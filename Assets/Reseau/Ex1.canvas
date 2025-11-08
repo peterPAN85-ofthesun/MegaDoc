@@ -1,0 +1,25 @@
+{
+	"nodes":[
+		{"id":"a23d78bfdfb3b1e3","type":"text","text":"Port 1 (192.168.10.254)","x":-147,"y":-400,"width":164,"height":60},
+		{"id":"3854fdace6375b3e","type":"text","text":"Rooter 2","x":-146,"y":-460,"width":326,"height":60},
+		{"id":"98be2fc48fca6a45","type":"text","text":"Port 2\n(192.168.20.2)","x":17,"y":-400,"width":163,"height":60},
+		{"id":"ba27f9e4c5442462","type":"text","text":"Port 1 (192.168.20.1)","x":340,"y":-620,"width":164,"height":60},
+		{"id":"b6f6fd951a4febb5","type":"text","text":"Rooter 1","x":341,"y":-680,"width":326,"height":60},
+		{"id":"a7afcd68b3617776","type":"text","text":"Port 2\n(192.168.30.1)","x":504,"y":-620,"width":163,"height":60},
+		{"id":"b9ade42dba3edd7f","type":"text","text":"Port 1 (192.168.30.2)","x":800,"y":-397,"width":171,"height":63},
+		{"id":"2e3f7213b3999f4d","type":"text","text":"Rooter 3","x":801,"y":-460,"width":339,"height":63},
+		{"id":"be44c8526269c2b5","type":"text","text":"Port 2\n(192.168.40.254)","x":971,"y":-397,"width":169,"height":63},
+		{"id":"80845d6c7a98387d","type":"text","text":"PC 1 (192.168.10.1)","x":-167,"y":-60,"width":205,"height":50},
+		{"id":"9454ade9c780c54a","type":"text","text":"PC 2(192.168.40.1)","x":953,"y":-20,"width":205,"height":50}
+	],
+	"edges":[
+		{"id":"876bb0f86649193f","fromNode":"80845d6c7a98387d","fromSide":"top","toNode":"a23d78bfdfb3b1e3","toSide":"bottom","fromEnd":"arrow"},
+		{"id":"56cbf86cb9d641c2","fromNode":"98be2fc48fca6a45","fromSide":"right","toNode":"ba27f9e4c5442462","toSide":"left","fromEnd":"arrow"},
+		{"id":"45507d4355042712","fromNode":"a7afcd68b3617776","fromSide":"right","toNode":"b9ade42dba3edd7f","toSide":"left","fromEnd":"arrow"},
+		{"id":"fe28a834b1eec1a0","fromNode":"be44c8526269c2b5","fromSide":"bottom","toNode":"9454ade9c780c54a","toSide":"top","fromEnd":"arrow"}
+	],
+	"metadata":{
+		"version":"1.0-1.0",
+		"frontmatter":{}
+	}
+}

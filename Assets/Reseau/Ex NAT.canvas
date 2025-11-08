@@ -1,0 +1,26 @@
+{
+	"nodes":[
+		{"id":"72605f34b5187b35","type":"text","text":"Serveur WEB\n(66.94.230.34)","x":-580,"y":-20,"width":185,"height":120},
+		{"id":"95d54bed71896d96","type":"text","text":"Router NAT\n(80.88.125.132)","x":-140,"y":-20,"width":160,"height":120},
+		{"id":"19680b19d1765065","type":"text","text":"Serveur WEB","x":-580,"y":100,"width":185,"height":120},
+		{"id":"5d27f9aaecc28f3d","type":"text","text":"Router NAT","x":-140,"y":100,"width":160,"height":120},
+		{"id":"074861c5602377f0","type":"text","text":"PC local","x":400,"y":100,"width":200,"height":120},
+		{"id":"7f10b2e8ed9f7528","type":"text","text":"PC local\n(192.168.0.2)","x":400,"y":-20,"width":200,"height":120},
+		{"id":"f1e0ebf6734452ee","type":"text","text":"Router NAT\n(192.168.0.1)","x":20,"y":-20,"width":160,"height":120},
+		{"id":"96f0e9b13e8d9b60","type":"text","text":"Router NAT","x":20,"y":100,"width":160,"height":120},
+		{"id":"15e3eadfebbb07ca","type":"text","text":"port : 8324","x":-340,"y":-50,"width":150,"height":60},
+		{"id":"d6df0dcc9ba2891d","type":"text","text":"port : 10225","x":220,"y":-50,"width":150,"height":60},
+		{"id":"197f434227ea2522","type":"text","text":"port : 80","x":220,"y":190,"width":150,"height":60},
+		{"id":"cbca940f767225d8","type":"text","text":"port : 8324","x":-340,"y":190,"width":150,"height":60}
+	],
+	"edges":[
+		{"id":"512cd2a49c085258","fromNode":"72605f34b5187b35","fromSide":"right","toNode":"95d54bed71896d96","toSide":"left"},
+		{"id":"3d529c6c2c9aa1d3","fromNode":"5d27f9aaecc28f3d","fromSide":"left","toNode":"19680b19d1765065","toSide":"right"},
+		{"id":"e5a3e737c45ca30e","fromNode":"f1e0ebf6734452ee","fromSide":"right","toNode":"7f10b2e8ed9f7528","toSide":"left"},
+		{"id":"57187b5622422229","fromNode":"96f0e9b13e8d9b60","fromSide":"right","toNode":"074861c5602377f0","toSide":"left"}
+	],
+	"metadata":{
+		"version":"1.0-1.0",
+		"frontmatter":{}
+	}
+}
