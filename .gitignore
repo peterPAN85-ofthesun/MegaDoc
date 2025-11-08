@@ -1,0 +1,12 @@
+# Obsidian workspace
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+
+# Plugin data
+.obsidian/plugins/*/data.json
+
+# Cache
+.obsidian/cache
+
+# Trash
+.trash/

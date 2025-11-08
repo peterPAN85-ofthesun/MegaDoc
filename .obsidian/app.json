@@ -1,0 +1,21 @@
+{
+  "livePreview": true,
+  "defaultViewMode": "source",
+  "readableLineLength": true,
+  "showLineNumber": true,
+  "spellcheck": true,
+  "spellcheckLanguages": [
+    "fr",
+    "en"
+  ],
+  "alwaysUpdateLinks": true,
+  "attachmentFolderPath": "Assets",
+  "newLinkFormat": "shortest",
+  "useMarkdownLinks": false,
+  "showFrontmatter": true,
+  "foldHeading": true,
+  "foldIndent": true,
+  "showIndentGuide": true,
+  "strictLineBreaks": false,
+  "vimMode": false
+}
