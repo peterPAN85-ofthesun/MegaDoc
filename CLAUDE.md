@@ -19,10 +19,8 @@ The Zettelkasten method is about:
 ```
 ObsidianZettle/
 ├── 0-Inbox/              # Quick captures, unprocessed notes
-├── 1-Fleeting/           # Temporary notes, raw ideas (to be processed)
-├── 2-Literature/         # Notes from books, articles, courses
-├── 3-Permanent/          # Atomic, evergreen notes (the core Zettelkasten)
-├── 4-Maps/              # Maps of Content (MOCs) - thematic indexes
+├── 1-Permanent/          # Atomic, evergreen notes (the core Zettelkasten)
+├── 2-Maps/              # Maps of Content (MOCs) - thematic indexes
 ├── Assets/              # Images, files, media
 ├── Templates/           # Note templates
 └── .obsidian/           # Obsidian configuration
@@ -30,40 +28,7 @@ ObsidianZettle/
 
 ## Note Types and Workflow
 
-### 1. Fleeting Notes (`1-Fleeting/`)
-**Purpose**: Capture raw ideas quickly without overthinking.
-
-**When to use**:
-- Quick thought or insight
-- Meeting notes
-- Temporary reminders
-
-**Workflow**:
-1. Use template: `Templates/Fleeting Note.md`
-2. Write down the idea immediately
-3. Process within 24-48h → convert to Literature or Permanent note
-4. Delete or archive after processing
-
-**Template tags**: `#fleeting`
-
-### 2. Literature Notes (`2-Literature/`)
-**Purpose**: Summarize external sources in your own words.
-
-**When to use**:
-- Reading a book, article, documentation
-- Watching a tutorial or course
-- Reviewing someone else's work
-
-**Workflow**:
-1. Use template: `Templates/Literature Note.md`
-2. Fill metadata (source, author, date)
-3. Summarize in your own words (no copy-paste)
-4. Extract key ideas → create Permanent notes
-5. Link to generated Permanent notes
-
-**Template tags**: `#literature`
-
-### 3. Permanent Notes (`3-Permanent/`)
+### 1. Permanent Notes (`1-Permanent/`)
 **Purpose**: The heart of Zettelkasten - atomic, evergreen concepts.
 
 **When to use**:
@@ -90,7 +55,7 @@ ObsidianZettle/
 
 **Template tags**: `#permanent` + thematic tags
 
-### 4. Maps of Content (`4-Maps/`)
+### 2. Maps of Content (`2-Maps/`)
 **Purpose**: Thematic indexes that organize related notes.
 
 **When to use**:
@@ -125,7 +90,7 @@ ObsidianZettle/
 
 ### Tags
 Use sparingly and consistently:
-- **Type tags**: `#fleeting` `#literature` `#permanent` `#moc`
+- **Type tags**: `#permanent` `#moc`
 - **Domain tags**: `#réseau` `#programmation` `#git` `#cmake`
 - **Status tags**: `#wip` `#à-revoir` `#complet`
 
@@ -137,13 +102,13 @@ All notes use consistent YAML frontmatter:
 
 ```yaml
 ---
-type: permanent|literature|fleeting|moc
+type: permanent|moc
 created: YYYY-MM-DD HH:mm
 tags:
   - tag1
   - tag2
-source: "URL or book reference"  # For literature notes
-author: "Author name"             # For literature notes
+source: "URL or book reference"  # Optional
+author: "Author name"             # Optional
 ---
 ```
 
@@ -154,16 +119,15 @@ When migrating from the old multi-vault structure:
 ### Step 1: Identify Note Type
 Determine if each note should become:
 - **Permanent**: Core concepts, well-understood ideas
-- **Literature**: Course notes, tutorials, documentation
-- **Fleeting**: Quick notes, day planners
+- **Inbox**: Course notes, tutorials, documentation, quick notes
 - **MOC**: HomePage files, glossaries, indexes
 
 ### Step 2: Transform Structure
-- Course day notes (J1, J2, J3) → Literature notes
+- Course day notes (J1, J2, J3) → Inbox
 - Technical concepts (VLANs, NAT, Git commands) → Permanent notes
 - Glossaries → MOCs
 - Templates → Keep in Templates/
-- Day Planners → Archive or Fleeting
+- Day Planners → Archive or Inbox
 
 ### Step 3: Atomize
 Break down large notes into atomic concepts:
@@ -187,7 +151,7 @@ Break down large notes into atomic concepts:
 ### Organizing
 1. **Don't overthink folders** - use search and links instead
 2. **Trust the process** - structure emerges over time
-3. **Regular reviews** - process Fleeting notes weekly
+3. **Regular reviews** - process Inbox notes weekly
 4. **Update MOCs** - keep indexes current
 
 ### Linking
@@ -215,7 +179,7 @@ git commit -m "Migrate Formation_Reseau vault"
 
 1. **Too many tags** - Use links instead
 2. **Notes too long** - Keep Permanent notes atomic
-3. **Not processing Fleeting** - Review and process regularly
+3. **Not processing Inbox** - Review and process regularly
 4. **Copying without understanding** - Always rewrite in your own words
 5. **Complex folder hierarchies** - Flat structure + links is better
 6. **Orphan notes** - Every note should link to at least 2 others

@@ -63,17 +63,43 @@ Les MOCs sont des index thématiques qui organisent vos notes permanentes par do
 
 ## 📚 Guides
 
+### Documentation générale
 - [[README]] : Vue d'ensemble du système
+- `CLAUDE.md` : Documentation complète du vault
 - `GUIDE-MIGRATION.md` : Comment migrer vos coffres
-- `CLAUDE.md` : Documentation complète
+
+### 🤖 Workflow avec Claude Code
+- `WORKFLOW.md` : Guide complet du workflow Zettelkasten avec Claude
+- `WORKFLOW-QUICKSTART.md` : Démarrage rapide (15 min)
+- `.claude/commands/` : Commandes slash disponibles
+
+**Commandes essentielles** :
+- `/create-note` - Créer une note permanente
+- `/atomize` - Extraire concepts d'une source
+- `/find-links` - Enrichir les connexions
+- `/process-inbox` - Traiter 0-Inbox/
+- `/process-current-note` - 🆕 Traiter note courante (tout-en-un)
+- `/update-moc` - Mettre à jour un MOC
+- `/audit` - Vérifier qualité d'une note
+
+### 🔌 Plugin Obsidian
+- `PLUGIN-INSTALLATION.md` : Guide d'installation du plugin
+- `PLUGIN-TERMINAL-MODE.md` : 🆕 Guide du mode terminal automatique
+- **Plugin** : Zettelkasten Claude Assistant v1.1.0
+- **Accès** : `Ctrl-P` dans Obsidian
+- **Commandes** : 8 commandes intégrées dans Obsidian
+- **Status** : ✅ Installé, à activer dans Obsidian
+- **🆕 Nouveauté v1.1.0** : Mode terminal automatique (6x plus rapide)
+- **🆕 Nouveau** : Commande "Traiter note courante" (tout-en-un)
+
+➜ **Installez le plugin maintenant !** Voir `PLUGIN-INSTALLATION.md`
 
 ## 🧭 Navigation Rapide
 
 ### Par Type
-- **Fleeting** : `1-Fleeting/` - Notes temporaires à traiter
-- **Literature** : `2-Literature/` - Résumés de lectures
-- **Permanent** : `3-Permanent/` - Cœur du Zettelkasten
-- **Maps** : `4-Maps/` - Vous êtes ici !
+- **Inbox** : `0-Inbox/` - Captures rapides, notes non traitées
+- **Permanent** : `1-Permanent/` - Cœur du Zettelkasten
+- **Maps** : `2-Maps/` - Vous êtes ici !
 
 ### Par Tag
 - `#réseau` - Concepts réseau
@@ -84,8 +110,29 @@ Les MOCs sont des index thématiques qui organisent vos notes permanentes par do
 
 ## 🌱 Démarrer Maintenant
 
+### 🤖 Avec Claude Code (recommandé)
+
+**Traiter vos notes brutes** :
+```bash
+/process-inbox
+```
+
+**Créer une note permanente** :
+```bash
+/create-note [concept]
+```
+
+**Enrichir une note existante** :
+```bash
+/find-links [nom-note]
+```
+
+➜ Voir `WORKFLOW-QUICKSTART.md` pour le guide complet
+
+### ✍️ Manuellement
+
 **Nouvelle note ?**
-1. Choisir le type : Fleeting, Literature, ou Permanent
+1. Choisir le type : Inbox ou Permanent
 2. Utiliser le template correspondant dans `Templates/`
 3. Remplir le contenu
 4. **Important** : Ajouter au moins 2 liens vers d'autres notes
@@ -95,11 +142,11 @@ Les MOCs sont des index thématiques qui organisent vos notes permanentes par do
 1. Lire `GUIDE-MIGRATION.md`
 2. Choisir Formation_Reseau (recommandé)
 3. Créer l'inventaire
-4. Commencer par une note Literature
-5. Extraire 2-3 Permanent notes
+4. Commencer par traiter 0-Inbox/
+5. Extraire 2-3 notes permanentes
 
 ---
 
-**Dernière mise à jour** : 2025-01-08
+**Dernière mise à jour** : 2025-11-11
 
 *Astuce : Épinglez cette page dans Obsidian pour un accès rapide !*

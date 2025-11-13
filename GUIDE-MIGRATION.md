@@ -37,7 +37,7 @@ Créez un fichier `INVENTAIRE.md` dans le coffre source :
 ```markdown
 # Inventaire Formation_Reseau
 
-## Notes de cours (Literature)
+## Notes de cours (Inbox)
 - [ ] J1 - Formation Réseau.md
 - [ ] J2 - Formation Réseau.md
 - [ ] J3 - Formation Réseau.md
@@ -55,12 +55,12 @@ Créez un fichier `INVENTAIRE.md` dans le coffre source :
 - [ ] HomePage.md → Intégrer dans MOC
 
 ## Autres
-- [ ] Day Planners/ → Archiver ou transformer en Fleeting
+- [ ] Day Planners/ → Archiver
 - [ ] Templates/ → Copier dans Templates/
 - [ ] Fichiers canvas (.canvas) → Garder dans Assets/
 ```
 
-### Étape 3 : Migration des Literature Notes
+### Étape 3 : Migration des Notes vers Inbox
 **Exemple : J1 - Formation Réseau.md**
 
 **AVANT** (structure actuelle) :
@@ -82,26 +82,22 @@ arp -a
 RIP vs OSPF...
 ```
 
-**APRÈS** (Literature Note) :
-1. Copier dans `2-Literature/Formation Réseau - Jour 1.md`
-2. Utiliser le template Literature Note
-3. Remplir métadonnées :
+**APRÈS** (Note dans Inbox) :
+1. Copier dans `0-Inbox/Formation Réseau - Jour 1.md`
+2. Ajouter les métadonnées :
    ```yaml
    ---
-   type: literature
    created: 2025-10-10
    source: "Formation Réseau - Jour 1"
-   author: "Formateur"
    tags:
-     - literature
      - réseau
      - formation
    ---
    ```
-4. **Important** : Identifier les concepts à extraire en Permanent notes
+3. **Important** : Identifier les concepts à extraire en Permanent notes
 
 ### Étape 4 : Extraction des Permanent Notes
-**À partir de la Literature Note, extraire les concepts atomiques**
+**À partir des notes dans Inbox, extraire les concepts atomiques**
 
 **Exemple 1 : Commande ipconfig**
 ```markdown
@@ -278,7 +274,7 @@ cp -r "Obsidian Vault/Formation_Reseau/04.Files/"* "../ObsidianZettle/Assets/"
 ## 🎓 Exemples par Type de Coffre
 
 ### Formation_Reseau
-- **J1, J2, J3** → Literature Notes
+- **J1, J2, J3** → Inbox
 - **NAT, VLAN, DHCP** → Permanent Notes (concepts)
 - **Commandes** → Permanent Notes (référence)
 - **Glossaire** → MOC
@@ -293,8 +289,8 @@ cp -r "Obsidian Vault/Formation_Reseau/04.Files/"* "../ObsidianZettle/Assets/"
 ### Apprendre le C / Cmake
 - **Concepts C** (pointeurs, malloc, etc.) → Permanent Notes
 - **Syntaxe** → Permanent Notes (référence)
-- **Librairies** → Literature Notes
-- **Tips** → Permanent Notes ou Fleeting
+- **Librairies** → Inbox
+- **Tips** → Permanent Notes ou Inbox
 
 ## ⚠️ Pièges à Éviter
 

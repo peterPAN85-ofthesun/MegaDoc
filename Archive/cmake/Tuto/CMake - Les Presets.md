@@ -1,0 +1,140 @@
+---
+banner: "![[project_management_coursefees.avif]]"
+Software: Cmake
+Version: v4.1.2
+Type: Tuto
+Auteur: PeterPan
+DateCreation:
+WorkInProgress: false
+tags:
+Sources:
+  - https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html
+cssclasses:
+  - show_properties
+---
+Créé : `=this.file.ctime`
+Dernière modification : `=this.file.mtime`
+
+
+
+>[!NOTE]
+>Le fichier `CMakePresets.json` doit se trouver à la racine du projet.
+>Voici un exemple de preset :
+
+
+
+```json
+{
+  "version": 10,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 23,
+    "patch": 0
+  },
+  "$comment": "An example CMakePresets.json file",
+  "include": [
+    "otherThings.json",
+    "moreThings.json"
+  ],
+  "configurePresets": [
+    {
+      "$comment": [
+        "This is a comment row.",
+        "This is another comment,",
+        "just because we can do it"
+      ],
+      "name": "default",
+      "displayName": "Default Config",
+      "description": "Default build using Ninja generator",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/default",
+      "cacheVariables": {
+        "FIRST_CACHE_VARIABLE": {
+          "type": "BOOL",
+          "value": "OFF"
+        },
+        "SECOND_CACHE_VARIABLE": "ON"
+      },
+      "environment": {
+        "MY_ENVIRONMENT_VARIABLE": "Test",
+        "PATH": "$env{HOME}/ninja/bin:$penv{PATH}"
+      },
+      "vendor": {
+        "example.com/ExampleIDE/1.0": {
+          "autoFormat": true
+        }
+      }
+    },
+    {
+      "name": "ninja-multi",
+      "inherits": "default",
+      "displayName": "Ninja Multi-Config",
+      "description": "Default build using Ninja Multi-Config generator",
+      "generator": "Ninja Multi-Config"
+    },
+    {
+      "name": "windows-only",
+      "inherits": "default",
+      "displayName": "Windows-only configuration",
+      "description": "This build is only available on Windows",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default",
+      "output": {"outputOnFailure": true},
+      "execution": {"noTestsAction": "error", "stopOnFailure": true}
+    }
+  ],
+  "packagePresets": [
+    {
+      "name": "default",
+      "configurePreset": "default",
+      "generators": [
+        "TGZ"
+      ]
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "default",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "default"
+        },
+        {
+          "type": "build",
+          "name": "default"
+        },
+        {
+          "type": "test",
+          "name": "default"
+        },
+        {
+          "type": "package",
+          "name": "default"
+        }
+      ]
+    }
+  ],
+  "vendor": {
+    "example.com/ExampleIDE/1.0": {
+      "autoFormat": false
+    }
+  }
+}
+```
+

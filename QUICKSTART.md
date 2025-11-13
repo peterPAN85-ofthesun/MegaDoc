@@ -15,22 +15,13 @@
 3. `GUIDE-MIGRATION.md` - Comment migrer vos coffres
 
 **Explorez les exemples** :
-- [[EXEMPLE - Note Fleeting]] dans `1-Fleeting/`
-- [[EXEMPLE - Note Permanente]] dans `3-Permanent/`
-- [[EXEMPLE - Map of Content]] dans `4-Maps/`
+- [[EXEMPLE - Note Permanente]] dans `1-Permanent/`
+- [[EXEMPLE - Map of Content]] dans `2-Maps/`
 
 ## 3️⃣ Créer votre première note (2 min)
 
-### Option A : Note Fleeting (idée rapide)
-1. Clic droit sur `1-Fleeting/` → "Nouvelle note"
-2. Ctrl+P → "Templates: Insert template"
-3. Choisir "Fleeting Note"
-4. Remplacer `{{title}}` par votre titre
-5. Écrire votre idée
-6. ✅ Première note créée !
-
-### Option B : Note Permanente (concept maîtrisé)
-1. Clic droit sur `3-Permanent/` → "Nouvelle note"
+### Note Permanente (concept maîtrisé)
+1. Clic droit sur `1-Permanent/` → "Nouvelle note"
 2. Ctrl+P → "Templates: Insert template"
 3. Choisir "Permanent Note"
 4. Remplir le concept

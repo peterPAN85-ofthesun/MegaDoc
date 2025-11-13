@@ -14,10 +14,8 @@ Ce coffre Obsidian unifie mes connaissances sur différents sujets (réseau, pro
 | Dossier | Description | Quand l'utiliser |
 |---------|-------------|------------------|
 | `0-Inbox/` | Captures rapides | Idée à noter immédiatement |
-| `1-Fleeting/` | Notes temporaires | Idées à traiter dans 24-48h |
-| `2-Literature/` | Notes de lecture | Résumés de livres, cours, articles |
-| `3-Permanent/` | Notes atomiques | Concepts maîtrisés, idées personnelles |
-| `4-Maps/` | Index thématiques | Vue d'ensemble d'un domaine |
+| `1-Permanent/` | Notes atomiques | Concepts maîtrisés, idées personnelles |
+| `2-Maps/` | Index thématiques | Vue d'ensemble d'un domaine |
 | `Assets/` | Médias | Images, canvas, fichiers |
 | `Templates/` | Modèles de notes | Créer de nouvelles notes |
 
@@ -29,8 +27,8 @@ Ce coffre Obsidian unifie mes connaissances sur différents sujets (réseau, pro
 3. Créer votre première note avec un template
 
 ### Workflow quotidien
-1. **Capturer** : Idée → `1-Fleeting/` avec template
-2. **Traiter** : Fleeting → Literature ou Permanent (1-2x/semaine)
+1. **Capturer** : Idée → `0-Inbox/`
+2. **Traiter** : Inbox → Permanent (1-2x/semaine)
 3. **Relier** : Ajouter des liens vers notes existantes
 4. **Explorer** : Suivre les liens, découvrir des connexions
 
@@ -39,6 +37,8 @@ Ce coffre Obsidian unifie mes connaissances sur différents sujets (réseau, pro
 - **[[INDEX]]** : Point d'entrée principal du Zettelkasten
 - **`CLAUDE.md`** : Guide complet pour Claude Code
 - **`GUIDE-MIGRATION.md`** : Migrer vos anciens coffres
+- **`PLUGIN-INSTALLATION.md`** : Installation du plugin Obsidian
+- **`PLUGIN-TERMINAL-MODE.md`** : 🆕 Mode terminal automatique (v1.1.0)
 - **`Templates/`** : Modèles de notes prêts à l'emploi
 
 ## 🔧 Migration
@@ -70,6 +70,7 @@ Ce coffre centralise progressivement les contenus de :
 ## 🛠️ Outils
 
 - **Obsidian** : Éditeur de notes
+- **Zettelkasten Claude Assistant** : 🆕 Plugin v1.1.0 avec mode terminal automatique
 - **Graph View** : Visualiser les connexions
 - **Backlinks** : Voir ce qui pointe vers une note
 - **Search** : Recherche plein texte
@@ -78,4 +79,4 @@ Ce coffre centralise progressivement les contenus de :
 ---
 
 **Créé** : 2025-01-08
-**Dernière mise à jour** : 2025-01-08
+**Dernière mise à jour** : 2025-11-11

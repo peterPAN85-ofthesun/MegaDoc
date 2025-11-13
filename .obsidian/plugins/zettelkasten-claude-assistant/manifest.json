@@ -1,0 +1,10 @@
+{
+  "id": "zettelkasten-claude-assistant",
+  "name": "Zettelkasten Claude Assistant",
+  "version": "1.1.0",
+  "minAppVersion": "0.15.0",
+  "description": "Intègre les workflows Zettelkasten avec Claude Code. Lance automatiquement un terminal ou copie dans le presse-papiers.",
+  "author": "Zettelkasten Team",
+  "authorUrl": "https://github.com/yourusername/zettelkasten-claude-assistant",
+  "isDesktopOnly": true
+}
