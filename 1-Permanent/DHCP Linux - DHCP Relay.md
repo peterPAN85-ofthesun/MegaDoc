@@ -185,6 +185,7 @@ iptables -t nat -A PREROUTING -i eth0 -p udp --dport 67 -j DNAT --to-destination
 ## Connexions
 
 ### Notes liées
+- [[DHCP Relay Agent]] - Concept général et architecture
 - [[DHCP - Dynamic Host Configuration]] - Processus DORA
 - [[DHCP Cisco - Relay Agent]] - Équivalent Cisco (ip helper-address)
 - [[DHCP Linux - Installation et configuration]] - Setup serveur DHCP

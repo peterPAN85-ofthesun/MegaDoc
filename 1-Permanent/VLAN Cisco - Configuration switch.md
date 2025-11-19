@@ -94,9 +94,9 @@ Switch(config)# no vlan 30
 
 ### Notes liées
 - [[VLAN - Virtual LAN]] - Concept de segmentation Layer 2
-- [[Mode access vs trunk]] - Différence entre les deux modes
+- [[VLAN - mode access vs trunk]] - Différence entre les deux modes
 - [[VLAN Cisco - Port trunk et 802.1Q]] - Transport multi-VLAN
-- [[802.1Q tagging]] - Protocole d'encapsulation
+- [[802.1Q - tagging VLAN]] - Protocole d'encapsulation
 
 ### Contexte
 Configuration de base pour segmenter un réseau d'entreprise. Les VLANs isolent les domaines de broadcast et améliorent la sécurité. À combiner avec le mode trunk pour interconnecter les switches.

@@ -91,7 +91,9 @@ Chercher la ligne `ip helper-address`.
 ## Connexions
 
 ### Notes liées
+- [[DHCP Relay Agent]] - Concept général et architecture
 - [[DHCP - Dynamic Host Configuration]] - Processus DORA
+- [[DHCP Linux - DHCP Relay]] - Équivalent Linux (dhcrelay)
 - [[DHCP Cisco - Multi-VLAN]] - Serveur local multi-VLAN
 - [[ROUTAGE - statique]] - Communication inter-réseau
 - [[VLAN - Virtual LAN]] - Segmentation réseau

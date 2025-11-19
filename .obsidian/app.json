@@ -4,10 +4,7 @@
   "readableLineLength": true,
   "showLineNumber": true,
   "spellcheck": true,
-  "spellcheckLanguages": [
-    "fr",
-    "en"
-  ],
+  "spellcheckLanguages": null,
   "alwaysUpdateLinks": true,
   "attachmentFolderPath": "Assets",
   "newLinkFormat": "shortest",

@@ -1,0 +1,31 @@
+/* Élargir les blocs de code pour les schémas ASCII */
+
+/* Augmenter la largeur maximale des blocs de code */
+.markdown-preview-view pre,
+.markdown-source-view.mod-cm6 .cm-content .HyperMD-codeblock {
+    max-width: none !important;
+}
+
+/* Élargir la zone de lecture pour les blocs de code */
+.markdown-reading-view .markdown-preview-sizer {
+    max-width: 100% !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+}
+
+/* Permettre le défilement horizontal si nécessaire */
+.markdown-preview-view pre {
+    overflow-x: auto !important;
+    white-space: pre !important;
+}
+
+/* Optionnel: Police plus petite pour les blocs de code (meilleure densité) */
+.markdown-preview-view pre code,
+.markdown-source-view.mod-cm6 .cm-line.HyperMD-codeblock {
+    font-size: 0.85em !important;
+}
+
+/* Élargir la zone de contenu globale en mode lecture */
+.markdown-reading-view {
+    max-width: 95% !important;
+}

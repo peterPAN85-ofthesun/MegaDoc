@@ -1,369 +1,247 @@
 ---
 type: moc
-created: 2025-01-08 18:00
+created: 2024-11-15
+updated: 2025-11-16
 tags:
   - moc
   - réseau
-  - index
 ---
 
 # MOC - Réseau
 
-> [!note] Vue d'ensemble
-> Carte de contenu complète sur le réseau informatique, couvrant les protocoles, configurations Cisco et Linux, et architectures de la couche 2 (liaison) à la couche 3 (réseau).
+Map of Content centralisée pour tous les concepts réseau, protocoles, et configurations.
 
 ---
 
-## 1. Protocoles fondamentaux
+## 🎯 Parcours d'apprentissage recommandé
 
-### Couche 2 (Liaison de données)
-- [[ARP - Address Resolution Protocol]] - Résolution IP → MAC
+### Niveau 1 : Fondations réseau
+1. Comprendre l'adressage IP et le subnetting
+2. Maîtriser les VLANs et la segmentation
+3. Découvrir les protocoles essentiels (ARP, ICMP, DNS, DHCP)
 
-### Couche 3 (Réseau)
-- [[ICMP - Internet Control Message Protocol]] - Ping, traceroute, diagnostics
-- [[TTL - Time To Live]] - Durée de vie des paquets, détection boucles
-- [[IGMP - Internet Group Management Protocol]] - Gestion multicast
-- [[RFC 1918 - adressage IP privé]] - Plages privées (10.x, 172.16.x, 192.168.x)
+### Niveau 2 : Routage et services
+1. Routage statique et dynamique
+2. Configuration NAT/PAT
+3. Services réseau avancés
 
-### Services applicatifs
-- [[DNS - Domain Name System]] - Résolution de noms de domaine
-
----
-
-## 2. DHCP (Dynamic Host Configuration Protocol)
-
-### Concepts fondamentaux
-- [[DHCP - Dynamic Host Configuration]] - Protocole, processus DORA, fonctionnement
-
-### Configuration Cisco IOS
-
-#### Configuration de base
-
-| Configuration | Description |
-|---------------|-------------|
-| [[DHCP Cisco - Configuration de base]] | Pool, passerelle, DNS, exclusions |
-| [[DHCP Cisco - Réservations MAC]] | IP fixes par MAC |
-| [[DHCP Cisco - Multi-VLAN]] | Pools multiples pour plusieurs réseaux |
-| [[DHCP Cisco - Relay Agent]] | Relayer vers serveur distant (ip helper-address) |
-
-#### Gestion et dépannage
-
-| Configuration | Description |
-|---------------|-------------|
-| [[DHCP Cisco - Vérification et dépannage]] | show commands, debug |
-
-### Configuration Linux (isc-dhcp-server)
-
-#### Configuration de base
-
-| Configuration | Description |
-|---------------|-------------|
-| [[DHCP Linux - Installation et configuration]] | Installation, pools, multi-VLAN |
-| [[DHCP Linux - Réservations MAC]] | IP fixes par MAC |
-| [[DHCP Linux - DHCP Relay]] | Relayer vers serveur distant (dhcrelay) |
-
-#### Client et gestion
-
-| Configuration | Description |
-|---------------|-------------|
-| [[DHCP Linux - Client DHCP]] | Configuration client (dhclient, NetworkManager) |
-| [[DHCP Linux - Vérification et dépannage]] | Logs, baux actifs, debug |
-
-### Sécurité
-- [[DHCP - snooping protection]] - Protection Layer 2 contre serveurs pirates
+### Niveau 3 : Protocoles de routage avancés
+1. OSPF et EIGRP
+2. BGP pour l'interconnexion Internet
+3. Multicast et PIM
 
 ---
 
-## 3. VLAN (Virtual Local Area Network)
+## 📚 Notes par thème
 
-### Concepts fondamentaux
-- [[VLAN - Virtual LAN]] - Segmentation réseau Layer 2
-- [[802.1Q - tagging VLAN]] - Protocole d'encapsulation VLAN
-- [[VLAN - mode access vs trunk]] - Différence entre les modes de port
-- [[VLAN - router on a stick]] - Routage inter-VLAN
+### 🔢 Adressage IP
 
-### Configuration Cisco
+#### Concepts fondamentaux
+- [[IP - subnetting]] → Découpage de réseaux
+- [[RFC 1918 - adressage IP privé]] → Plages IP privées
+- [[TTL - Time To Live]] → Durée de vie paquets
 
-#### Switch Layer 2
+### 🏷️ VLAN (Virtual LAN)
 
-| Configuration | Description |
-|---------------|-------------|
-| [[VLAN Cisco - Configuration switch]] | Créer VLANs, ports access |
-| [[VLAN Cisco - Port trunk et 802.1Q]] | Transport multi-VLAN |
+#### Concepts de base
+- [[VLAN - Virtual LAN]] → Segmentation logique des réseaux
+- [[VLAN - mode access vs trunk]] → Types de ports
+- [[VLAN - natif untagged]] → VLAN natif sans tag
+
+#### Encapsulation et tagging
+- [[Types d'Encapsulation VLAN]] → Méthodes d'encapsulation
+- [[802.1Q - tagging VLAN]] → Standard de tagging
+
+#### Configuration Cisco
+- [[VLAN Cisco - Configuration switch]] → Configuration de base
+- [[VLAN Cisco - Port trunk et 802.1Q]] → Configuration trunks
+- [[VLAN Cisco - Sécurisation]] → Sécurité VLAN
+- [[VLAN Cisco - Vérification et dépannage]] → Troubleshooting
+- [[VLAN Cisco - Switch Layer 3]] → Switch L3
+- [[VLAN Cisco - Router on a stick]] → Routage inter-VLAN
+- [[CISCO - sous-interfaces]] → Configuration sous-interfaces
+
+#### Configuration Linux
+- [[VLAN Linux - Configuration interfaces]] → Setup VLAN sous Linux
+- [[VLAN Linux - Routage inter-VLAN]] → Routage L3 Linux
 
 #### Routage inter-VLAN
+- [[VLAN - router on a stick]] → Méthode classique
 
-| Configuration | Description |
-|---------------|-------------|
-| [[VLAN Cisco - Router on a stick]] | Routage via sous-interfaces 802.1Q |
-| [[VLAN Cisco - Switch Layer 3]] | Routage matériel avec SVI |
+### 🔀 Routage
 
-#### Sécurité et maintenance
+#### Concepts de base
+- [[ROUTAGE - statique]] → Routes statiques
 
-| Configuration | Description |
-|---------------|-------------|
-| [[VLAN Cisco - Sécurisation]] | VLAN natif, DTP, port security |
-| [[VLAN Cisco - Vérification et dépannage]] | show commands, debug |
+#### Configuration Cisco
+- [[Routage Cisco - Configuration de base]] → Setup initial
+- [[Routage Cisco - Routes statiques avancées]] → Routes complexes
+- [[Routage Cisco - Distance administrative]] → Métrique de priorité
+- [[Routage Cisco - Vérification et dépannage]] → Troubleshooting
 
-### Configuration Linux
+#### Protocoles de routage
+- [[RIP - Routing Information Protocol]] → Protocol distance vector
+- [[OSPF - Open Shortest Path First]] → Protocol link-state
+- [[EIGRP - Enhanced Interior Gateway Routing Protocol]] → Protocol hybride Cisco
+- [[BGP - Border Gateway Protocol]] → Routage Internet
 
-#### Configuration et routage
+### 🌐 NAT (Network Address Translation)
 
-| Configuration | Description |
-|---------------|-------------|
-| [[VLAN Linux - Configuration interfaces]] | Sous-interfaces VLAN (eth0.10, .20) |
-| [[VLAN Linux - Routage inter-VLAN]] | IP forwarding, firewall |
+#### Concepts
+- [[NAT - Network Address Translation]] → Translation d'adresses
+- [[PAT - Port Address Translation]] → NAT avec ports
+- [[NAT - source NAT (SNAT)]] → NAT source
+- [[NAT - destination NAT (DNAT)]] → NAT destination
+- [[NAT - port forwarding]] → Redirection de ports
+- [[Port Forwarding]] → Concept détaillé
 
----
+#### Configuration Cisco
+- [[NAT Cisco - Configuration interfaces]] → Setup interfaces
+- [[NAT Cisco - NAT statique]] → Mapping 1:1
+- [[NAT Cisco - PAT et NAT Overload]] → Partage IP
+- [[NAT Cisco - Port forwarding]] → Redirection ports
+- [[NAT Cisco - Vérification et dépannage]] → Troubleshooting
 
-## 4. NAT (Network Address Translation)
+#### Configuration Linux
+- [[NAT Linux - iptables et NAT]] → NAT avec iptables
+- [[NAT Linux - Port forwarding]] → Redirection Linux
 
-### Concepts fondamentaux
-- [[NAT - Network Address Translation]] - Translation d'adresses, types de NAT
-- [[PAT - Port Address Translation]] - Partage d'IP publique (overload)
-- [[NAT - port forwarding]] - Redirection de ports (DNAT)
+### 📡 DHCP (Dynamic Host Configuration Protocol)
 
-### Configuration Cisco IOS
+#### Concepts
+- [[DHCP - Dynamic Host Configuration]] → Attribution IP automatique
+- [[DHCP Relay Agent]] → Relais DHCP
+- [[DHCP - snooping protection]] → Protection snooping
 
-#### Configuration de base
+#### Configuration Cisco
+- [[DHCP Cisco - Configuration de base]] → Setup serveur
+- [[DHCP Cisco - Multi-VLAN]] → DHCP multi-VLAN
+- [[DHCP Cisco - Relay Agent]] → Configuration relay
+- [[DHCP Cisco - Réservations MAC]] → Binding statique
+- [[DHCP Cisco - Vérification et dépannage]] → Troubleshooting
 
-| Configuration | Description |
-|---------------|-------------|
-| [[NAT Cisco - Configuration interfaces]] | Définir inside/outside |
+#### Configuration Linux
+- [[DHCP Linux - Installation et configuration]] → Setup serveur
+- [[DHCP Linux - Client DHCP]] → Configuration client
+- [[DHCP Linux - DHCP Relay]] → Relais DHCP
+- [[DHCP Linux - Réservations MAC]] → Réservations
+- [[DHCP Linux - Vérification et dépannage]] → Troubleshooting
 
-#### Types de NAT
+### 🔍 DNS et résolution de noms
+- [[DNS - Domain Name System]] → Résolution de noms
 
-| Configuration | Description |
-|---------------|-------------|
-| [[NAT Cisco - NAT statique]] | Translation 1:1 permanente |
-| [[NAT Cisco - PAT et NAT Overload]] | Partage d'IP publique (overload) |
-| [[NAT Cisco - Port forwarding]] | Redirection ports spécifiques |
+### 🛡️ Sécurité réseau
+- [[DMZ - Zone démilitarisée]] → Zone tampon sécurisée
 
-#### Gestion et dépannage
+### 📨 Protocoles de couche 3
 
-| Configuration | Description |
-|---------------|-------------|
-| [[NAT Cisco - Vérification et dépannage]] | show commands, timeouts, debug |
+#### Protocoles de contrôle
+- [[ARP - Address Resolution Protocol]] → Résolution MAC/IP
+- [[ICMP - Internet Control Message Protocol]] → Messages de contrôle
 
-### Configuration Linux (iptables)
+#### Multicast
+- [[MULTICAST - diffusion groupe]] → Communication 1-vers-n
+- [[IGMP - Internet Group Management Protocol]] → Gestion groupes multicast
+- [[PIM - Protocol Independent Multicast]] → Routage multicast
 
-#### Configuration
-
-| Configuration | Description |
-|---------------|-------------|
-| [[NAT Linux - iptables et NAT]] | SNAT, MASQUERADE, IP forwarding |
-| [[NAT Linux - Port forwarding]] | DNAT pour redirection ports |
-
----
-
-## 5. Routage IP
-
-### Concepts fondamentaux
-- [[ROUTAGE - statique]] - Principe du routage, table de routage
-
-### Configuration Cisco IOS
-
-#### Configuration de base
-
-| Configuration | Description |
-|---------------|-------------|
-| [[Routage Cisco - Configuration de base]] | Routes statiques, next-hop, route par défaut |
-
-#### Techniques avancées
-
-| Configuration | Description |
-|---------------|-------------|
-| [[Routage Cisco - Routes statiques avancées]] | Floating static, load balancing, routes NULL |
-| [[Routage Cisco - Distance administrative]] | Priorité entre sources de routage |
-
-#### Gestion et dépannage
-
-| Configuration | Description |
-|---------------|-------------|
-| [[Routage Cisco - Vérification et dépannage]] | show commands, ping, traceroute |
+### 🔧 Outils de diagnostic
+- [[ping - tester connectivité réseau]] → Test connectivité ICMP
+- [[traceroute - tracer route réseau]] → Traçage de route
 
 ---
 
-## Architecture et topologies
+## 📋 Notes par plateforme
 
-### Topologies courantes
+### Cisco IOS
+- [[VLAN Cisco - Configuration switch]]
+- [[VLAN Cisco - Port trunk et 802.1Q]]
+- [[VLAN Cisco - Router on a stick]]
+- [[VLAN Cisco - Switch Layer 3]]
+- [[VLAN Cisco - Sécurisation]]
+- [[VLAN Cisco - Vérification et dépannage]]
+- [[CISCO - sous-interfaces]]
+- [[Routage Cisco - Configuration de base]]
+- [[Routage Cisco - Routes statiques avancées]]
+- [[Routage Cisco - Distance administrative]]
+- [[Routage Cisco - Vérification et dépannage]]
+- [[NAT Cisco - Configuration interfaces]]
+- [[NAT Cisco - NAT statique]]
+- [[NAT Cisco - PAT et NAT Overload]]
+- [[NAT Cisco - Port forwarding]]
+- [[NAT Cisco - Vérification et dépannage]]
+- [[DHCP Cisco - Configuration de base]]
+- [[DHCP Cisco - Multi-VLAN]]
+- [[DHCP Cisco - Relay Agent]]
+- [[DHCP Cisco - Réservations MAC]]
+- [[DHCP Cisco - Vérification et dépannage]]
 
-#### PME / Petite entreprise
+### Linux
+- [[VLAN Linux - Configuration interfaces]]
+- [[VLAN Linux - Routage inter-VLAN]]
+- [[NAT Linux - iptables et NAT]]
+- [[NAT Linux - Port forwarding]]
+- [[DHCP Linux - Installation et configuration]]
+- [[DHCP Linux - Client DHCP]]
+- [[DHCP Linux - DHCP Relay]]
+- [[DHCP Linux - Réservations MAC]]
+- [[DHCP Linux - Vérification et dépannage]]
+
+---
+
+## 🔗 Connexions avec autres domaines
+
+### Sécurité
+- Protection DHCP Snooping
+- DMZ et segmentation
+- Contrôle d'accès par VLAN
+
+### Linux Système
+- Configuration réseau avancée
+- Modules noyau réseau
+- Interfaces et bridges
+
+### Administration
+- Automatisation configuration
+- Monitoring et supervision
+- Dépannage méthodique
+
+---
+
+## 📝 Concepts clés à maîtriser
+
+1. **Segmentation** : VLANs, subnetting
+2. **Routage** : Statique, dynamique, protocols
+3. **Services** : DHCP, DNS, NAT
+4. **Sécurité** : DMZ, isolation, contrôle d'accès
+5. **Diagnostic** : ping, traceroute, show commands
+
+---
+
+## 🎓 Progression suggérée
+
+```mermaid
+graph TD
+    A[IP & Subnetting] --> B[VLANs]
+    B --> C[Routage statique]
+    C --> D[Protocoles dynamiques]
+    A --> E[DHCP & DNS]
+    E --> F[NAT/PAT]
+    B --> G[Inter-VLAN Routing]
+    D --> H[OSPF/EIGRP/BGP]
+    F --> I[Port Forwarding]
 ```
-Internet
-   |
-[Routeur - NAT/PAT + DHCP]
-   |
-[Switch L2 - VLANs]
-   |
-LAN segmenté (VLAN Admin, Users, Invités)
-```
-
-**Composants** :
-- Routeur : [[NAT - Network Address Translation]], [[DHCP - Dynamic Host Configuration]]
-- Switch : [[VLAN - Virtual LAN]], [[VLAN - mode access vs trunk]]
-
-#### Entreprise moyenne avec DMZ
-```
-Internet
-   |
-[Routeur WAN - NAT]
-   |
-   +--- DMZ (serveurs publics - NAT statique)
-   |
-[Switch L3 - Routage inter-VLAN]
-   |
-LAN multi-VLAN (Admin, Users, VoIP, IoT)
-```
-
-**Composants** :
-- NAT : [[NAT Cisco - NAT statique]] pour DMZ, [[NAT Cisco - PAT et NAT Overload]] pour LAN
-- Switch L3 : [[VLAN Cisco - Switch Layer 3]]
-- DHCP multi-VLAN : [[DHCP Cisco - Multi-VLAN]]
-
-#### Router on a stick
-```
-[Switch L2 avec VLANs]
-        |
-    (trunk)
-        |
-[Routeur avec sous-interfaces 802.1Q]
-```
-
-**Configuration** :
-- Switch : [[VLAN Cisco - Port trunk et 802.1Q]]
-- Routeur : [[VLAN Cisco - Router on a stick]]
 
 ---
 
-## Comparaison des implémentations
+## 📊 Statistiques du vault réseau
 
-### Cisco vs Linux
-
-| Fonction | Cisco IOS | Linux |
-|----------|-----------|-------|
-| **DHCP Server** | `ip dhcp pool` | isc-dhcp-server |
-| **DHCP Relay** | `ip helper-address` | dhcrelay |
-| **VLAN** | Natif (switch) | 802.1Q kernel module |
-| **NAT** | `ip nat inside/outside` | iptables -t nat |
-| **Routage** | `ip route` | `ip route` |
-| **Performance** | Matériel (ASIC) | Logiciel (CPU) |
-| **Coût** | Élevé (licences) | Gratuit (open-source) |
-| **Scalabilité** | Excellente | Bonne |
-| **Flexibilité** | Limitée | Très élevée |
-
-### Types de NAT
-
-| Type | IP publiques | Connexions | Utilisation | Notes |
-|------|--------------|------------|-------------|-------|
-| **NAT statique** | 1 par serveur | ∞ | Serveurs publics | [[NAT Cisco - NAT statique]] |
-| **PAT/Overload** | 1 partagée | ~65000 | PME, particuliers | [[NAT Cisco - PAT et NAT Overload]] |
-| **Port forwarding** | 1 partagée | Par port | Services spécifiques | [[NAT - port forwarding]] |
-
-### Routage inter-VLAN
-
-| Méthode | Équipement | Performance | Coût | Notes |
-|---------|------------|-------------|------|-------|
-| **Router on a stick** | Routeur + Switch L2 | Moyenne | Économique | [[VLAN - router on a stick]] |
-| **Switch Layer 3** | Switch L3 | Élevée | Moyen/Élevé | [[VLAN Cisco - Switch Layer 3]] |
-| **Serveur Linux** | Serveur + Switch L2 | Variable | Économique | [[VLAN Linux - Routage inter-VLAN]] |
+**Notes VLAN** : 13 notes
+**Notes DHCP** : 11 notes
+**Notes NAT** : 9 notes
+**Notes Routage** : 8 notes
+**Protocoles** : 7 notes
+**Total notes réseau** : ~48 notes
 
 ---
 
-## Progression d'apprentissage recommandée
-
-### Niveau 1 - Fondamentaux
-1. [[RFC 1918 - adressage IP privé]] - Plages IP privées
-2. [[ARP - Address Resolution Protocol]] - Résolution IP/MAC
-3. [[ICMP - Internet Control Message Protocol]] - Ping et diagnostics
-4. [[DNS - Domain Name System]] - Résolution de noms
-5. [[TTL - Time To Live]] - Durée de vie des paquets
-
-### Niveau 2 - Services de base
-1. [[DHCP - Dynamic Host Configuration]] - Concept général
-2. [[DHCP Cisco - Configuration de base]] - Serveur DHCP Cisco
-3. [[DHCP Linux - Installation et configuration]] - Serveur DHCP Linux
-
-### Niveau 3 - Segmentation (VLAN)
-1. [[VLAN - Virtual LAN]] - Concept général
-2. [[802.1Q - tagging VLAN]] - Protocole d'encapsulation
-3. [[VLAN - mode access vs trunk]] - Modes de port
-4. [[VLAN Cisco - Configuration switch]] - Configuration pratique
-5. [[VLAN Cisco - Port trunk et 802.1Q]] - Trunking
-
-### Niveau 4 - Routage inter-VLAN
-1. [[ROUTAGE - statique]] - Principe du routage
-2. [[VLAN - router on a stick]] - Routage inter-VLAN économique
-3. [[VLAN Cisco - Router on a stick]] - Configuration Cisco
-4. [[VLAN Cisco - Switch Layer 3]] - Alternative performante
-5. [[Routage Cisco - Configuration de base]] - Routes statiques
-
-### Niveau 5 - Translation d'adresses (NAT)
-1. [[NAT - Network Address Translation]] - Concept général
-2. [[NAT Cisco - Configuration interfaces]] - Inside/Outside
-3. [[NAT Cisco - PAT et NAT Overload]] - Partage d'IP
-4. [[NAT Cisco - NAT statique]] - Translation 1:1
-5. [[NAT - port forwarding]] - Redirection de ports
-
-### Niveau 6 - Configurations avancées
-1. [[DHCP Cisco - Multi-VLAN]] - DHCP pour plusieurs VLANs
-2. [[DHCP Cisco - Relay Agent]] - Serveur DHCP centralisé
-3. [[Routage Cisco - Routes statiques avancées]] - Floating routes, load balancing
-4. [[Routage Cisco - Distance administrative]] - Priorité de routes
-5. [[VLAN Cisco - Sécurisation]] - Sécurité VLAN
-
-### Niveau 7 - Sécurité et dépannage
-1. [[DHCP - snooping protection]] - Sécurité Layer 2
-2. [[VLAN Cisco - Vérification et dépannage]] - Debug VLAN
-3. [[NAT Cisco - Vérification et dépannage]] - Debug NAT
-4. [[Routage Cisco - Vérification et dépannage]] - Debug routage
-
----
-
-## Ressources externes
-
-### Standards et RFCs
-- RFC 791 - Internet Protocol (IP)
-- RFC 1918 - Address Allocation for Private Internets
-- RFC 2131 - Dynamic Host Configuration Protocol
-- RFC 3022 - Traditional IP Network Address Translator
-- IEEE 802.1Q - Virtual LANs
-
-### Documentation
-- Cisco IOS Configuration Guides
-- Linux Network Administrator's Guide
-- ISC DHCP Documentation
-- iptables/nftables Documentation
-
-### Outils de diagnostic et simulation
-- **Wireshark** - Analyse de paquets réseau
-- **Packet Tracer** - Simulation réseau Cisco
-- **GNS3 / EVE-NG** - Émulation réseau avancée
-- **tcpdump** - Capture de paquets en ligne de commande
-- **ping/traceroute** - Diagnostics de base
-
----
-
-## Index par plateforme
-
-### Toutes les notes Cisco
-**DHCP** : [[DHCP Cisco - Configuration de base]] · [[DHCP Cisco - Réservations MAC]] · [[DHCP Cisco - Multi-VLAN]] · [[DHCP Cisco - Relay Agent]] · [[DHCP Cisco - Vérification et dépannage]]
-
-**VLAN** : [[VLAN Cisco - Configuration switch]] · [[VLAN Cisco - Port trunk et 802.1Q]] · [[VLAN Cisco - Router on a stick]] · [[VLAN Cisco - Switch Layer 3]] · [[VLAN Cisco - Sécurisation]] · [[VLAN Cisco - Vérification et dépannage]]
-
-**NAT** : [[NAT Cisco - Configuration interfaces]] · [[NAT Cisco - NAT statique]] · [[NAT Cisco - PAT et NAT Overload]] · [[NAT Cisco - Port forwarding]] · [[NAT Cisco - Vérification et dépannage]]
-
-**Routage** : [[Routage Cisco - Configuration de base]] · [[Routage Cisco - Routes statiques avancées]] · [[Routage Cisco - Distance administrative]] · [[Routage Cisco - Vérification et dépannage]]
-
-### Toutes les notes Linux
-**DHCP** : [[DHCP Linux - Installation et configuration]] · [[DHCP Linux - Réservations MAC]] · [[DHCP Linux - DHCP Relay]] · [[DHCP Linux - Client DHCP]] · [[DHCP Linux - Vérification et dépannage]]
-
-**VLAN** : [[VLAN Linux - Configuration interfaces]] · [[VLAN Linux - Routage inter-VLAN]]
-
-**NAT** : [[NAT Linux - iptables et NAT]] · [[NAT Linux - Port forwarding]]
-
----
-
-**Dernière mise à jour** : 2025-01-08
-
-**Note** : Ce MOC remplace les anciens MOCs spécialisés (MOC - DHCP, MOC - VLAN, MOC - NAT, MOC - Routage) pour centraliser toute la documentation réseau en un seul endroit.
+**Dernière mise à jour** : 2025-11-16

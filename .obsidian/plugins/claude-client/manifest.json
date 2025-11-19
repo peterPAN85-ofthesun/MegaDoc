@@ -1,0 +1,10 @@
+{
+  "id": "claude-client",
+  "name": "Claude Client",
+  "version": "2.0.1",
+  "minAppVersion": "0.15.0",
+  "description": "Client Claude intégré (via Claude Code CLI) pour analyser vos notes et optimiser votre Zettelkasten. Suit strictement la philosophie Zettelkasten : enrichir avant créer, priorité au vault, validation utilisateur.",
+  "author": "Grégoire",
+  "authorUrl": "",
+  "isDesktopOnly": false
+}
