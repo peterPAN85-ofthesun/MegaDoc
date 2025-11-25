@@ -181,19 +181,6 @@ Le firmware du receiver implémente l'algorithme SMPTE 2022-7 de sélection/reco
 - **Prism** : Monitoring SMPTE 2022-7
 - **Tektronix Sentry** : Analyse redondance
 - **Cisco show commands** : Statistiques multicast
-
-## Relation avec SMPTE 2022-6
-
-### SMPTE 2022-6
-- Transport **SDI complet** sur IP (vidéo+audio encapsulé ensemble)
-- Plus ancien, moins flexible
-
-### SMPTE 2022-7
-- Standard de **redondance** (compatible 2110 ET 2022-6)
-- Décrit uniquement le mécanisme de duplication/sélection
-
-**Héritage** : SMPTE 2110 utilise le mécanisme de redondance de 2022-7.
-
 ## Cas d'usage
 
 ### Production TV en direct

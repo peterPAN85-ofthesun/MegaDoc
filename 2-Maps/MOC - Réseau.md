@@ -159,7 +159,7 @@ Map of Content centralisée pour tous les concepts réseau, protocoles, et confi
 #### Fondamentaux
 - [[SMPTE 2110 - transport multimédia par IP]] → Norme transport broadcast
 - [[SDI vs IP - comparaison broadcast]] → Évolution SDI vers IP
-- [[Topologie Spine-Leaf - architecture réseau]] → Architecture datacenter
+- [[Topologie Spine-Leaf]] → Architecture datacenter haute disponibilité
 
 #### Synchronisation
 - [[PTP - Precision Time Protocol]] → Synchronisation nanoseconde
@@ -270,9 +270,9 @@ graph TD
 **Notes NAT** : 9 notes
 **Notes Routage** : 8 notes
 **Notes Multicast** : 8 notes (concept + 3 Linux + 2 Cisco + 2 protocoles)
-**Notes Broadcast IP (SMPTE 2110)** : 11 notes
+**Notes Broadcast IP (SMPTE 2110)** : 12 notes
 **Protocoles** : 7 notes
-**Total notes réseau** : ~67 notes
+**Total notes réseau** : ~68 notes
 
 ---
 

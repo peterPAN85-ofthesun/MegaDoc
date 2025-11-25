@@ -47,7 +47,7 @@ Le **SMPTE 2110** représente la transition du broadcast professionnel vers l'IP
 3. **Description flux** : [[SDP - Session Description Protocol]]
 
 ### Niveau 4 : Architecture et haute disponibilité
-1. **Topologie** : [[Topologie Spine-Leaf - architecture réseau]]
+1. **Topologie** : [[Topologie Spine-Leaf]]
 2. **Redondance** : [[SMPTE 2022-7 - redondance réseau]]
 3. **Configuration Spine (L3)** : [[MULTICAST Cisco - routeur PIM]] ou [[MULTICAST Linux - routeur PIM]]
 4. **Configuration Leaf (L2)** : [[MULTICAST Cisco - switch IGMP snooping]] ou [[MULTICAST Linux - bridge IGMP snooping]]
@@ -164,7 +164,7 @@ Le **SMPTE 2110** représente la transition du broadcast professionnel vers l'IP
 ### 🏗️ Architecture réseau
 
 #### Topologie
-- [[Topologie Spine-Leaf - architecture réseau]] → Architecture datacenter/broadcast moderne
+- [[Topologie Spine-Leaf]] → Architecture datacenter/broadcast moderne
 
 #### Structure typique
 ```
@@ -446,12 +446,12 @@ show ptp corrections
 
 ## 📊 Statistiques du domaine
 
-**Notes permanentes** : 18 notes
+**Notes permanentes** : 19 notes
 - Fondamentaux : 3 notes
 - Synchronisation : 3 notes
 - Orchestration : 2 notes
 - Transport : 2 notes
-- Architecture : 2 notes
+- Architecture : 3 notes
 - Configuration multicast : 6 notes (3 Linux + 2 Cisco + 1 concept)
 
 **Connexions** : ~80 liens internes

@@ -85,6 +85,7 @@ La **norme SMPTE 2110** permet le transport de contenus multimédia broadcast (v
 - **PTP (Precision Time Protocol)** : IEEE 1588, précision nanoseconde
 - Tous les équipements synchronisés sur horloge maître
 - Nécessaire pour commutation "seamless"
+- compatible uniquement PTPv2 (pas compatible avec PTPv1)
 
 ### Commutation
 **No seamless** : Désabonnement → abonnement (coupure brève)
