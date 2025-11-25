@@ -83,6 +83,26 @@ MAC : 01:00:5E:01:01:01
 - 1 flux vidéo 10 Mbps
 - 1000 clients = **10 Mbps** (au lieu de 10 Gbps en unicast)
 
+### Broadcast IP professionnel (SMPTE 2110)
+**Contexte** : Production audiovisuelle (studios TV, régies)
+```
+[Caméra SDI] → [Gateway] → Multicast 239.1.1.1 → [Mélangeurs, Enregistreurs, Moniteurs]
+```
+
+**Caractéristiques** :
+- Flux vidéo HD non compressé : **~1 Gbps par flux**
+- Séparation des essences : vidéo, audio (16 canaux), métadonnées
+- Transport RTP sur UDP
+- Redondance réseau rouge/bleu (SMPTE 2022-7)
+- Synchronisation PTP (nanoseconde)
+
+**Avantages du multicast pour le broadcast** :
+- Une caméra diffuse vers 10+ équipements (mélangeurs, enregistreurs)
+- Sans multicast : 10 Gbps (1 Gbps × 10 destinations)
+- Avec multicast : **1 Gbps** total
+
+**Exigence critique** : IGMP snooping obligatoire (éviter saturation réseau)
+
 ### Visioconférence
 - 1 personne parle → tous reçoivent
 - Économie bande passante
@@ -190,6 +210,11 @@ Gi0/1          239.1.1.1       00:10:23    00:02:37
 
 - [[IGMP - Internet Group Management Protocol]] - Abonnement groupes
 - [[PIM - Protocol Independent Multicast]] - Routage multicast
+- [[MULTICAST Linux - client réception flux]] - Configuration client multicast
+- [[MULTICAST Linux - bridge IGMP snooping]] - Linux comme switch L2
+- [[MULTICAST Linux - routeur PIM]] - Routeur Linux avec PIM daemon
+- [[MULTICAST Cisco - switch IGMP snooping]] - Switch Cisco L2 avec IGMP snooping
+- [[MULTICAST Cisco - routeur PIM]] - Routeur Cisco avec PIM Sparse Mode
 - [[OSPF - Open Shortest Path First]] - Utilise multicast (224.0.0.5)
 
 ---

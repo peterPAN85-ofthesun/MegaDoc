@@ -49,7 +49,6 @@ Map of Content centralisée pour tous les concepts réseau, protocoles, et confi
 - [[VLAN - natif untagged]] → VLAN natif sans tag
 
 #### Encapsulation et tagging
-- [[Types d'Encapsulation VLAN]] → Méthodes d'encapsulation
 - [[802.1Q - tagging VLAN]] → Standard de tagging
 
 #### Configuration Cisco
@@ -143,6 +142,37 @@ Map of Content centralisée pour tous les concepts réseau, protocoles, et confi
 - [[MULTICAST - diffusion groupe]] → Communication 1-vers-n
 - [[IGMP - Internet Group Management Protocol]] → Gestion groupes multicast
 - [[PIM - Protocol Independent Multicast]] → Routage multicast
+
+##### Configuration Linux
+- [[MULTICAST Linux - client réception flux]] → Client s'abonnant à un flux
+- [[MULTICAST Linux - bridge IGMP snooping]] → Switch L2 avec IGMP snooping
+- [[MULTICAST Linux - routeur PIM]] → Routeur L3 avec PIM daemon
+
+##### Configuration Cisco
+- [[MULTICAST Cisco - switch IGMP snooping]] → Switch L2 avec IGMP snooping
+- [[MULTICAST Cisco - routeur PIM]] → Routeur L3 avec PIM Sparse Mode
+
+### 📡 Broadcast IP (SMPTE 2110)
+
+> 💡 **Pour un guide complet** : Voir [[MOC - SMPTE 2110 & Broadcast IP]]
+
+#### Fondamentaux
+- [[SMPTE 2110 - transport multimédia par IP]] → Norme transport broadcast
+- [[SDI vs IP - comparaison broadcast]] → Évolution SDI vers IP
+- [[Topologie Spine-Leaf - architecture réseau]] → Architecture datacenter
+
+#### Synchronisation
+- [[PTP - Precision Time Protocol]] → Synchronisation nanoseconde
+- [[BMCA - Best Master Clock Algorithm]] → Sélection Master PTP
+- [[PTP Clock modes - Ordinary Transparent Boundary]] → Modes switches PTP
+
+#### Orchestration et transport
+- [[NMOS - découverte équipements broadcast]] → Découverte IS-04/IS-05
+- [[RTP - Real-time Transport Protocol]] → Encapsulation temps réel
+- [[SDP - Session Description Protocol]] → Description flux
+
+#### Redondance
+- [[SMPTE 2022-7 - redondance réseau]] → Haute disponibilité rouge/bleu
 
 ### 🔧 Outils de diagnostic
 - [[ping - tester connectivité réseau]] → Test connectivité ICMP
@@ -239,9 +269,11 @@ graph TD
 **Notes DHCP** : 11 notes
 **Notes NAT** : 9 notes
 **Notes Routage** : 8 notes
+**Notes Multicast** : 8 notes (concept + 3 Linux + 2 Cisco + 2 protocoles)
+**Notes Broadcast IP (SMPTE 2110)** : 11 notes
 **Protocoles** : 7 notes
-**Total notes réseau** : ~48 notes
+**Total notes réseau** : ~67 notes
 
 ---
 
-**Dernière mise à jour** : 2025-11-16
+**Dernière mise à jour** : 2025-11-25
