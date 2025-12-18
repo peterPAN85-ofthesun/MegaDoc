@@ -47,6 +47,53 @@ En **broadcast IP**, les flux vidéo/audio arrivent par paquets asynchrones. Pou
 
 ## Mécanisme de synchronisation
 
+### Vue d'ensemble : Échange complet MASTER ↔ FOLLOWER
+
+```
+MASTER (horloge référence)          FOLLOWER (à synchroniser)
+      |                                      |
+      |                                      |
+═══════════════════ PHASE 1 : SYNC ═══════════════════════
+      |                                      |
+      | t1 = 10:00:00.000000000              |
+      |--- Sync --------------------------->| t2 = 10:00:00.000000150
+      |    (timestamp t1)                    | (reçu avec délai réseau)
+      |                                      |
+      |--- Follow_Up (t1) ------------------>|
+      |    (précise t1 exact)                | Stocke t1 et t2
+      |                                      |
+═══════════════ PHASE 2 : DELAY REQUEST ══════════════════
+      |                                      |
+      |                                      | t3 = 10:00:00.500000000
+      |<-- Delay_Req -------------------------| (envoi requête)
+      | t4 = 10:00:00.500000140              |
+      | (reçu avec délai réseau)             |
+      |                                      |
+      |--- Delay_Resp (t4) ----------------->|
+      |    (indique t4 de réception)         | Stocke t3 et t4
+      |                                      |
+═══════════════════ CALCULS FOLLOWER ═════════════════════
+                                             |
+                    Délai réseau = (t2-t1 + t4-t3) / 2
+                                 = (150ns + 140ns) / 2
+                                 = 145 ns
+                                             |
+                    Offset horloge = (t2-t1) - délai
+                                   = 150ns - 145ns
+                                   = +5 ns
+                                             |
+                    → Ajuste horloge locale : -5 ns
+                                             |
+                                      [SYNCHRONISÉ]
+```
+
+**Principe** :
+1. **MASTER → FOLLOWER** (Sync) : Mesure t2-t1 (temps aller)
+2. **FOLLOWER → MASTER** (Delay Req) : Mesure t4-t3 (temps retour)
+3. **Calcul délai** : Moyenne des deux trajets (hypothèse symétrique)
+4. **Calcul offset** : Décalage horloge à compenser
+5. **Ajustement** : FOLLOWER corrige son horloge
+
 ### Phase 1 : SYNC (Master → Follower)
 
 ```

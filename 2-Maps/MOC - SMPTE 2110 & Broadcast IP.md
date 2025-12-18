@@ -61,7 +61,9 @@ Le **SMPTE 2110** représente la transition du broadcast professionnel vers l'IP
 #### Concepts de base
 - [[SMPTE 2110 - transport multimédia par IP]] → Norme principale, séparation essences
 - [[SDI vs IP - comparaison broadcast]] → Évolution du paradigme broadcast
+- [[SMPTE 2022-6 - transport SDI sur IP]] → Standard transition (gateway SDI↔IP)
 - [[MULTICAST - diffusion groupe]] → Communication 1-vers-N
+- [[Fibre optique broadcast - multimode vs monomode]] → Choix infrastructure physique
 
 #### Protocoles réseau
 - [[IGMP - Internet Group Management Protocol]] → Abonnement aux groupes multicast
@@ -128,6 +130,10 @@ Le **SMPTE 2110** représente la transition du broadcast professionnel vers l'IP
 #### Protocoles
 - [[RTP - Real-time Transport Protocol]] → Encapsulation temps réel (couche 5)
 - [[SDP - Session Description Protocol]] → Description des flux multimédia
+
+#### Gestion du trafic
+- [[SMPTE 2110-21 - types de flux NL N W]] → Stratégies buffering (Narrow Linear, Narrow, Wide)
+- [[Commutation seamless - basculement sans coupure]] → Switching sans interruption visible
 
 #### Structure d'un flux SMPTE 2110
 ```
@@ -446,11 +452,11 @@ show ptp corrections
 
 ## 📊 Statistiques du domaine
 
-**Notes permanentes** : 19 notes
-- Fondamentaux : 3 notes
+**Notes permanentes** : 23 notes
+- Fondamentaux : 5 notes (+2 : SMPTE 2022-6, Fibre optique)
 - Synchronisation : 3 notes
 - Orchestration : 2 notes
-- Transport : 2 notes
+- Transport : 4 notes (+2 : SMPTE 2110-21, Commutation seamless)
 - Architecture : 3 notes
 - Configuration multicast : 6 notes (3 Linux + 2 Cisco + 1 concept)
 

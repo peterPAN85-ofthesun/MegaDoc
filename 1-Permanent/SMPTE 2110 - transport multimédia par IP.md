@@ -70,9 +70,73 @@ La **norme SMPTE 2110** permet le transport de contenus multimédia broadcast (v
 - **2110-20** : Vidéo non compressée
 - **2110-21** : Gestion du trafic (NL, N, W)
 - **2110-22** : Vidéo JPEG XS (compression légère)
-- **2110-30** : Audio PCM (basé sur AES67)
+- **2110-30** : Audio PCM non compressé (basé sur AES67)
 - **2110-31** : Audio AES3 (compressé)
 - **2110-40/41/43** : Métadonnées, sous-titrage (TTML)
+
+### Détails SMPTE 2110-30 (Audio PCM)
+
+**Base** : Standard AES67 (audio sur IP)
+**Format** : PCM non compressé
+**Taille paquet** : 1460 octets
+
+**Trois profils standardisés** :
+
+| Profil | Latence | Fréquence | Canaux | Usage typique |
+|--------|---------|-----------|--------|---------------|
+| **A** | 1 ms | 48 kHz | 8 canaux | Production standard |
+| **B** | 1 ms | 48 kHz | 16 canaux | Multi-canaux étendu |
+| **C** | 125 µs | 48 kHz | 64 canaux | Ultra-faible latence |
+
+**Principe** : Pour augmenter le nombre de canaux, on réduit la latence entre paquets, ce qui augmente le débit global.
+
+### Détails SMPTE 2110-20 (Vidéo non compressée)
+
+**Formats supportés** :
+- Définitions : jusqu'à 32K × 32K pixels
+- Espaces colorimétriques : YCbCr, RGB, XYZ, ICtCp
+- Échantillonnages : 4:2:2/10, 4:2:2/12, 4:4:4/16, 4:2:0/12, KEY/16
+
+**Particularité** : Seule la **partie active de l'image** est transmise (pas les blanking horizontaux/verticaux).
+
+**Calcul débit vidéo HD 4:2:2** :
+```
+1920 × 1080 px × 25 fps × 10 bits × (1 + 0.5 + 0.5) = 1.037 Gbps
+```
+
+### Détails SMPTE 2110-22 (Vidéo JPEG XS)
+
+**Compression légère** : JPEG XS (ISO/IEC 21122)
+- Taux compression : 2:1 à 10:1
+- Latence : < 1 ligne (ultra-faible)
+- Qualité : Visuellement sans perte
+
+**Avantage** : Réduit bande passante (4K → 1-2 Gbps au lieu de 12 Gbps) tout en gardant qualité broadcast.
+
+### Détails SMPTE 2110-31 (Audio AES3 compressé)
+
+**Format** : Audio AES3 (Audio Engineering Society)
+- Données audio compressées ou non-compressées
+- Compatible avec équipements AES3 legacy
+
+**Différence avec 2110-30** :
+- 2110-30 = PCM pur (non compressé)
+- 2110-31 = AES3 (peut inclure compression)
+
+### Détails SMPTE 2110-40/41/43 (Métadonnées)
+
+**2110-40** : Ancillary Data (métadonnées SDI embarquées)
+- Timecode, closed captions, tally
+- Format hérité du SDI (VANC/HANC)
+
+**2110-41** : Fast Metadata
+- Métadonnées temps réel rapides
+- Signalisation, contrôle
+
+**2110-43** : Sous-titrage TTML (Timed Text Markup Language)
+- Basé sur XML
+- Meilleure indexation que closed captions traditionnels
+- Support multi-langues, styling avancé
 
 ### Dépendances
 - **SMPTE 2022-7** : Redondance réseau rouge/bleu
@@ -113,6 +177,25 @@ ip igmp snooping
 - Déploiement rapide (câbles Ethernet vs SDI)
 - Longues distances (fibre optique)
 - Évolutivité (ajout d'équipements sans rewiring)
+
+## SDI vs IP - Tableau comparatif
+
+| SDI | Réseau IP (SMPTE 2110) |
+|-----|------------------------|
+| **Commutation de circuit** | **Commutation de paquets** |
+| Connexions statiques | Connexions dynamiques (routage) |
+| Bande passante garantie | "Best Effort" (nécessite QoS) |
+| Déterministe | Probabiliste |
+| Mono signal unidirectionnel | Multi-signaux |
+| Synchrone | Asynchrone (nécessite PTP) |
+| Temps réel | Non temps réel / Jitter / Reordering |
+| Basse latence (~0 ms) | Latence variable (dépend utilisation) |
+| Pas (très peu) d'erreur (BER faible) | Perte paquets / FEC / Re-Tx |
+| Point à Point | "Any to any" |
+
+**Débit SDI HD** : 1.485 Gbps (tout inclus : vidéo + 16 audio + métadonnées)
+
+**Équipement transition** : **Gateway** (conversion SDI ↔ IP)
 
 ## Avantages vs SDI
 

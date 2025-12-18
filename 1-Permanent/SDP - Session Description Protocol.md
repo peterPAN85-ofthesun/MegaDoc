@@ -145,23 +145,85 @@ a=source-filter: incl IN IP4 239.100.1.2 192.168.10.100
 - **Format** : L24 (PCM 24 bits), 48 kHz, 8 canaux
 - **Ptime** : 1 ms par paquet
 
-### Exemple 3 : Redondance SMPTE 2022-7 (réseau bleu)
+### Exemple 3 : Redondance SMPTE 2022-7 - Vidéo complète (rouge + bleu)
 
-**Vidéo primaire (rouge)** :
+**Vidéo primaire (réseau rouge)** :
 ```
+v=0
+o=- 1234567890 1 IN IP4 192.168.10.100
+s=Camera 01 - Video HD 1080p50 (Primary)
 c=IN IP4 239.100.1.1/32
+t=0 0
 m=video 5004 RTP/AVP 96
+a=rtpmap:96 raw/90000
+a=fmtp:96 sampling=YCbCr-4:2:2; width=1920; height=1080; depth=10; colorimetry=BT709
+a=mediaclk:direct=0
+a=ts-refclk:ptp=IEEE1588-2008:00-1B-21-FF-FE-12-34-56:0
 a=source-filter: incl IN IP4 239.100.1.1 192.168.10.100
 ```
 
-**Vidéo secondaire (bleu)** :
+**Vidéo secondaire (réseau bleu)** :
 ```
+v=0
+o=- 1234567890 1 IN IP4 192.168.20.100
+s=Camera 01 - Video HD 1080p50 (Secondary)
 c=IN IP4 239.200.1.1/32
+t=0 0
 m=video 5004 RTP/AVP 96
+a=rtpmap:96 raw/90000
+a=fmtp:96 sampling=YCbCr-4:2:2; width=1920; height=1080; depth=10; colorimetry=BT709
+a=mediaclk:direct=0
+a=ts-refclk:ptp=IEEE1588-2008:00-1B-21-FF-FE-12-34-56:0
 a=source-filter: incl IN IP4 239.200.1.1 192.168.20.100
 ```
 
-Les deux flux ont les **mêmes en-têtes RTP** (Sequence Number, Timestamp identiques), mais des adresses IP différentes (rouge vs bleu).
+**Interprétation** :
+- **Même Session ID** (`1234567890`) : Flux identiques
+- **Adresses différentes** : Rouge `239.100.x.x`, Bleu `239.200.x.x`
+- **IPs sources différentes** : Rouge `192.168.10.100`, Bleu `192.168.20.100`
+- **PTP identique** : Synchronisation commune (`a=ts-refclk`)
+- **Payload/Format identiques** : Receiver peut basculer seamless
+
+### Exemple 4 : Redondance SMPTE 2022-7 - Audio complet (rouge + bleu)
+
+**Audio primaire (réseau rouge)** :
+```
+v=0
+o=- 1234567891 1 IN IP4 192.168.10.100
+s=Camera 01 - Audio 8ch (Primary)
+c=IN IP4 239.100.1.2/32
+t=0 0
+m=audio 5006 RTP/AVP 97
+a=rtpmap:97 L24/48000/8
+a=ptime:1
+a=mediaclk:direct=0
+a=ts-refclk:ptp=IEEE1588-2008:00-1B-21-FF-FE-12-34-56:0
+a=source-filter: incl IN IP4 239.100.1.2 192.168.10.100
+```
+
+**Audio secondaire (réseau bleu)** :
+```
+v=0
+o=- 1234567891 1 IN IP4 192.168.20.100
+s=Camera 01 - Audio 8ch (Secondary)
+c=IN IP4 239.200.1.2/32
+t=0 0
+m=audio 5006 RTP/AVP 97
+a=rtpmap:97 L24/48000/8
+a=ptime:1
+a=mediaclk:direct=0
+a=ts-refclk:ptp=IEEE1588-2008:00-1B-21-FF-FE-12-34-56:0
+a=source-filter: incl IN IP4 239.200.1.2 192.168.20.100
+```
+
+**Interprétation** :
+- **Adresse rouge** : `239.100.1.2`, **Adresse bleu** : `239.200.1.2`
+- **Port identique** : `5006`
+- **Payload identique** : `97` (L24 = PCM 24 bits)
+- **8 canaux**, **48 kHz**, **ptime 1 ms**
+- Les deux flux ont les **mêmes en-têtes RTP** (Sequence Number, Timestamp identiques) grâce à la référence PTP commune
+
+**Principe SMPTE 2022-7** : Le receiver s'abonne **simultanément** aux deux flux (rouge ET bleu), bufferise les deux, et utilise le premier paquet arrivé. Si un réseau tombe, l'autre prend le relais instantanément (seamless).
 
 ## Transmission SDP
 
