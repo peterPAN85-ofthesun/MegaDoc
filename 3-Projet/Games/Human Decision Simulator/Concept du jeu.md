@@ -1,0 +1,11 @@
+
+Nous sommes un enfant qui vient de naître dans un monde à l'aube de l'humanité. Il doit se familiariser avec cette jeune civilisation, organisée suivant des critères aléatoires ou définis au début du jeu par le joueur. Dans ces critères, on retrouve notamment l'organisation du pouvoir (s'il est partagé et comment, ou s'il est détenu uniquement par une seule personne), les conditions de vies des différentes classes sociales (revenus, pénibilité au travail, importance du temps libre...), la capacité pour une personne de montée dans la hiérarchie et s'extraire de son milieu social, son modèle économique (le libre échange, impôt, et redistribution des richesse) et croyance (fêtes religieuses, coutumes, mythes)
+L'enfant qu'on joue va devoir grandir, apprendre les règles de sa société à la manière d'un grand tutoriel. Puis, suivant les circonstances et les opportunités qui se présentent, le joueur aura le choix de gravir les échelons de sa société, la faire prospérer ou changer l'ordre établi, ou bien se séparer du groupe, partir avec ses les gens qui lui sont fidèle, ou bien faire la révolution.
+Bref : on donne l'opportunité au joueur de changer les règles du jeu, sachant que ses choix sont amenés à détruire sa civilisation, et notamment les gens qu'il aime. 
+Au moment où notre personnage est sur le point de mourir, il peut léguer son héritage à un autre enfant, où à une personne plus jeune que lui, pour faire perdurer sa civilisation. À ce moment : le joueur prend le contrôle de cet autre personnage, et le jeu continue sur cette même base.
+
+J'aimerais que le jeu prenne dans un premier temps la forme d'un simulateur de vie à la manière d'un sims : Le joueur évolue dans sa maison, il a un emploie du temps, des objectifs obligatoire à remplir pour satisfaire son rôle dans la société, et des objectifs secondaire pour gravir les échelons de sa civilisation. Petit à petit, les outils de gestion sont débloqués, suivant la réputation que l'on a. Lorsqu'on gagne suffisamment la confiance de ses congénères, on a la capacité de changer toutes les règles de sa civilisation. Mais attention cela peut provoquer des effets secondaires : le mécontentement de certaine personne, ou bien l'effondrement de l'économie.
+Le jeu doit glisser progressivement du simulateur de vie au jeu de gestion
+
+GameEngine : godot
+Modélisation 3D : Blender
