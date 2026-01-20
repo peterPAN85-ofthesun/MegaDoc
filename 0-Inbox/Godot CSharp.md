@@ -302,4 +302,12 @@ AnimationPlayer monAnim = getNode("AnimationPlayer") as AnimationPlayer;
 monAnim.Play("Walk");
 ```
 
+# 8 - Créer des tableaux
 
+```cs
+Godot.Collections.Dictionary<Type1, Type2> MonDictionnaire;
+```
+
+```cs
+Godot.Collections.Array array = ["First", 2, 3, "Last"];
+```
