@@ -280,6 +280,45 @@ public void MonTimeOut()
 
 L'objet disparaîtra après un certain temps après son apparition une fois le jeu lancé.
 
+On peut aussi créer des signaux *custom*
+
+### Custom Signals
+
+Déclarer un signal
+```cs
+[Signal]
+public delegate void MySignalEventHandler();
+
+[Signal]
+public delegate void MySignalWithArgumentEventHandler(string myString);
+```
+
+Le nom du Signal doit être suivi par `EventHandler` pour être reconnu.
+
+Connecter une fonction à un signal
+```cs
+public override void _Ready()
+{
+    MySignal += () => GD.Print("Hello!"); //Sans argumets
+    MySignalWithArgument += SayHelloTo;   //Avec Arguments
+}
+
+
+//Fonction à connecter avec argument
+private void SayHelloTo(string name)
+{
+    GD.Print($"Hello {name}!");
+}
+```
+
+Sans avoir à se connecter, on peut retrouver le signal à partir de la Scène courante :
+
+```cs
+//Le code attend l'arrivée du signal à partir de l'arbre de scène
+await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+```
+
+
 # 6 - Paramètre de la souris
 
 Pour Éditer le comportement du curseur de la souris :
@@ -311,3 +350,14 @@ Godot.Collections.Dictionary<Type1, Type2> MonDictionnaire;
 ```cs
 Godot.Collections.Array array = ["First", 2, 3, "Last"];
 ```
+
+
+Pour parcourir un Dictionnary :
+```cs
+var groceries = new Godot.Collections.Dictionary { { "Orange", 20 }, { "Apple", 2 }, { "Banana", 4 } };
+foreach (var (fruit, amount) in groceries)
+{
+    // `fruit` is the key, `amount` is the value.
+}
+```
+
