@@ -51,3 +51,24 @@
 - **Liens** : Concept 1 (SubViewport), Concept 2 (chargement dynamique), `Scripts/`
 
 ---
+
+### Autoload dans Godot (singleton global)
+
+- **Date** : 2026-03-06
+- **Contexte** : Envisagé dans SimLife pour `ThumbnailGenerator`, afin que le cache de thumbnails soit accessible depuis n'importe quel système (panneau d'édition, futurs systèmes de jeu, etc.)
+- **Explication** :
+  - Un Autoload est un singleton Godot : un nœud chargé **avant toutes les scènes** et qui reste en vie pendant toute la durée du jeu
+  - Accessible depuis n'importe quel script sans `GetNode()` sur un parent ni référence exportée
+  - Configuration : `Projet → Paramètres du projet → Autoload` → sélectionner le script ou la scène, lui donner un nom
+  - Accès en C# : `GetNode<MonScript>("/root/NomAutoload")`
+  - Comparaison avec un nœud classique :
+    - **Sans Autoload** : le nœud n'existe que dans sa scène, les autres scripts ont besoin d'une référence explicite (export, signal, GetParent…)
+    - **Avec Autoload** : accessible globalement depuis n'importe quelle scène, sans dépendance structurelle
+  - Critères de choix :
+    - Donnée partagée entre plusieurs scènes → Autoload
+    - Donnée utilisée uniquement dans la scène courante → Nœud classique
+    - Projet amené à grandir avec de nombreux systèmes → Autoload
+    - Prototype simple avec peu de scènes → Nœud classique
+- **Liens** : Concept 3 (cache d'images / `ThumbnailCache`), `Scripts/`
+
+---
