@@ -14,6 +14,23 @@ Traiter **automatiquement** la note courante en :
 
 # Workflow automatique
 
+## Phase 0 : Résolution des images
+
+Avant toute analyse, **détecter et lire les images marquées** dans la note.
+
+Chercher les patterns suivants :
+- `![[image.jpg]] [IMAGE]` — même ligne, avec espace
+- `![[image.jpg]][IMAGE]` — même ligne, sans espace
+- `![[image.jpg]]` suivi de `[IMAGE]` à la ligne suivante
+
+Pour chaque image marquée `[IMAGE]` :
+1. Extraire le nom du fichier depuis le lien `![[...]]`
+2. Localiser le fichier dans `Assets/` (chercher dans les sous-dossiers si besoin)
+3. **Lire l'image** avec le tool Read pour en extraire le contenu (texte, tableaux, schémas)
+4. Intégrer ce contenu dans l'analyse comme s'il faisait partie du texte de la note
+
+Les images **sans** marqueur `[IMAGE]` sont ignorées.
+
 ## Phase 1 : Analyse (30 secondes)
 
 **Lire la note courante** et identifier :

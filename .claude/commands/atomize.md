@@ -12,6 +12,7 @@ L'utilisateur a une source (fichier dans 0-Inbox/, notes brutes, etc.) contenant
 
 1. **Identifier la source** : Demander le chemin du fichier ou le contenu
 2. **Lire la source** complètement
+2b. **Résoudre les images** : chercher les marqueurs `[IMAGE]` après les liens `![[...]]`. Pour chaque image marquée, lire le fichier image dans `Assets/` et intégrer son contenu (texte, tableaux, schémas) dans l'analyse. Les images sans `[IMAGE]` sont ignorées.
 3. **Analyser et identifier** tous les concepts atomiques distincts
 4. **Lister les concepts** trouvés et demander validation
 5. **Pour chaque concept validé** :
