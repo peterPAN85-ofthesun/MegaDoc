@@ -103,8 +103,12 @@ Il ne faut pas oublier d'adapter ces deux paramètres sur l'ensemble de la chaî
 ![[20260407_164944.jpg]]
 [IMAGE]
 
->[!Claude]
->Je n'ai pas compris pourquoi ces deux paramètres ne sont pas liés de manière automatique. Quels sont les cas où on a besoin d'une dynamique SDR et d'un espace colo HDR? Inversement ? 
+>[!Claude] ✅
+>Je n'ai pas compris pourquoi ces deux paramètres ne sont pas liés de manière automatique. Quels sont les cas où on a besoin d'une dynamique SDR et d'un espace colo HDR? Inversement ?
+>
+>**Réponse :** Dynamique et espace colorimétrique sont deux propriétés physiques **indépendantes** du signal. Cas réels :
+>- **Dynamique HDR + espace SDR (Rec.709)** : les caméras Sony HLG "Live" encodent en HLG (dynamique étendue) mais restent dans l'espace Rec.709. Cas d'usage : régie HDR live avec moniteurs Rec.709, ou diffuseur qui adopte le HDR progressivement sans changer l'espace couleur.
+>- **Dynamique SDR + espace HDR (Rec.2020)** : production UHD qui filme en Rec.2020 pour la couverture chromatique maximale, mais garde un gamma SDR car la chaîne de diffusion n'est pas encore HDR. Permet de "future-proof" le master sans migrer toute l'infra.
 
 
 En HDR HLG, 203 nits (75%) correspond à 100% du signal en SDR (100 nit)
