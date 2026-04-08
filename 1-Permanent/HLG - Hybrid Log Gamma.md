@@ -84,3 +84,4 @@ En régie : signal HLG entrant → conversion −10 dB appliquée sur la luminan
 ## Images sources
 
 ![[20260407_162008.jpg]]
+![[20260407_161145.jpg]]
