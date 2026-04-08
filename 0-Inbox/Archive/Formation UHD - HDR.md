@@ -150,3 +150,4 @@ Dolby Vision = PQ2084
 Sur les OCP Sony, pour régler le format de sortie de la caméra
 `Config/MultiFormat`
 
+Slog-3 : courbe de chez Sony, va moins vite saturer que le HLG, équivalent au V-log de Panasonic
