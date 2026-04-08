@@ -144,3 +144,9 @@ Métadata statiques/dynamique
 
 Dolby Vision = PQ2084
 
+
+# TP
+
+Sur les OCP Sony, pour régler le format de sortie de la caméra
+`Config/MultiFormat`
+
