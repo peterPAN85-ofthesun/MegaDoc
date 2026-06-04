@@ -138,6 +138,7 @@ public async void SpawnEnnemi()
 ### Notes liées
 - [[Godot Csharp - Cycle de vie (_Ready, _Process, _PhysicsProcess)]] - Connexion dans `_Ready()`
 - [[Godot Csharp - Instanciation de scènes]] - Signaux sur objets instanciés
+- [[Godot Csharp - async-await et Task]] - `await ToSignal()` attend un signal de manière asynchrone
 
 ### Dans le contexte de
 - [[MOC - Godot]] - Communication entre noeuds

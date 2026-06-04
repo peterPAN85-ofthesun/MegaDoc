@@ -72,7 +72,7 @@ Le choix Display/Scene Light est l'une des décisions techniques les plus import
 ## Source
 
 - ITU-R BT.2408 (Source : BBC)
-- Formation IIFA / Média 180, 2026-04-08 — [[0-Inbox/Formation UHD - HDR J2]]
+- Formation IIFA / Média 180, 2026-04-08 — [[Formation UHD - HDR J2]]
 
 ---
 

@@ -58,7 +58,7 @@ Ces conditions garantissent que ce que le coloriste voit sur son moniteur corres
 ## Source
 
 - Rec. UIT-R BT.2100-3 (Tableau 3)
-- Formation IIFA / Média 180, 2026-04-08 — [[0-Inbox/Formation UHD - HDR J2]]
+- Formation IIFA / Média 180, 2026-04-08 — [[Formation UHD - HDR J2]]
 
 ---
 

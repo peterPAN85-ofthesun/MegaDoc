@@ -97,7 +97,7 @@ Ce workflow est la concrétisation de toute la chaîne HDR théorique en conditi
 ## Source
 
 - ITU-R BT.2408-8 Fig20 §7.2 — *HDR-focused camera shading*
-- Formation IIFA / Média 180, 2026-04-08 — [[0-Inbox/Formation UHD - HDR J2]]
+- Formation IIFA / Média 180, 2026-04-08 — [[Formation UHD - HDR J2]]
 
 ---
 

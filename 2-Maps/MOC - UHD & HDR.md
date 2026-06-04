@@ -94,7 +94,7 @@ tags:
 ## 📚 Ressources
 
 - Source J1 : [[0-Inbox/Archive/Formation UHD - HDR]] (formation IIFA / Média 180, 2026-04-07)
-- Source J2 : [[0-Inbox/Formation UHD - HDR J2]] (formation IIFA / Média 180, 2026-04-08)
+- Source J2 : [[Formation UHD - HDR J2]] (formation IIFA / Média 180, 2026-04-08)
 - Document de référence : FTV PAD UHD - Spécifications V0.9, octobre 2024
 - Norme centrale : ITU-R BT.2100 (2018)
 - Standard EBU broadcast HDR : R137 (HLG recommandé pour le live)

@@ -70,7 +70,7 @@ La coexistence de PQ (cinéma, plateformes) et HLG (broadcast TV) oblige les op�
 
 - ITU-R BT.2408-14 (Concept of transcoding PQ→HLG)
 - ITU-R BT.2408-15 (Concept of transcoding HLG→PQ)
-- Formation IIFA / Média 180, 2026-04-08 — [[0-Inbox/Formation UHD - HDR J2]]
+- Formation IIFA / Média 180, 2026-04-08 — [[Formation UHD - HDR J2]]
 
 ---
 

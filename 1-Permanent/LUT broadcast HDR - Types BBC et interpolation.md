@@ -93,7 +93,7 @@ Les LUTs sont les "briques" hardware de toute chaîne HDR broadcast. Comprendre 
 ## Source
 
 - Source : BBC Research & Development
-- Formation IIFA / Média 180, 2026-04-08 — [[0-Inbox/Formation UHD - HDR J2]]
+- Formation IIFA / Média 180, 2026-04-08 — [[Formation UHD - HDR J2]]
 
 ---
 

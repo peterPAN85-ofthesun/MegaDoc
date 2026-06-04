@@ -63,7 +63,7 @@ Sans BT.2408, les niveaux HDR seraient interprétés différemment par chaque pr
 ## Source
 
 - ITU-R BT.2408 *Operational practices in HDR television production*
-- Formation IIFA / Média 180, 2026-04-08 — [[0-Inbox/Formation UHD - HDR J2]]
+- Formation IIFA / Média 180, 2026-04-08 — [[Formation UHD - HDR J2]]
 
 ---
 

@@ -60,6 +60,15 @@ Animer les éléments du jeu :
 
 - [[Godot Csharp - AnimationPlayer]]
 
+### ⏳ Programmation asynchrone
+
+`async/await` pour séquencer sans bloquer le thread principal :
+
+- [[Godot Csharp - async-await et Task]]
+- [[Godot Csharp - Formes de retour async (Task, Task et async void)]]
+- [[Godot Csharp - Timer avec ToSignal vs Task.Delay]]
+- [[Godot Csharp - IsInstanceValid après un await]]
+
 ### 📊 Structures de données
 
 Collections et données de jeu :
@@ -98,5 +107,5 @@ Sujets identifiés mais pas encore couverts :
 - [ ] Export et déploiement
 
 ---
-**Dernière mise à jour** : 2026-01-27
-**Nombre de notes** : 12
+**Dernière mise à jour** : 2026-06-05
+**Nombre de notes** : 16

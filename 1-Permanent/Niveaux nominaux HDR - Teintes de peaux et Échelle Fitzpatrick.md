@@ -61,7 +61,7 @@ La teinte de peau est l'un des indicateurs visuels les plus sensibles pour l'œi
 ## Source
 
 - ITU-R BT.2408 Table 2 — *Indicative ranges of levels for common objects in PQ and HLG production*
-- Formation IIFA / Média 180, 2026-04-08 — [[0-Inbox/Formation UHD - HDR J2]]
+- Formation IIFA / Média 180, 2026-04-08 — [[Formation UHD - HDR J2]]
 
 ---
 
