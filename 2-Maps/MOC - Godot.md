@@ -26,6 +26,7 @@ Les bases pour écrire des scripts Godot en C# :
 - [[Godot Csharp - Cycle de vie (_Ready, _Process, _PhysicsProcess)]]
 - [[Csharp - Méthodes de casting]]
 - [[Csharp - Modificateurs d'accès]]
+- [[Csharp - readonly vs const]]
 - [[Csharp vs C++ - Gestion mémoire (new et GC)]]
 
 ### 🕹️ Système d'Input
@@ -53,6 +54,12 @@ Créer et gérer des objets dynamiquement :
 Signaux et événements pour un code découplé :
 
 - [[Godot Csharp - Signaux et événements]]
+
+### 🌐 Singletons et état global
+
+Données persistantes accessibles de partout, survivant aux changements de scène :
+
+- [[Godot Csharp - Autoload (Singleton)]]
 
 ### 🎬 Animation
 
@@ -107,5 +114,5 @@ Sujets identifiés mais pas encore couverts :
 - [ ] Export et déploiement
 
 ---
-**Dernière mise à jour** : 2026-06-05
-**Nombre de notes** : 16
+**Dernière mise à jour** : 2026-06-07
+**Nombre de notes** : 18

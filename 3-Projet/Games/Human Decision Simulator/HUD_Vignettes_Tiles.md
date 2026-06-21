@@ -541,7 +541,7 @@ assez rapide pour 3–30 tiles.
 Quand tu seras prêt à coder, voici l'ordre recommandé :
 
 1. **Autoload `TileLibrary`**
-   - [ ] Créer `Scripts/TileLibrary.cs` (cf. §2.4).
+   - [x] Créer `Scripts/TileLibrary.cs` (cf. §2.4).
    - [ ] L'enregistrer dans Projet → Paramètres → Autoload (nom : `TileLibrary`).
 2. **Générateur `ThumbnailMaker`**
    - [ ] Créer `Scripts/ThumbnailMaker.cs` (cf. §2.2).
