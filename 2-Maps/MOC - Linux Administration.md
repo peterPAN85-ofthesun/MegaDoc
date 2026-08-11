@@ -46,6 +46,19 @@ Ces notes sont basées sur les objectifs de la certification LPI Linux (101-500)
 | [[LINUX : _proc_ - système de fichiers virtuel processus]] | Détails sur les fichiers importants dans /proc |
 | [[LINUX : _sys_ - système de fichiers virtuel kernel]] | Système de fichiers virtuel /sys pour le matériel |
 
+## 🖥️ Sessions graphiques et services utilisateur
+
+### KDE Plasma / Wayland
+- [[SDDM - Autologin sous Wayland]] - Ouverture automatique de session, nécessaire pour les services de capture d'écran (Sunshine)
+- [[Systemd - Alias de service utilisateur nécessite enable]] - Piège classique des autostart `.desktop` KDE
+
+### Réalité virtuelle
+- [[Oculus Rift CV1 sous Linux - SteamVR via OpenHMD]] - Faire fonctionner un casque VR sans driver Linux officiel
+- [[SteamVR - Drivers externes et Steam Runtime container]] - Contournement de l'isolation Steam Runtime pour drivers tiers
+
+### Audio (PipeWire/JACK)
+- [[PipeWire - Bridge loopback pour capture applicative (Discord)]] - Partager du son JACK avec une application qui filtre par identité de process
+
 ## 🔧 Configuration réseau Linux
 
 ### DHCP sur Linux
