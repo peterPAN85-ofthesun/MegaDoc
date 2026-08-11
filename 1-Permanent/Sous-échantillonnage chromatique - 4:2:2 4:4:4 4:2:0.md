@@ -60,7 +60,7 @@ Une caméra Sony XAVC-L enregistre en 4:2:0 : économie de stockage significativ
 - [[SDI - Débits et interfaces 1.5G 3G 12G]] — le sampling impacte directement le débit nécessaire
 
 ### Dans le contexte de
-- [[Transition HD vers UHD]] — le passage à l'UHD maintient le 4:2:2 comme standard minimal
+- [[Transition HD vers UHD - Quatre axes d'amélioration|Transition HD vers UHD]] — le passage à l'UHD maintient le 4:2:2 comme standard minimal
 - [[MOC - UHD & HDR]] — fondamental pour comprendre les débits et la qualité des signaux
 
 ## Source

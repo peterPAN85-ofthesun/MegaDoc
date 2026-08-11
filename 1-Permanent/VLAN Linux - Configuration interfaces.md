@@ -187,7 +187,7 @@ ip link show | grep UP
 
 ### Notes liées
 - [[VLAN - Virtual LAN]] - Concept de segmentation
-- [[802.1Q tagging]] - Protocole d'encapsulation
+- [[802.1Q - tagging VLAN|802.1Q tagging]] - Protocole d'encapsulation
 - [[VLAN Linux - Routage inter-VLAN]] - Activer forwarding entre VLANs
 - [[VLAN Cisco - Port trunk et 802.1Q]] - Configuration trunk côté switch
 

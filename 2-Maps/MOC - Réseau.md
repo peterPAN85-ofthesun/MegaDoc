@@ -38,6 +38,8 @@ Map of Content centralisée pour tous les concepts réseau, protocoles, et confi
 
 #### Concepts fondamentaux
 - [[IP - subnetting]] → Découpage de réseaux
+- [[Sous-réseau - Subnetting]] → Découpage en sous-réseaux
+- [[Classe réseau A B C]] → Classification historique des adresses IP
 - [[RFC 1918 - adressage IP privé]] → Plages IP privées
 - [[TTL - Time To Live]] → Durée de vie paquets
 
@@ -50,6 +52,7 @@ Map of Content centralisée pour tous les concepts réseau, protocoles, et confi
 
 #### Encapsulation et tagging
 - [[802.1Q - tagging VLAN]] → Standard de tagging
+- [[ISL - Inter-Switch Link]] → Ancien protocole de trunking propriétaire Cisco
 
 #### Configuration Cisco
 - [[VLAN Cisco - Configuration switch]] → Configuration de base
@@ -71,6 +74,8 @@ Map of Content centralisée pour tous les concepts réseau, protocoles, et confi
 
 #### Concepts de base
 - [[ROUTAGE - statique]] → Routes statiques
+- [[Table de routage]] → Structure de données interne du routeur
+- [[Route par défaut]] → Route attrape-tout (gateway of last resort)
 
 #### Configuration Cisco
 - [[Routage Cisco - Configuration de base]] → Setup initial
@@ -128,6 +133,7 @@ Map of Content centralisée pour tous les concepts réseau, protocoles, et confi
 
 ### 🔍 DNS et résolution de noms
 - [[DNS - Domain Name System]] → Résolution de noms
+- [[DNS inversé - PTR]] → Résolution IP vers nom
 
 ### 🛡️ Sécurité réseau
 - [[DMZ - Zone démilitarisée]] → Zone tampon sécurisée
@@ -136,6 +142,8 @@ Map of Content centralisée pour tous les concepts réseau, protocoles, et confi
 
 #### Protocoles de contrôle
 - [[ARP - Address Resolution Protocol]] → Résolution MAC/IP
+- [[Table ARP]] → Cache des associations IP/MAC
+- [[ARP spoofing]] → Attaque man-in-the-middle sur ARP
 - [[ICMP - Internet Control Message Protocol]] → Messages de contrôle
 
 #### Multicast

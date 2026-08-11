@@ -56,7 +56,7 @@ Un signal SDI 1080i50 transporté en 4:2:2 YCbCr 10 bits : Y est samplé à plei
 - [[Rec.2020 - Espace colorimétrique UHD]] — Rec.2020 utilise également YCbCr, avec des primaires couleur étendues
 
 ### Dans le contexte de
-- [[Transition HD vers UHD]] — le passage à l'UHD introduit Rec.2020, qui étend l'espace couleur
+- [[Transition HD vers UHD - Quatre axes d'amélioration|Transition HD vers UHD]] — le passage à l'UHD introduit Rec.2020, qui étend l'espace couleur
 - [[MOC - UHD & HDR]] — fondamental à comprendre pour la chaîne de production UHD-HDR
 
 ## Source

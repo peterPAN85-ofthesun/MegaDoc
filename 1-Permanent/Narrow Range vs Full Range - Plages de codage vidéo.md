@@ -58,7 +58,7 @@ Un opérateur exporte un fichier ProRes en Full Range mais l'encode en H.264 san
 - [[CODECs UHD-HDR 10 bits compatibles]] — chaque codec a des spécifications de plage précises
 
 ### Dans le contexte de
-- [[Transition HD vers UHD]] — l'UHD hérite du Narrow Range SDR et l'étend avec 10 bits
+- [[Transition HD vers UHD - Quatre axes d'amélioration|Transition HD vers UHD]] — l'UHD hérite du Narrow Range SDR et l'étend avec 10 bits
 - [[MOC - UHD & HDR]] — paramètre fondamental à surveiller dans tout workflow UHD
 
 ## Source

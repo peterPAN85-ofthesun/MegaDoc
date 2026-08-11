@@ -208,4 +208,4 @@ git clean -fd
 - [[CLAUDE CODE : [Bash] - exécution shell]] - Exécuter commandes Git
 - [[MOC - CMake]] - Build systems
 - [[MOC - Programmation C]] - Projets versionnés
-- [[INDEX]] - Point d'entrée du vault
+- [[README]] - Point d'entrée du vault
