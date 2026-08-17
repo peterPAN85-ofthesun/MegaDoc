@@ -218,6 +218,7 @@ int main(int argc, char *argv[])
     sceSifInitRpc(0);
     init_scr();
 
+	scr_setXY(0, 10);
     scr_printf("Hello, World!\n");
 
     // Apres 5 secondes, on efface l'ecran.
@@ -460,6 +461,38 @@ Registres GS ciblables via A+D, `common/include/gif_tags.h` (liste non exhaustiv
 >[!Note]
 >Un GIFtag peut fonctionner selon 3 modes (`flg` dans `GIF_SET_TAG`, constantes `GIF_FLG_PACKED`/`GIF_FLG_REGLIST`/`GIF_FLG_IMAGE`) : **PACKED** (le plus courant, données sur 128 bits alignées, dont A+D est un cas particulier), **REGLIST** (données compactées sur 64 bits, sans padding), **IMAGE** (transfert brut vers la VRAM, ex: upload de texture). `graph.c` (section 3b) utilise PACKED + A+D car c'est le plus simple à écrire à la main ; **gsKit** fait exactement ce travail de construction de GIFtag/registres à la place du développeur.
 
+### GIF_REG_AD (0x0E) : deux tables de "registres" à ne pas confondre
+
+>[!Note]
+>- Le champ `NREG`/la liste de descripteurs 4 bits de la GIFtag (mode PACKED, table `GIF_REG_*` ci-dessus, `common/include/gif_tags.h`) décrit le **format** du contenu de chaque qword de données (« ce qword, c'est un PRIM », « celui d'après, un RGBAQ »...) — le registre GS destinataire est alors **implicite**, déduit de la position du descripteur dans `NREG`.
+>- Les vraies **adresses de registres privilégiés du GS** (`GS_REG_*`, `common/include/gs_gp.h`) forment une liste bien plus longue (`GS_REG_XYOFFSET_1`=0x18, `GS_REG_SCISSOR_1`=0x40, `GS_REG_FRAME_1`=0x4C, `GS_REG_ZBUF_1`=0x4E, `GS_REG_BITBLTBUF`=0x50...) : ce sont les adresses réelles que le GS lit en interne, indépendamment de tout format PACKED.
+
+`GIF_REG_AD` = 0x0E = mode « Address+Data ». Quand la GIFtag déclare ce format pour un qword, la structure du qword change : ce n'est plus « valeur d'un registre connu implicitement », mais une paire adresse+valeur explicite.
+
+| `dw` | Contenu en mode A+D |
+|---|---|
+| `dw[0]` (64 bits bas) | **DATA** — la valeur à écrire dans le registre GS |
+| `dw[1]` (64 bits hauts, seul l'octet bas compte) | **ADDRESS** — l'adresse du registre GS ciblé (une constante `GS_REG_*`) |
+
+C'est un mécanisme d'écriture générique : chaque qword porte sa propre adresse destination dans `dw[1]`, contrairement aux autres formats PACKED (`ST`, `UV`, `XYZ2`...) où l'adresse est fixée une fois pour toutes par la position du qword dans le `NREG` de l'en-tête GIFtag.
+
+>[!Note]
+>Dans `graph.c`/`main.c` (section 3b), les lignes `PACK_GIFTAG(q, GIF_SET_PRIM(...), GIF_REG_PRIM)` réutilisent les constantes `GIF_REG_PRIM`/`GIF_REG_RGBAQ`/`GIF_REG_XYZ2` (0x00/0x01/0x05) comme **adresses** de registre GS en mode A+D. Ça fonctionne parce que les adresses réelles des registres GS liés aux sommets (`GS_REG_PRIM`=0x00, `GS_REG_RGBAQ`=0x01, `GS_REG_XYZ2`=0x05 dans `gs_gp.h`) coïncident numériquement avec les valeurs de la table de format PACKED — **une coïncidence pratique, pas une règle générale**. Pour les registres de setup GS sans équivalent dans la table de format (voir ci-dessous), il faut utiliser les vraies constantes `GS_REG_*`.
+
+Registres GS de setup, sans format PACKED dédié, donc accessibles **uniquement** via A+D (`common/include/gs_gp.h`) :
+
+| Constante `GS_REG_*` | Adresse | Rôle |
+|---|---|---|
+| `GS_REG_XYOFFSET_1`/`_2` | 0x18/0x19 | Offset appliqué aux coordonnées XYZ des sommets (contexte 1/2) — détail format fixed-point en 3g |
+| `GS_REG_SCISSOR_1`/`_2` | 0x40/0x41 | Zone de découpe (clipping) du rendu |
+| `GS_REG_TEST_1`/`_2` | 0x47/0x48 | Tests par pixel (alpha test, depth test...) |
+| `GS_REG_FRAME_1`/`_2` | 0x4C/0x4D | Configuration du framebuffer (adresse VRAM, largeur, PSM, masque) |
+| `GS_REG_ZBUF_1`/`_2` | 0x4E/0x4F | Configuration du Z-buffer |
+| `GS_REG_BITBLTBUF` | 0x50 | Transfert VRAM↔VRAM ou RAM↔VRAM (upload de texture, `draw_texture_transfer`) |
+| `GS_REG_TRXPOS`/`GS_REG_TRXREG`/`GS_REG_TRXDIR` | 0x51/0x52/0x53 | Position/taille/déclenchement d'un transfert `BITBLTBUF` |
+
+C'est pour ça que le mode A+D est omniprésent dans le code d'initialisation du GS (`draw_setup_environment`, appelée par `init_drawing_environment` dans `main.c` de ce repo comme dans `graph.c`) : les registres de setup GS (`FRAME`, `ZBUF`, `XYOFFSET`, `SCISSOR`, `BITBLTBUF`...) n'ont **aucun format dédié** dans la table PACKED normale (orientée flux de sommets `PRIM`/`RGBAQ`/`ST`/`UV`/`XYZ2`) — A+D est donc la seule façon de les écrire via une GIFtag.
+
 **Décodage bit à bit, exemple réel tiré de `graph.c` :**
 
 ```c
@@ -599,6 +632,170 @@ Formats Z-buffer, `common/include/gs_psm.h:30-37` (ps2sdk) vs `gsKit/include/gsI
 | 16 bits (S) | 0x3A | 0x0A |
 
 Le choix du PSM a un impact direct sur la consommation de VRAM (le GS n'en a que 4 Mo) et la qualité de couleur/alpha disponible : `CT24` économise de la VRAM mais perd l'alpha, `CT16`/`CT16S` divisent par deux la taille mais réduisent la précision couleur (5 bits/canal, 1 bit d'alpha), `T8`/`T4` sont réservés aux textures indexées (avec CLUT via `gsKit_texture_send`/`GS_SET_TEXA` côté texturing, non détaillé ici).
+
+## g) Fixed-point 12.4 des coordonnées XYZ, et le registre XYOFFSET
+
+Dans les paquets GIF vus en 3b/3c, les positions de sommets ne sont **pas des entiers pixel simples** : le GS attend un format **fixed-point 12.4** (12 bits partie entière + 4 bits partie fractionnaire) pour les champs X/Y de `XYZ2`/`XYZ3`. C'est ce qui explique le `<< 4` dans `graph.c`/`main.c` (section 3b) :
+
+```c
+PACK_GIFTAG(q, GIF_SET_XYZ(((loop0 * 20) << 4) + (2048 << 4), ((loop0 * 10) << 4) + (2048 << 4), 0), GIF_REG_XYZ2);
+```
+
+`GIF_SET_XYZ(X, Y, Z)` (`common/include/gif_tags.h:103-105`) pack X/Y sur 16 bits chacun, sans rien connaître du fixed-point — c'est juste une valeur brute :
+
+```c
+#define GIF_SET_XYZ(X, Y, Z)                                   \
+    (u64)((X)&0x0000FFFF) << 0 | (u64)((Y)&0x0000FFFF) << 16 | \
+        (u64)((Z)&0xFFFFFFFF) << 32
+```
+
+| Champ | Bits (dans `XYZ2`) | Format | Précision |
+|---|---|---|---|
+| X | 0-15 (16 bits) | 12.4 fixed-point | 1/16ᵉ de pixel |
+| Y | 16-31 (16 bits) | 12.4 fixed-point | 1/16ᵉ de pixel |
+| Z | 32-63 (32 bits) | entier | profondeur brute (pas de fraction) |
+
+Sur les 16 bits de X/Y, seuls 12 bits servent de partie entière (0-4095) et 4 bits de partie fractionnaire (0-15/16). Ce sous-pixel sert à l'interpolation/antialiasing du rasterizer (bords de triangle plus précis qu'un pixel entier). **Conséquence pratique :** une position pixel `x` doit être envoyée comme `x << 4` (ou `(int)(x * 16.0f)` si on part d'un flottant), sinon la valeur est interprétée 16x trop petite (le triangle devient invisible ou minuscule, collé à l'origine).
+
+>[!Note]
+>Le champ Z de `XYZ2`, lui, reste un entier simple (32 bits, pas de fraction) — c'est uniquement X/Y qui portent ce format fixed-point.
+
+### XYOFFSET : recentrer l'origine dans l'espace de coordonnées du GS
+
+L'espace de coordonnées interne du GS est **non signé** (12 bits entiers → 0-4095, avant le décalage fixed-point). Il n'y a pas de coordonnées négatives possibles au niveau du rasterizer. Le registre privilégié **XYOFFSET** (`GS_REG_XYOFFSET_1`/`_2` = 0x18/0x19, un par contexte de dessin — voir 3c) sert à décaler toutes les coordonnées X/Y des sommets *avant* rasterization, ce qui permet de définir une origine logique "au milieu" de cet espace et donc de simuler des positions positives/négatives autour de ce centre.
+
+`GS_SET_XYOFFSET(X, Y)` (`common/include/gs_gp.h:323-324`) — le registre lui-même est aussi exprimé en 12.4 fixed-point :
+
+```c
+#define GS_SET_XYOFFSET(X, Y) \
+    (u64)((X)&0x0000FFFF) << 0 | (u64)((Y)&0x0000FFFF) << 32
+```
+
+Fixer l'offset à `2048 << 4` centre l'origine logique `(0,0)` de la scène au milieu de l'espace 0-4095 (`2048` = milieu de `4095`) :
+
+```c
+PACK_GIFTAG(q, GS_SET_XYOFFSET(2048 << 4, 2048 << 4), GS_REG_XYOFFSET_1);
+```
+
+**Dans ce repo (`main.c`) comme dans `graph.c`, cette valeur `2048,2048` n'est pas posée via un A+D explicite comme ci-dessus** : c'est `draw_setup_environment(q, 0, frame, z)` — appelée dans `init_drawing_environment()` en `main.c:41` — qui configure tout l'environnement de dessin du contexte 0 (`FRAME`, `ZBUF`, `SCISSOR`, `TEST`...) et pose, en interne, `XYOFFSET_1` à cette valeur par défaut `(2048, 2048)`. Le projet n'appelle jamais `draw_primitive_xyoffset` : l'offset par défaut posé par `draw_setup_environment` reste donc actif tel quel pendant tout le rendu.
+
+Chaque vertex `XYZ2` envoyé ensuite est automatiquement recentré par le GS par rapport à cet offset — d'où le `+ (2048 << 4)` ajouté à chaque coordonnée dans `render()` (`main.c:75` et `main.c:77`, même schéma dans `graph.c`) : c'est ce qui compense le défaut posé par `draw_setup_environment` et fait apparaître le carré au centre de l'écran plutôt que collé à l'origine `(0,0)` brute du GS (coin, hors zone visible une fois le scissor/framebuffer appliqués).
+
+**API haut niveau pour *changer* cet offset : `draw_primitive_xyoffset`** (`ee/include/draw_primitives.h:52`) construit ce même GIFtag A+D à la place du développeur, et prend directement des **pixels flottants non décalés** (le `<< 4` est fait en interne) :
+
+```c
+extern qword_t *draw_primitive_xyoffset(qword_t *q, int context, float x, float y);
+```
+
+Elle sert à **écraser** le défaut déjà posé par `draw_setup_environment`, pas à le poser une première fois — ce n'est donc pas ce que fait ce projet actuellement. Exemple réel, `samples/draw/cube/cube.c:70` puis `:73` (écran 640×512) :
+
+```c
+// This will setup a default drawing environment.
+q = draw_setup_environment(q, 0, frame, z);              // pose XYOFFSET_1 = (2048, 2048) par défaut
+
+// Now reset the primitive origin to 2048-width/2, 2048-height/2.
+q = draw_primitive_xyoffset(q, 0, (2048 - 320), (2048 - 256)); // recentre pour un framebuffer 640x512
+```
+
+>[!Note]
+>Ce repo (`main.c`) et `graph.c` s'arrêtent après `draw_setup_environment` : ils gardent l'offset par défaut `2048,2048` et compensent manuellement dans chaque `GIF_SET_XYZ(...)` avec `+ (2048 << 4)`. `cube.c` prend l'approche inverse : il appelle en plus `draw_primitive_xyoffset` pour recentrer l'offset une bonne fois selon la taille réelle du framebuffer, et n'a ensuite plus besoin d'ajouter `2048 << 4` à chaque vertex.
+
+>[!Note]
+>Voir 3i pour le détail des contextes de dessin (`_1`/`_2`) et du bit `CTXT`.
+
+### 3h - Schéma : référentiel de coordonnées posé par draw_setup_environment
+
+<svg viewBox="0 0 640 380" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;font-family:sans-serif;">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="var(--text-accent)"/>
+    </marker>
+  </defs>
+  <rect x="40" y="40" width="256" height="256" fill="none" stroke="var(--text-normal)" stroke-width="1.5"/>
+  <text x="90" y="20" font-size="12" fill="var(--text-normal)" font-weight="bold">Espace de coordonnées du GS (12 bits non signés, 0..4095)</text>
+  <text x="40" y="32" font-size="11" fill="var(--text-muted)">X=0 →</text>
+  <text x="255" y="32" font-size="11" fill="var(--text-muted)">X=4095</text>
+  <text x="4" y="50" font-size="11" fill="var(--text-muted)">Y=0</text>
+  <text x="0" y="300" font-size="11" fill="var(--text-muted)">↓ Y=4095</text>
+  <circle cx="40" cy="40" r="3" fill="var(--text-normal)"/>
+  <text x="46" y="55" font-size="10" fill="var(--text-muted)">origine (0,0) de l'espace GS</text>
+  <line x1="40" y1="40" x2="168" y2="168" stroke="var(--text-accent)" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+  <text x="45" y="118" font-size="11" fill="var(--text-accent)">XYOFFSET_1 = (2048,2048)</text>
+  <text x="45" y="131" font-size="11" fill="var(--text-accent)">= centre de l'espace GS</text>
+  <text x="45" y="144" font-size="10" fill="var(--text-muted)">posé par draw_setup_environment()</text>
+  <circle cx="168" cy="168" r="4" fill="var(--text-accent)"/>
+  <rect x="168" y="168" width="32" height="32" fill="var(--interactive-accent)" fill-opacity="0.15" stroke="var(--interactive-accent)" stroke-width="1.5"/>
+  <text x="168" y="215" font-size="9" fill="var(--text-normal)">Framebuffer 512×512</text>
+  <text x="168" y="226" font-size="9" fill="var(--text-muted)">(0,0) logique = coin haut-gauche</text>
+  <text x="340" y="60" font-size="12" fill="var(--text-normal)" font-weight="bold">Formule</text>
+  <text x="340" y="80" font-size="11" fill="var(--text-normal)">X_envoyé (XYZ2) = X_pixel_logique + XYOFFSET_X</text>
+  <text x="340" y="96" font-size="11" fill="var(--text-normal)">Y_envoyé (XYZ2) = Y_pixel_logique + XYOFFSET_Y</text>
+  <text x="340" y="118" font-size="11" fill="var(--text-muted)">Le GS calcule en interne :</text>
+  <text x="340" y="134" font-size="11" fill="var(--text-normal)">X_écran = X_envoyé − XYOFFSET_X</text>
+  <text x="340" y="150" font-size="11" fill="var(--text-normal)">Y_écran = Y_envoyé − XYOFFSET_Y</text>
+  <text x="340" y="180" font-size="11" fill="var(--text-muted)">Avec XYOFFSET_1 = (2048,2048) :</text>
+  <text x="340" y="196" font-size="11" fill="var(--text-normal)">(0,0) logique tombe exactement</text>
+  <text x="340" y="212" font-size="11" fill="var(--text-normal)">au centre de l'espace GS 0..4095,</text>
+  <text x="340" y="228" font-size="11" fill="var(--text-normal)">soit le coin haut-gauche du framebuffer.</text>
+</svg>
+
+Légende : le grand carré est l'espace de coordonnées du GS (12 bits non signés, 0..4095), posé implicitement par `draw_setup_environment()` (appelée à `main.c:41` dans ce projet). Le point/carré en pointillé est `XYOFFSET_1`, par défaut `(2048,2048)` — exactement le centre de cet espace. Le petit carré bleu est le framebuffer 512×512 du projet, dont le coin `(0,0)` logique coïncide avec cet offset.
+
+>[!Note]
+>Ce SVG est intégré en HTML brut dans la note (pas dans un bloc de code) et utilise les variables CSS d'Obsidian (`var(--text-normal)`, `var(--text-accent)`, `var(--interactive-accent)`, etc.) pour s'adapter automatiquement au thème clair/sombre.
+
+### 3i - Les contextes de dessin (`_1` / `_2`)
+
+Le GS duplique en **deux exemplaires indépendants** tous les registres qui définissent *où* et *comment* une primitive est rasterisée. Chaque exemplaire est un **contexte de dessin** (contexte 1 ou 2), `common/include/gs_gp.h` :
+
+| Registre | Rôle |
+|---|---|
+| `XYOFFSET_1` / `XYOFFSET_2` | Offset appliqué aux coordonnées XYZ des sommets avant rasterization (voir 3g/3h) |
+| `SCISSOR_1` / `SCISSOR_2` | Rectangle de clipping, dans l'espace de coordonnées du GS |
+| `FRAME_1` / `FRAME_2` | Framebuffer cible (adresse VRAM, largeur, format de pixel/PSM) |
+| `ZBUF_1` / `ZBUF_2` | Z-buffer associé (adresse, format, activation) |
+| `TEST_1` / `TEST_2` | Tests par pixel : alpha test, depth test, etc. |
+
+Chaque primitive envoyée porte un bit **`CTXT`** dans le registre `PRIM` (packé via `GIF_SET_PRIM(...)`, section 3c) qui sélectionne quel jeu de registres (`_1` ou `_2`) le GS doit utiliser pour la rasteriser. Le changement de contexte est donc **instantané** — un simple bit posé sur la primitive suivante — au lieu de renvoyer par DMA tout un lot de registres (offset, scissor, framebuffer...) entre deux dessins.
+
+Intérêt pratique : dessiner alternativement vers deux zones VRAM différentes (double-buffering géré à la main plutôt que par le vsync), ou vers deux fenêtres de clipping/offset différentes, sans reconfigurer tout l'environnement du GS à chaque primitive.
+
+>[!Note]
+>Dans ce projet (`main.c`), un seul contexte est utilisé : le `0` passé en premier argument de `draw_setup_environment(q, 0, frame, z)` (cf. section 3h). La bascule de contexte ne joue donc aucun rôle actuellement dans ce code.
+
+### 3j - GIF_SET_PRIM : le registre PRIM
+
+`GIF_SET_PRIM` (définie dans `/usr/local/ps2dev/ps2sdk/common/include/gif_tags.h:85-90`) construit la valeur 64 bits à envoyer dans le registre GS `PRIM` (`GIF_REG_PRIM = 0x00`, `gif_tags.h:42`), qui décrit quel type de primitive dessiner et comment la rasteriser :
+
+```c
+#define GIF_SET_PRIM(PRIM, IIP, TME, FGE, ABE, AA1, FST, CTXT, FIX)    \
+    (u64)((PRIM)&0x00000007) << 0 | (u64)((IIP)&0x00000001) << 3 |     \
+        (u64)((TME)&0x00000001) << 4 | (u64)((FGE)&0x00000001) << 5 |  \
+        (u64)((ABE)&0x00000001) << 6 | (u64)((AA1)&0x00000001) << 7 |  \
+        (u64)((FST)&0x00000001) << 8 | (u64)((CTXT)&0x00000001) << 9 | \
+        (u64)((FIX)&0x00000001) << 10
+```
+
+| Champ | Bits | Rôle |
+|---|---|---|
+| `PRIM` | 0-2 | type de primitive : `0`=point, `1`=ligne, `2`=line strip, `3`=triangle, `4`=triangle strip, `5`=triangle fan, `6`=sprite (constantes `GS_PRIM_*` dans `gs_gp.h:151-163`) |
+| `IIP` | 3 | shading : `0`=flat (une seule couleur), `1`=Gouraud (interpolée par sommet) |
+| `TME` | 4 | active/désactive le texture mapping |
+| `FGE` | 5 | active/désactive le fog |
+| `ABE` | 6 | active/désactive l'alpha blending |
+| `AA1` | 7 | active/désactive l'antialiasing 1 pass (lignes/triangles) |
+| `FST` | 8 | format des coords de texture : `0`=STQ (perspective-correct), `1`=UV (linéaire) |
+| `CTXT` | 9 | quel contexte de dessin utiliser : `0`=contexte 1, `1`=contexte 2 (cf. section 3i) |
+| `FIX` | 10 | fixe les décimales de fog (rarement utilisé) |
+
+Dans `render()` (`main.c:71`) :
+```c
+PACK_GIFTAG(q, GIF_SET_PRIM(6, 0, 0, 0, 0, 0, 0, 0, 0), GIF_REG_PRIM);
+```
+= `PRIM=6` (sprite/rectangle plein via 2 coins, `GS_PRIM_SPRITE`), tout le reste à `0` : pas de Gouraud, pas de texture, pas de fog, pas d'alpha blending, pas d'antialiasing, coords STQ, contexte 1, pas de FIX. Cohérent avec les deux `GIF_SET_XYZ` par itération de boucle (coin haut-gauche + coin bas-droit du sprite).
+
+>[!Note]
+>Sources consultées : `gif_tags.h:85-90` et `gif_tags.h:42` (macro et registre), `gs_gp.h:151-163` (constantes `GS_PRIM_*`), sample officiel `/usr/local/ps2dev/ps2sdk/samples/graph/graph.c:121` qui utilise le même pattern (`GIF_SET_PRIM(6, 0, 0, 0, 0, 0, 0, 0, 0)` pour dessiner des carrés en `GS_PRIM_SPRITE`).
 
 
 # 4 - Utiliser la manette (pad)
