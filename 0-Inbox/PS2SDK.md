@@ -739,7 +739,7 @@ q = draw_primitive_xyoffset(q, 0, (2048 - 320), (2048 - 256)); // recentre pour 
   <text x="340" y="228" font-size="11" fill="var(--text-normal)">soit le coin haut-gauche du framebuffer.</text>
 </svg>
 
-Légende : le grand carré est l'espace de coordonnées du GS (12 bits non signés, 0..4095), posé implicitement par `draw_setup_environment()` (appelée à `main.c:41` dans ce projet). Le point/carré en pointillé est `XYOFFSET_1`, par défaut `(2048,2048)` — exactement le centre de cet espace. Le petit carré bleu est le framebuffer 512×512 du projet, dont le coin `(0,0)` logique coïncide avec cet offset.
+Légende : le grand carré est l'espace de coordonnées du GS (12 bits non signés, 0..4095), posé implicitement par `draw_setup_environment()`. Le point/carré en pointillé est `XYOFFSET_1`, par défaut `(2048,2048)` — exactement le centre de cet espace. Le petit carré bleu est le framebuffer 512×512 du projet, dont le coin `(0,0)` logique coïncide avec cet offset.
 
 >[!Note]
 >Ce SVG est intégré en HTML brut dans la note (pas dans un bloc de code) et utilise les variables CSS d'Obsidian (`var(--text-normal)`, `var(--text-accent)`, `var(--interactive-accent)`, etc.) pour s'adapter automatiquement au thème clair/sombre.
