@@ -280,6 +280,9 @@ Le principe, en résumé, avant le code :
 
 Le point clé : `dma_channel_send_normal` **ne bloque pas** l'EE — le transfert RAM→GS se fait en parallèle, pendant que l'EE pourrait préparer autre chose. Les deux points de synchronisation explicites (`draw_wait_finish`/`graph_wait_vsync`) sont volontairement placés par le programmeur pour garantir l'ordre (ne pas réécrire le paquet avant que le DMA l'ait consommé, ne pas dessiner une nouvelle frame avant l'affichage de la précédente).
 
+>[!Note]
+>`draw_finish(q)` (`ee/include/draw.h:38`, « Signal that drawing is finished ») ajoute la primitive **FINISH** en fin de paquet — c'est elle qui, une fois traitée par la GS, lève l'évènement d'interruption sur lequel `draw_wait_finish()` (`draw.h:41`, « Wait until finish event occurs ») se bloque. Sans `draw_finish(q)` avant l'envoi, `draw_wait_finish()` n'a aucun évènement à attendre. `graph_wait_vsync()` n'a rien à voir avec cette mécanique : il attend le prochain VBlank (retour de balayage vertical, ~60 Hz NTSC / 50 Hz PAL) pour cadencer l'affichage et éviter le tearing, indépendamment de l'état de la GS.
+
 C'est bas niveau — on construit les tags GIF à la main. **`gsKit`** (`gsKit.h`, `gsVU1.h`) existe justement pour éviter ça en fournissant des fonctions de dessin haut niveau (sprites, primitives, textures) qui génèrent les paquets GIF pour toi ; c'est la lib à privilégier pour un vrai projet plutôt que refaire `draw.h` à la main.
 
 *Fichier complet, `samples/graph/graph.c` (dessine 20 carrés colorés puis dort) :*
@@ -431,6 +434,29 @@ q++;
 - `flg=0` : mode **PACKED** (voir plus bas).
 - `nreg=1` : un seul registre décrit par qword de données (ici via A+D, voir plus bas).
 - D1 = `GIF_REG_AD` (0x0E) : indique que chaque qword suivant est une paire **adresse+donnée** (mode "A+D"), qui permet d'écrire n'importe quel registre GS directement — c'est le cas particulier le plus utilisé du mode PACKED.
+
+**Table complète des codes REGS** (valeurs possibles du champ `NREG`/de chaque descriptor 4 bits en mode PACKED, `common/include/gif_tags.h:41-74`) :
+
+| Code | Constante | Registre/rôle |
+|---|---|---|
+| 0x0 | `GIF_REG_PRIM` | PRIM |
+| 0x1 | `GIF_REG_RGBAQ` | RGBAQ |
+| 0x2 | `GIF_REG_ST` | ST |
+| 0x3 | `GIF_REG_UV` | UV |
+| 0x4 | `GIF_REG_XYZF2` | XYZF2 |
+| 0x5 | `GIF_REG_XYZ2` | XYZ2 |
+| 0x6 | `GIF_REG_TEX0_1` | TEX0 (contexte 1) |
+| 0x7 | `GIF_REG_TEX0_2` | TEX0 (contexte 2) |
+| 0x8 | `GIF_REG_CLAMP_1` | CLAMP (contexte 1) |
+| 0x9 | `GIF_REG_CLAMP_2` | CLAMP (contexte 2) |
+| 0xA | `GIF_REG_FOG` | FOG |
+| 0xB | *(non défini)* | — |
+| 0xC | `GIF_REG_XYZF3` | XYZF3 (sans draw kick) |
+| 0xD | `GIF_REG_XYZ3` | XYZ3 (sans draw kick) |
+| 0xE | `GIF_REG_AD` | A+D (adresse+donnée générique) |
+| 0xF | `GIF_REG_NOP` | NOP (qword ignoré) |
+
+Les codes 0x0-0xD sont des raccourcis : le GIF sait déjà, par construction, à quel registre GS chaque code correspond (le format de la donnée est figé et connu à l'avance), donc pas besoin de transmettre d'adresse — la position du descripteur dans `NREG` suffit à router la donnée. **A+D (0xE)** est le seul code générique : il abandonne ce raccourci pour transporter, dans chaque qword, une adresse de registre GS explicite (voir la sous-section dédiée ci-dessous) — c'est ce qui permet d'atteindre des registres GS qui n'ont *aucun* code dédié dans cette table (`BITBLTBUF`, `TEST`, `SCISSOR`, `FRAME`...). **NOP (0xF)** ne fait rien, sert de bourrage/alignement.
 
 Ensuite, chaque qword de données en A+D suit le même schéma `PACK_GIFTAG(q, valeur, registre_cible)` :
 
@@ -622,6 +648,36 @@ Formats couleur/texture, `common/include/gs_psm.h:9-29` (ps2sdk) et `gsKit/inclu
 | 0x13 | `GS_PSM_8` | `GS_PSM_T8` | Indexé 8 bits (palette/CLUT) |
 | 0x14 | `GS_PSM_4` | `GS_PSM_T4` | Indexé 4 bits (palette/CLUT) |
 
+### Framebuffer vs Z-buffer
+
+Deux buffers VRAM distincts, chacun avec son propre PSM, décrits par des structs séparées `ee/include/draw_buffers.h:40-54` :
+
+```c
+typedef struct {
+    unsigned int address;
+    unsigned int width;
+    unsigned int height;
+    unsigned int psm;
+    unsigned int mask;
+} framebuffer_t;
+
+typedef struct {
+    unsigned int enable;
+    unsigned int method;
+    unsigned int address;
+    unsigned int zsm;
+    unsigned int mask;
+} zbuffer_t;
+```
+
+| | Framebuffer | Z-buffer |
+|---|---|---|
+| Contenu | Couleur de chaque pixel — ce qui est réellement affiché | Profondeur (distance à la caméra) de chaque pixel |
+| Rôle | Relié aux circuits d'affichage via `graph_initialize` (section 3b) | Test d'occlusion : ne garder, sur un pixel donné, que la primitive la plus proche de la caméra |
+| Activation | Toujours actif | `enable` (0/1) — désactivable |
+
+Quand `z->enable = 0` (cas de `init_gs()` en `graph.c`/`main.c`, section 3b), le test de profondeur est désactivé : les primitives s'écrivent dans le framebuffer strictement dans leur **ordre d'envoi**, la dernière écrase la précédente sur un pixel donné — pas de notion de profondeur 3D tant que le Z-buffer n'est pas activé (`z->enable = 1` + `z->address` alloué en VRAM comme le framebuffer).
+
 Formats Z-buffer, `common/include/gs_psm.h:30-37` (ps2sdk) vs `gsKit/include/gsInit.h:129-136` (gsKit) — attention, valeurs **différentes** :
 
 | Profondeur | ps2sdk `GS_PSMZ_*` | gsKit `GS_PSMZ_*` |
@@ -632,6 +688,24 @@ Formats Z-buffer, `common/include/gs_psm.h:30-37` (ps2sdk) vs `gsKit/include/gsI
 | 16 bits (S) | 0x3A | 0x0A |
 
 Le choix du PSM a un impact direct sur la consommation de VRAM (le GS n'en a que 4 Mo) et la qualité de couleur/alpha disponible : `CT24` économise de la VRAM mais perd l'alpha, `CT16`/`CT16S` divisent par deux la taille mais réduisent la précision couleur (5 bits/canal, 1 bit d'alpha), `T8`/`T4` sont réservés aux textures indexées (avec CLUT via `gsKit_texture_send`/`GS_SET_TEXA` côté texturing, non détaillé ici).
+
+### Allocation VRAM (`graph_vram_allocate`) vs XYOFFSET : deux mécanismes à ne pas confondre
+
+`graph_vram_allocate(width, height, psm, alignment)` (`ee/include/graph_vram.h:23`) répond à une question différente de celle du registre **XYOFFSET** (section 3g) : **où le buffer est physiquement placé en VRAM**, pas comment les coordonnées des sommets sont interprétées une fois qu'on dessine dedans.
+
+La VRAM n'est pas adressée à l'octet près par les registres de setup du GS : `GS_SET_FRAME(FBA, FBW, PSM, FMSK)` (`common/include/gs_gp.h:209-211`) code l'adresse du framebuffer (`FBA`) sur 9 bits en unités de **pages** de VRAM — pas en octets ni en pixels — et il en va de même pour `ZBA` dans `GS_SET_ZBUF`. `graph_vram_allocate` doit donc placer chaque buffer sur une frontière compatible avec cette granularité matérielle, d'où le paramètre `alignment` :
+
+| Constante | Valeur | Usage (`ee/include/graph_vram.h:13-16`) |
+|---|---|---|
+| `GRAPH_ALIGN_PAGE` | 2048 | Framebuffer et Z-buffer (`graph.c`, `main.c` de ce repo, `cube.c`, `teapot.c`...) |
+| `GRAPH_ALIGN_BLOCK` | 64 | Texture buffer et CLUT buffer, plus petits, alignement plus fin (ex: `texture.c:62`, `font.c:67-68`) |
+
+Ce paramètre ne fait qu'allouer un emplacement en VRAM et retourner une adresse (`frame->address`, utilisée ensuite par `graph_initialize` et par `draw_setup_environment` pour poser `FRAME`/`ZBUF`) — il ne dit rien de comment les coordonnées XYZ des sommets seront ensuite rasterisées dans ce buffer.
+
+**XYOFFSET, au contraire, ne touche à aucune mémoire** : c'est un registre de contexte de dessin (`GS_REG_XYOFFSET_1`/`_2`, posé via A+D comme `FRAME`/`ZBUF`, voir 3c) qui décale les coordonnées X/Y fixed-point 12.4 des sommets *avant* rasterization, pour faire correspondre l'espace de coordonnées interne du GS (0-4095, non signé) à la fenêtre de dessin voulue (détail en 3g).
+
+>[!Note]
+>Les deux mécanismes sont complémentaires, pas substituables : l'allocation VRAM (avec son alignement page/bloc) doit exister *avant* même de pouvoir poser XYOFFSET, puisque XYOFFSET ne fait que positionner le rendu par rapport à un framebuffer déjà alloué et relié via `graph_initialize`. Changer `GRAPH_ALIGN_PAGE` en `GRAPH_ALIGN_BLOCK` ne changerait rien à l'endroit où atterrit un pixel dessiné en `(0,0)` ; changer XYOFFSET ne déplace pas le framebuffer en VRAM.
 
 ## g) Fixed-point 12.4 des coordonnées XYZ, et le registre XYOFFSET
 
@@ -703,7 +777,7 @@ q = draw_primitive_xyoffset(q, 0, (2048 - 320), (2048 - 256)); // recentre pour 
 >[!Note]
 >Voir 3i pour le détail des contextes de dessin (`_1`/`_2`) et du bit `CTXT`.
 
-### 3h - Schéma : référentiel de coordonnées posé par draw_setup_environment
+## h) - Schéma : référentiel de coordonnées posé par draw_setup_environment
 
 <svg viewBox="0 0 640 380" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;font-family:sans-serif;">
   <defs>
@@ -744,7 +818,7 @@ Légende : le grand carré est l'espace de coordonnées du GS (12 bits non sign�
 >[!Note]
 >Ce SVG est intégré en HTML brut dans la note (pas dans un bloc de code) et utilise les variables CSS d'Obsidian (`var(--text-normal)`, `var(--text-accent)`, `var(--interactive-accent)`, etc.) pour s'adapter automatiquement au thème clair/sombre.
 
-### 3i - Les contextes de dessin (`_1` / `_2`)
+## i) - Les contextes de dessin (`_1` / `_2`)
 
 Le GS duplique en **deux exemplaires indépendants** tous les registres qui définissent *où* et *comment* une primitive est rasterisée. Chaque exemplaire est un **contexte de dessin** (contexte 1 ou 2), `common/include/gs_gp.h` :
 
@@ -763,7 +837,7 @@ Intérêt pratique : dessiner alternativement vers deux zones VRAM différentes 
 >[!Note]
 >Dans ce projet (`main.c`), un seul contexte est utilisé : le `0` passé en premier argument de `draw_setup_environment(q, 0, frame, z)` (cf. section 3h). La bascule de contexte ne joue donc aucun rôle actuellement dans ce code.
 
-### 3j - GIF_SET_PRIM : le registre PRIM
+## j) - GIF_SET_PRIM : le registre PRIM
 
 `GIF_SET_PRIM` (définie dans `/usr/local/ps2dev/ps2sdk/common/include/gif_tags.h:85-90`) construit la valeur 64 bits à envoyer dans le registre GS `PRIM` (`GIF_REG_PRIM = 0x00`, `gif_tags.h:42`), qui décrit quel type de primitive dessiner et comment la rasteriser :
 
@@ -796,6 +870,252 @@ PACK_GIFTAG(q, GIF_SET_PRIM(6, 0, 0, 0, 0, 0, 0, 0, 0), GIF_REG_PRIM);
 
 >[!Note]
 >Sources consultées : `gif_tags.h:85-90` et `gif_tags.h:42` (macro et registre), `gs_gp.h:151-163` (constantes `GS_PRIM_*`), sample officiel `/usr/local/ps2dev/ps2sdk/samples/graph/graph.c:121` qui utilise le même pattern (`GIF_SET_PRIM(6, 0, 0, 0, 0, 0, 0, 0, 0)` pour dessiner des carrés en `GS_PRIM_SPRITE`).
+
+## k) - `packet_t` : le buffer DMA (`packet.h`)
+
+`packet_t` (`ee/include/packet.h:23-28`) encapsule un buffer mémoire aligné 64 octets, prêt pour DMA, dans lequel on construit une chaîne de qwords (GIFtags + données de primitives, sections 3c/3e) avant envoi au GIF. C'est le type de `packet` utilisé dans `init_drawing_environment`/`render` (section 3b, `graph.c`/`main.c`).
+
+```c
+typedef struct {
+    u32 qwords;                              // capacité allouée, en qwords
+    u16 qwc;                                 // compteur de qwords utilisés, avancé par packet_increment_qwc
+    u16 type;                                // PACKET_NORMAL / PACKET_UCAB / PACKET_SPR
+    qword_t *data __attribute__((aligned(64)));  // buffer aligné 64 octets
+} packet_t;
+```
+
+| Fonction | Rôle |
+|---|---|
+| `packet_init(qwords, type)` | Alloue un `packet_t` de `qwords` quadwords |
+| `packet_free(packet)` | Libère le buffer |
+| `packet_reset(packet)` | Remet `qwc` à 0 et vide le contenu |
+| `packet_increment_qwc(packet, num)` | Avance le compteur `qwc`, retourne le qword courant |
+
+Types (`type`, `packet.h:14-16`) :
+
+| Constante | Valeur | Mémoire utilisée |
+|---|---|---|
+| `PACKET_NORMAL` | 0x00 | RAM EE classique, cachée |
+| `PACKET_UCAB` | 0x01 | RAM EE *uncached accelerated* — écriture DMA rapide, pas de gestion de cohérence de cache à faire soi-même |
+| `PACKET_SPR` | 0x02 | Scratchpad RAM (16 Ko, section 1) |
+
+Dans `main.c`/`graph.c` : `packet_init(50, PACKET_NORMAL)` alloue 50 qwords — une marge confortable/arbitraire, pas une taille calculée précisément (le contenu réel construit par paquet, ex. dans `render()`, tourne autour d'une dizaine de qwords : 1 GIFtag + 4 données en A+D).
+
+>[!Note]
+>Sous-dimensionner le buffer entraîne une écriture hors bornes silencieuse — la PS2 n'a pas de protection mémoire stricte côté EE, donc pas de crash immédiat garanti, juste de la corruption mémoire potentielle. Sur-dimensionner ne coûte que quelques centaines d'octets négligeables : en pratique, mieux vaut prévoir large.
+
+## l) - GIF_SET_RGBAQ : le registre RGBAQ (64 bits)
+
+`GIF_SET_RGBAQ` (`common/include/gif_tags.h:92-95`) construit la valeur 64 bits à envoyer dans le registre GS `RGBAQ` (`GIF_REG_RGBAQ = 0x01`, section 3c) — la couleur/alpha courants appliqués au(x) prochain(s) sommet(s) :
+
+```c
+#define GIF_SET_RGBAQ(R, G, B, A, Q)                                \
+    (u64)((R)&0x000000FF) << 0 | (u64)((G)&0x000000FF) << 8 |       \
+        (u64)((B)&0x000000FF) << 16 | (u64)((A)&0x000000FF) << 24 | \
+        (u64)((Q)&0xFFFFFFFF) << 32
+```
+
+| Champ | Bits | Type | Rôle |
+|---|---|---|---|
+| `R` | 0-7 | `u8` (0-255) | intensité rouge |
+| `G` | 8-15 | `u8` (0-255) | intensité verte |
+| `B` | 16-23 | `u8` (0-255) | intensité bleue |
+| `A` | 24-31 | `u8` (0-255) | alpha (opacité, `0x80`=128 ≈ mi-transparent avec le mode de blending par défaut) |
+| `Q` | 32-63 | `float32` | coefficient de correction de perspective (1/w) pour le texture mapping |
+
+R/G/B/A sont de simples entiers 8 bits empaquetés par décalage de bits, comme tous les autres champs de tag vus en section 3c/3g. **`Q` est le seul champ flottant** : c'est le facteur `1/w` du pipeline de perspective-correct texture mapping (utilisé conjointement avec `ST`, section 3c, quand `FST=0` dans `PRIM` — section 3j). Sans texture ou sans perspective correction, on force `Q = 1.0f` — mais **empaqueté tel quel comme pattern binaire de float**, pas comme un entier `1`.
+
+Exemple réel, `graph.c`/`main.c` (section 3b) :
+```c
+PACK_GIFTAG(q, GIF_SET_RGBAQ((loop0 * 10), 0, 255 - (loop0 * 10), 0x80, 0x3F800000), GIF_REG_RGBAQ);
+```
+R et B varient avec la boucle (dégradé rouge↔bleu), `G=0`, `A=0x80` (128, semi-transparent), `Q=0x3F800000` — qui est exactement le bit pattern IEEE-754 de `1.0f` (voir aparté ci-dessous), pas la valeur entière `0x3F800000`.
+
+>[!Note]
+>Le champ `Q` n'a **pas** de macro de conversion float→u32 : `GIF_SET_RGBAQ` traite son 5ᵉ argument comme un entier 32 bits brut (`(Q)&0xFFFFFFFF`), qu'on le pose en hexadécimal (`0x3F800000`) ou via un cast de type (`*(u32*)&(float){1.0f}`). Écrire `GIF_SET_RGBAQ(r, g, b, a, 1)` serait un bug silencieux : ça pose `Q` à l'entier `1` réinterprété comme float, soit une valeur dénormalisée proche de zéro — pas `1.0f`.
+
+#### Aparté : IEEE-754 simple précision (32 bits), pourquoi `0x3F800000` = `1.0f`
+
+Le GS n'a aucune notion de type — comme le DMA/GIF en général (section 3c/3e), il ne fait que déplacer et écrire des patterns binaires bruts dans des registres. Un `float` C, une fois casté en `u32` pour être empaqueté dans un tag, doit donc déjà être sous la forme binaire que l'IEEE-754 impose — il n'y a pas de conversion implicite entier→flottant faite par le matériel au moment de l'écriture du registre.
+
+Format IEEE-754 simple précision (32 bits) :
+
+| Champ | Bits | Rôle |
+|---|---|---|
+| Signe | 31 | 0 = positif, 1 = négatif |
+| Exposant | 23-30 (8 bits) | exposant biaisé (+127) |
+| Mantisse | 0-22 (23 bits) | partie fractionnaire, bit implicite `1.` non stocké |
+
+Formule : `valeur = (-1)^signe × 1.mantisse × 2^(exposant-127)`
+
+Décodage de `0x3F800000` :
+```
+0x3F800000 = 0 01111111 00000000000000000000000
+             │ └──┬───┘ └───────────┬───────────┘
+           signe exposant=127      mantisse=0
+             =0  →127-127=0
+```
+`valeur = (-1)^0 × 1.0 × 2^0 = 1.0f`
+
+>[!Note]
+>Point clé à retenir pour tout champ flottant packé à la main dans un tag GIF/DMA (`Q` ici, mais le principe est général) : le GS/GIF attend le pattern binaire IEEE-754 brut en mémoire, jamais une conversion automatique. On écrit donc soit l'hex du bit pattern directement (`0x3F800000`), soit on caste explicitement l'adresse d'un `float` en `u32*` en C — jamais un `(u32)1.0f`, qui tronquerait `1.0f` en l'entier `1` au lieu de réinterpréter ses bits.
+
+## m) - Synchronisation CPU/DMA : `dma_channel_fast_waits` / `dma_wait_fast`
+
+Le DMA (section 3d) transfère les données (ex: un paquet GIF) de la RAM EE vers le GS (ou un autre périphérique) **de façon asynchrone** : `dma_channel_send_normal` rend la main immédiatement, le transfert continue en tâche de fond pendant que l'EE exécute la suite (voir schéma section 3b). Conséquence directe : l'EE **ne doit pas réécrire un buffer** (le `packet_t`, section 3k) tant que le DMA n'a pas fini de le lire — sinon la GS reçoit un mélange de l'ancienne et de la nouvelle frame (corruption visuelle, race condition classique producteur/consommateur).
+
+`dma_wait_fast()` (`ee/include/dma.h`) est le point de synchronisation qui règle ce problème : il bloque l'EE (poll de l'état du canal) jusqu'à ce que le transfert en cours sur le(s) canal(aux) enregistré(s) soit terminé.
+
+Pour qu'il sache *quel* canal surveiller sans qu'on ait à le repréciser à chaque appel, il faut d'abord l'enregistrer une fois via `dma_channel_fast_waits(channel)` — typiquement à l'initialisation, juste après `dma_channel_initialize` :
+
+```c
+dma_channel_initialize(DMA_CHANNEL_GIF, NULL, 0);
+dma_channel_fast_waits(DMA_CHANNEL_GIF); // enregistre GIF pour le "fast wait" — une seule fois, à l'init
+```
+
+Ensuite, `dma_wait_fast()` s'utilise sans argument — c'est ce qui distingue le "fast mode" d'une attente générique par canal (qui obligerait à repasser `DMA_CHANNEL_GIF` à chaque appel) :
+
+| Fonction | Rôle | Appel |
+|---|---|---|
+| `dma_channel_fast_waits(channel)` | Setup : enregistre `channel` comme canal suivi par le mécanisme fast wait | Une fois, à l'init (`main()` dans `main.c`/`graph.c`) |
+| `dma_wait_fast()` | Bloque l'EE jusqu'à la fin du transfert sur le(s) canal(aux) enregistré(s) | À chaque frame, avant de reconstruire/renvoyer le paquet |
+
+Pattern d'usage typique, `render()` dans `main.c`/`graph.c` (section 3b) :
+
+```c
+dma_channel_fast_waits(DMA_CHANNEL_GIF); // setup, une fois à l'init
+
+// ... dans la boucle de rendu ...
+dma_channel_send_normal(DMA_CHANNEL_GIF, packet->data, q - packet->data, 0, 0);
+dma_wait_fast(); // attend la fin du transfert avant de reconstruire le prochain packet
+```
+
+Ce pattern garantit que le GS a fini de lire le buffer précédent avant que l'EE ne le réécrive pour la frame suivante — voir aussi `dma_wait_fast()` en tout début de `render()` (`main.c:344`/`main.c:357`), qui protège symétriquement le paquet contre une éventuelle frame précédente pas encore consommée.
+
+>[!Note]
+>`dma_wait_fast()` est complémentaire de `draw_wait_finish()` (section 3b), pas redondant : `dma_wait_fast()` attend que le **DMA** ait fini de transférer les octets vers le GIF (couche transport), `draw_wait_finish()` attend que la **GS** ait fini de traiter la primitive **FINISH** en fin de paquet (couche rendu). Dans `graph.c`/`main.c`, les deux sont utilisés à des endroits différents du cycle : `dma_wait_fast()` avant de reconstruire un nouveau paquet, `draw_wait_finish()` juste après l'avoir envoyé.
+
+## n) Outils de debug du PS2SDK
+
+Trois outils indépendants, à des niveaux différents. La section 3a montre déjà l'usage basique de `scr_printf` — ici, le panorama complet des fonctions disponibles, plus deux libs non couvertes ailleurs dans la note.
+
+### `libdebug` / `debug.h` (`-ldebug`) — console texte overlay, déjà liée dans ce projet
+
+Dessine du texte directement par-dessus le framebuffer via le GS, sans dépendre d'un pipeline de rendu fonctionnel — l'outil le plus utilisé en pratique pour du debug rapide (`ee/include/debug.h`).
+
+| Fonction | Rôle |
+|---|---|
+| `init_scr(void)` | Initialise la console de debug à l'écran |
+| `scr_printf(const char*, ...)` | Équivalent `printf` affiché à l'écran |
+| `scr_vprintf(fmt, va_list)` | Variante `scr_printf` avec `va_list` |
+| `scr_putchar(x, y, color, ch)` | Affiche un caractère à une position donnée |
+| `scr_clear(void)` | Efface tout l'écran |
+| `scr_clearline(Y)` | Efface une ligne |
+| `scr_clearchar(X, Y)` | Efface un caractère |
+| `scr_setXY(x, y)` / `scr_getX()` / `scr_getY()` | Positionne/lit la position du curseur texte |
+| `scr_setbgcolor(color)` | Couleur de fond |
+| `scr_setfontcolor(color)` | Couleur du texte |
+| `scr_setcursorcolor(color)` | Couleur du curseur |
+| `scr_change_defaultcolor(index, color)` | Change une couleur de la palette par défaut |
+| `scr_setCursor(enable)` / `scr_getCursor()` | Active/désactive/lit l'état du curseur |
+| `ps2GetStackTrace(results, max)` | Récupère une stack trace de l'appel courant |
+
+>[!Note]
+>`DEBUG_BGCOLOR(col)` (`debug.h:22`) écrit directement le registre GS de couleur de fond, memory-mappé à l'adresse `0x120000e0` :
+>```c
+>#define DEBUG_BGCOLOR(col) *((u64 *) 0x120000e0) = (u64) (col)
+>```
+>Pratique pour visualiser où le code plante/boucle infiniment sans même passer par `scr_printf` : il suffit de changer la couleur d'écran à différents points du code (ex: `DEBUG_BGCOLOR(0xff0000ffUL)` avant une section suspecte) pour voir jusqu'où l'exécution est allée, y compris dans un contexte où le pipeline de rendu normal ne tourne pas encore.
+
+### `libeedebug` / `ee_debug.h` (`-leedebug`) — debug bas niveau via les registres COP0
+
+Pas liée par défaut dans ce projet (`EE_LIBS` ne contient que `-ldebug` actuellement) — nécessiterait d'ajouter `-leedebug` à `EE_LIBS`. Utilise les registres de debug matériels du coprocesseur EE (`ee/include/ee_debug.h`) pour poser des breakpoints matériels et intercepter les exceptions, plutôt que d'instrumenter le code par affichage.
+
+| Fonction | Rôle |
+|---|---|
+| `ee_dbg_install(levels)` / `ee_dbg_remove(levels)` | Installe/retire les handlers d'exception (niveaux 1 et 2) |
+| `ee_dbg_get_level1_handler(cause)` / `ee_dbg_set_level1_handler(cause, handler)` | Lit/pose le handler d'exception de niveau 1 pour une cause donnée |
+| `ee_dbg_get_level2_handler(cause)` / `ee_dbg_set_level2_handler(cause, handler)` | Idem, niveau 2 |
+| `ee_dbg_get/set_bpc(void)/(u32)` | Registre *Breakpoint Control* |
+| `ee_dbg_get/set_iab(void)/(u32)` / `iabm` | *Instruction Address Breakpoint* + masque |
+| `ee_dbg_get/set_dab(void)/(u32)` / `dabm` | *Data Address Breakpoint* + masque |
+| `ee_dbg_get/set_dvb(void)/(u32)` / `dvbm` | *Data Value Breakpoint* + masque |
+| `ee_dbg_set_bpr(addr, mask, opmode_mask)` | Pose un breakpoint matériel sur lecture (*read*) |
+| `ee_dbg_set_bpw(addr, mask, opmode_mask)` | Pose un breakpoint matériel sur écriture (*write*) |
+| `ee_dbg_set_bpv(value, mask, opmode_mask)` | Pose un breakpoint matériel sur valeur (*value*) |
+| `ee_dbg_set_bpx(addr, mask, opmode_mask)` | Pose un breakpoint matériel sur exécution (*execute*) |
+| `ee_dbg_clr_bps()` / `bpda()` / `bpdv()` / `bpx()` | Efface les breakpoints (généraux / adresse-donnée / valeur-donnée / exécution) |
+
+#### Level 1 / Level 2 : les deux étages du gestionnaire d'exceptions EE
+
+>[!Note]
+>Ce "Level 1 / Level 2" est propre au mécanisme d'exception du CPU EE (MIPS R5900) exposé par `libeedebug` — à ne pas confondre avec d'autres notions de "niveau" vues ailleurs dans le SDK (ex: niveaux de priorité DMA, contextes GS 1/2 en section 3c/3f).
+
+Quand le CPU rencontre une exception (breakpoint matériel posé via `ee_dbg_set_bpx`/`bpr`/`bpw`/`bpv`, division par zéro, accès mémoire invalide, TLB miss, syscall...), il saute automatiquement à une adresse de **vecteur fixe** en mémoire (imposée par le matériel, ex. `0x80000080` pour les exceptions générales). Le code à cette adresse doit être minimal et robuste : il s'exécute dans un état très contraint (interruptions désactivées, contexte pas encore sauvegardé).
+
+`ee_debug.h` définit un unique type de handler pour les deux niveaux (`ee_debug.h:28`) :
+
+```c
+typedef int (EE_ExceptionHandler)(struct st_EE_RegFrame *);
+```
+
+**Level 1 — handler bas niveau, posé au vecteur matériel :**
+
+```c
+extern EE_ExceptionHandler *ee_dbg_get_level1_handler(int cause);
+extern EE_ExceptionHandler *ee_dbg_set_level1_handler(int cause, EE_ExceptionHandler *handler);
+```
+
+Installé directement à l'adresse du vecteur d'exception matériel. Son rôle :
+- sauvegarder l'intégralité des registres CPU dans une structure `EE_RegFrame` (`common/include/ps2_debug.h:58-111` — GPR, `status`, `cause`, `epc`, `badvaddr`, et les registres de breakpoint `bpc`/`iab`/`iabm`/`dab`/`dabm`/`dvb`/`dvbm`) ;
+- lire le champ ExcCode du registre CAUSE (COP0) pour déterminer la cause exacte de l'exception ;
+- dispatcher vers le handler Level 2 enregistré pour cette cause.
+
+`ee_dbg_install(levels)` installe le Level 1 par défaut fourni par le PS2SDK — pas besoin d'en écrire un soi-même en usage normal.
+
+**Level 2 — handler haut niveau, un par cause :**
+
+```c
+extern EE_ExceptionHandler *ee_dbg_get_level2_handler(int cause);
+extern EE_ExceptionHandler *ee_dbg_set_level2_handler(int cause, EE_ExceptionHandler *handler);
+```
+
+Point d'entrée applicatif. Une fois le Level 1 terminé (sauvegarde + identification de la cause), il appelle la fonction Level 2 enregistrée pour cette cause précise, avec le `EE_RegFrame*` complet (tous les registres au moment du crash) passé en argument. C'est là qu'on branche sa propre logique de debug (ex: afficher l'état des registres via `scr_printf` quand un breakpoint matériel posé avec `ee_dbg_set_bpx`/`bpr` est atteint).
+
+**Flux résumé :**
+```
+Exception matérielle
+      ↓
+Vecteur fixe (adresse imposée par le CPU, ex. 0x80000080)
+      ↓
+Handler Level 1 (sauvegarde EE_RegFrame, lit ExcCode du registre CAUSE)
+      ↓
+Handler Level 2 (fonction utilisateur, reçoit EE_RegFrame*, indexé par cause)
+```
+
+`cause` correspond au code d'exception MIPS (champ ExcCode extrait du registre CAUSE) — chaque type d'exception (breakpoint, TLB, overflow, syscall...) a son propre `cause` et donc potentiellement son propre handler Level 2, alors que le Level 1 est en pratique unique/générique : même code de sauvegarde de contexte pour toutes les causes, seul le dispatch vers Level 2 varie.
+
+### `screenshot.h` — capture d'écran depuis la VRAM
+
+Pas liée par défaut non plus — nécessite le même ajout de lib que ci-dessus le cas échéant (fonctions déclarées dans `ee/include/screenshot.h`, sans lib dédiée séparée listée dans le Makefile). Dump directement le contenu d'un buffer VRAM (typiquement le framebuffer courant) vers un fichier ou un buffer mémoire — pratique pour inspecter visuellement un rendu sans setup graphique interactif (ex: dans un émulateur headless, ou en CI).
+
+```c
+extern int ps2_screenshot_file(const char* pFilename, unsigned int VramAdress,
+                        unsigned int Width, unsigned int Height, unsigned int Psm);
+
+extern int ps2_screenshot(void* pTemp, unsigned int VramAdress, unsigned int x, unsigned int y,
+                   unsigned int Width, unsigned int Height, unsigned int Psm);
+```
+
+| Fonction | Rôle |
+|---|---|
+| `ps2_screenshot_file(pFilename, VramAdress, Width, Height, Psm)` | Dump la VRAM directement vers un fichier |
+| `ps2_screenshot(pTemp, VramAdress, x, y, Width, Height, Psm)` | Dump la VRAM vers un buffer mémoire (`pTemp`), à partir d'un offset `(x, y)` |
+
+Les deux prennent l'adresse VRAM du buffer à capturer (ex: `frame.address`, section 3b/3f) et son `Psm` (section 3f) — mêmes informations que celles déjà en main après `graph_vram_allocate`/`init_gs`.
+
+>[!Note]
+>Résumé pratique pour ce projet : seul `libdebug` (`scr_printf`, `DEBUG_BGCOLOR`...) est disponible immédiatement, puisque `EE_LIBS` ne lie que `-ldma -lgraph -ldraw -lkernel -ldebug` (section 2). `libeedebug` (breakpoints matériels) et `screenshot.h` (capture VRAM) nécessitent d'ajouter la lib correspondante à `EE_LIBS` avant de pouvoir les utiliser.
 
 
 # 4 - Utiliser la manette (pad)
