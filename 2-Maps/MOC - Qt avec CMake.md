@@ -45,6 +45,16 @@ Qt est un framework multiplateforme pour développer des applications graphiques
 | [[CMAKE : [CMAKE_BUILD_TYPE] - variable build type Debug ou Release]] | Types de compilation |
 | [[CMAKE : [CMAKE_EXPORT_COMPILE_COMMANDS] - variable génération compile_commands.json]] | Intégration LSP/IDE |
 
+### Ce que produit le linkage (fondamentaux C)
+
+`target_link_libraries` se traduit en options `-l` passées à `ld` : ces notes expliquent ce qui se passe une fois CMake sorti de scène.
+
+| Note | Utilité |
+|------|---------|
+| [[C - convention -lfoo et recherche des archives]] | Comment `Qt6::Widgets` devient un chemin de bibliothèque résolu |
+| [[C - ordre de résolution des archives au link]] | Pourquoi l'ordre des cibles liées compte, et le rôle de `--start-group` |
+| [[C - en-tête et bibliothèque (déclarer vs définir)]] | Distinguer une erreur d'include d'une erreur de linkage |
+
 ## Notes principales
 - [[CMAKE - automation Qt AUTOUIC AUTOMOC AUTORCC]] - Incontournable pour éviter appels manuels moc/uic/rcc
 - [[CMAKE : [find_package] - découverte Qt multi-versions]] - Pattern essentiel compatibilité Qt5/Qt6
@@ -66,4 +76,4 @@ Qt est un framework multiplateforme pour développer des applications graphiques
 - Déploiement Qt (windeployqt, macdeployqt, linuxdeployqt)
 
 ---
-**Dernière mise à jour** : 2025-11-11
+**Dernière mise à jour** : 2026-08-22

@@ -37,7 +37,7 @@ Une Map of Content (MOC) est un index thématique qui :
 
 ## Notes principales
 - [[EXEMPLE - Note Permanente]] - Principe d'atomicité
-- [[INDEX]] - Point d'entrée du Zettelkasten
+- *(Ajoutez ici le point d'entrée de votre Zettelkasten)*
 
 ## Ressources externes
 - `CLAUDE.md` - Documentation complète

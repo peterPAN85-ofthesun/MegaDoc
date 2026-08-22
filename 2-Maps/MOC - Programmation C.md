@@ -96,14 +96,26 @@ Le C est un langage de programmation impératif créé dans les années 1970, en
 
 ## 🔧 Outils et build
 
+### Compilation
 - [[C - compilation et linkage]] - gcc, étapes de compilation
+- [[GCC - driver et non compilateur]] - Les quatre étapes et qui reçoit quelle option
+- [[C - en-tête et bibliothèque (déclarer vs définir)]] - La distinction qui explique la moitié des erreurs de build
+- [[ELF - Executable and Linkable Format]] - Le format du binaire produit : sections, segments, table des symboles
+
+### Édition de liens
+- [[C - convention -lfoo et recherche des archives]] - Comment `ld` trouve `libfoo.a`
+- [[C - ordre de résolution des archives au link]] - Objets d'abord, bibliothèques ensuite, `--start-group`
+
+### Make
 - [[Makefile - automatisation compilation C]] - Règles, variables, automatisation
+- [[MAKE - but par défaut DEFAULT_GOAL]] - Le piège de l'`include` placé avant `all:`
 
 ---
 
 ## 🚀 Concepts avancés
 
 - [[C - programmation orientée objet]] - Simulation de POO avec struct + pointeurs de fonctions
+- [[IEEE-754 - simple précision 32 bits]] - Représentation binaire des flottants, convertir vs réinterpréter
 
 ---
 
@@ -150,6 +162,12 @@ Le C est un langage de programmation impératif créé dans les années 1970, en
 18. [[C - programmation orientée objet]]
 19. [[C - compilation et linkage]]
 20. [[Makefile - automatisation compilation C]]
+21. [[GCC - driver et non compilateur]]
+22. [[C - en-tête et bibliothèque (déclarer vs définir)]]
+23. [[C - convention -lfoo et recherche des archives]]
+24. [[C - ordre de résolution des archives au link]]
+25. [[MAKE - but par défaut DEFAULT_GOAL]]
+26. [[IEEE-754 - simple précision 32 bits]]
 
 ---
 
@@ -157,7 +175,12 @@ Le C est un langage de programmation impératif créé dans les années 1970, en
 
 ### Sources
 - OpenClassrooms : https://openclassrooms.com/fr/courses/19980-apprenez-a-programmer-en-c
-- Fichiers source : `Archive/Apprendre le C/`
+- Fichiers source : `Archive/Apprendre le C/`, `0-Inbox/PS2SDK.md` (chapitre 7)
+
+### Domaines connexes
+- [[MOC - PS2 Homebrew]] - Instanciation de ces mécanismes en cross-compilation MIPS
+- [[MOC - CMake]] - Alternative à Make pour l'automatisation de build
+- [[MOC - C++ POO]] - Le prolongement objet du langage, mêmes règles de compilation
 
 ### Documentation officielle
 - C Standard Library Reference
@@ -168,9 +191,9 @@ Le C est un langage de programmation impératif créé dans les années 1970, en
 
 ## 🎯 Statistiques
 
-- **Total de notes** : 25 notes permanentes
+- **Total de notes** : 32 notes permanentes
 - **Date de création** : 2025-11-13
-- **Dernière mise à jour** : 2025-11-13
+- **Dernière mise à jour** : 2026-08-22
 
 ---
 

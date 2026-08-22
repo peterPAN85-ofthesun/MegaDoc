@@ -40,10 +40,10 @@ Plus on augmente la partie réseau : Plus on réduit le domaine de collision de 
 Les ports sont utilisés dans la partie "application" du système OSI. 
 
 Utile notamment pour le NAT (Network Address Translation)
-![[0-Inbox/FormationRéseau/Days/Jours2/Ex NAT.canvas]]
+![[Archive/FormationRéseau/Days/Jours2/Ex NAT.canvas]]
 
 # TP
-![[0-Inbox/FormationRéseau/Days/Jours2/TP1.canvas]]
+![[Archive/FormationRéseau/Days/Jours2/TP1.canvas]]
 Parefeu : pfsense
 
 >[!NOTE]

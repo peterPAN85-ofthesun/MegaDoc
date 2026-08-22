@@ -73,6 +73,21 @@ Les concepts essentiels à maîtriser en priorité :
 4. **[[C++ - Classes abstraites]]** - Modèles et interfaces
 5. **[[C++ - Destructeur virtuel]]** - Gestion mémoire correcte en héritage
 
+## 🔗 Compilation et MOCs connexes
+
+La séparation header/source d'une classe C++ est une instance du principe général « déclarer vs définir », et les erreurs de build qui en découlent obéissent aux mêmes règles qu'en C :
+
+- [[C - en-tête et bibliothèque (déclarer vs définir)]] - Pourquoi `undefined reference` n'est jamais une erreur de compilation
+- [[GCC - driver et non compilateur]] - Les quatre étapes et l'option qui s'adresse à chacune
+- [[C - ordre de résolution des archives au link]] - Objets d'abord, bibliothèques ensuite
+- [[ELF - Executable and Linkable Format]] - Le format du binaire et de la table des symboles
+- [[C++ - Classes (structure header-source)]] - L'application directe en C++
+
+MOCs :
+- [[MOC - Programmation C]] - Le socle procédural et la chaîne de build
+- [[MOC - CMake]] - Automatiser la compilation d'un projet C++
+- [[MOC - Qt avec CMake]] - C++ appliqué au framework Qt
+
 ## Ressources externes
 
 - [OpenClassrooms - Programmez en orienté objet avec C++](https://openclassrooms.com/fr/courses/7137751-programmez-en-oriente-objet-avec-c)
@@ -93,5 +108,5 @@ Sujets identifiés mais pas encore couverts :
 - [ ] Composition vs héritage
 
 ---
-**Dernière mise à jour** : 2026-01-05
+**Dernière mise à jour** : 2026-08-22
 **Nombre de notes** : 19

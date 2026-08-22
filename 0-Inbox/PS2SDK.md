@@ -107,20 +107,20 @@ Ce diagramme consolide tout ce qui est détaillé plus loin dans la note : les 1
 EE_BIN=test.elf
 EE_OBJS=main.o
 
-EE_LIBS=-ldma -lgraph -ldraw -lkernel -ldebug
+EE_LIBS=-ldma -lgraph -ldraw -lkernel -ldebug -lpacket
 
 EE_CFLAGS += -Wall --std=c99
-EE_LDFLAGS = -L$(PS2SDK)/ee/common/lib -L$(PS2SDK)/ee/lib
+EE_LDFLAGS = -L$(PS2SDK)/ee/lib
 
 
 PS2SDK=/usr/local/ps2dev/ps2sdk
 
 ISO_TGT=test.iso
 
+all: $(ISO_TGT)
+
 include $(PS2SDK)/samples/Makefile.eeglobal
 include $(PS2SDK)/samples/Makefile.pref
-
-all: $(ISO_TGT)
 
 $(ISO_TGT): $(EE_BIN)
 	mkisofs -l -o $(ISO_TGT) $(EE_BIN) SYSTEM.CNF
@@ -145,10 +145,28 @@ On inclue une série de libraire importante :
 - ldraw : fonctions de dessin
 - lkernel : fonction de système de base
 - ldebug : affichage de debug (souvent `scr_printf`)
+- lpacket : construction des buffers DMA (`packet_init` / `packet_free`, cf. 3k)
+
+Toutes ces archives vivent au même endroit, `$(PS2SDK)/ee/lib/` — détail dans « Où vivent les en-têtes et les bibliothèques » plus bas.
+
+>[!Warning] Trois pièges corrigés dans l'exemple ci-dessus
+>**1. `-lpacket` manquait.** Dès qu'on appelle `packet_init` / `packet_free`, le link échoue sur `undefined reference to 'packet_init'`. Le `#include <packet.h>` ne suffit pas — l'en-tête déclare, l'archive définit (principe général en **7c**).
+>
+>**2. `all:` doit être déclaré *avant* les `include`.** Règle GNU Make générique, détaillée en **7g** : le but par défaut est la première cible explicite rencontrée, `include` compris. Ici `Makefile.eeglobal` définit `$(EE_BIN): $(EE_OBJS)` ; inclus avant `all:`, il devient le but par défaut et un `make` nu construit `test.elf` **sans jamais fabriquer l'ISO**, silencieusement.
+>```
+>include AVANT all:  ->  .DEFAULT_GOAL := test.elf
+>include APRES all:  ->  .DEFAULT_GOAL := all
+>```
+>
+>**3. `-L$(PS2SDK)/ee/common/lib` a été retiré** : ce répertoire **n'existe pas** (`common/` ne contient que `include/`), c'était un `-L` mort.
 
 `EE_CFLAGS` existe déjà dans `$(PS2SDK)/samples/Makefile.eeglobal`. On ajoute juste quelques flags de compilation : `EE_CFLAGS += -Wall --std=c99`
 
-`EE_LFLAGS` prend les valeurs contenue dans PS2SDK pour agrémenter en arguments l'éditeur de liaison
+`EE_LDFLAGS` passe des arguments à l'éditeur de liens. Même mécanique que `EE_CFLAGS` : `Makefile.eeglobal` fait `EE_LDFLAGS := -L$(PS2SDK)/ee/lib -Wl,-zmax-page-size=128 $(EE_LDFLAGS)`, c'est-à-dire qu'il **place les siens devant et concatène les nôtres derrière**. Le `-L$(PS2SDK)/ee/lib` de l'exemple est donc lui aussi redondant — on peut vider la ligne, elle n'est utile que pour ajouter un répertoire de bibliothèques *supplémentaire* (un port compilé à la main, par exemple).
+
+>[!Note]
+>`EE_LDFLAGS` est déclaré avec `=` (expansion différée), ce qui lui permet de référencer `$(PS2SDK)` alors que la variable n'est assignée que trois lignes plus bas.
+>Avec `:=` (expansion immédiate) l'exemple fonctionnerait **quand même ici**, mais pour une raison accidentelle : `PS2SDK` est exportée dans l'environnement du shell, et Make importe les variables d'environnement. Sans cet export, `:=` donnerait `-L/ee/lib` — vérifié avec `env -u PS2SDK make`. Le `=` rend l'exemple robuste dans les deux cas.
 
 Les variable par défaut sont définies dans `$(PS2SDK)/samples/Makefile.pref`
 Les règles de compilations de base sont définies dans `$(PS2SDK)/samples/Makefile.eeglobal`
@@ -180,6 +198,383 @@ CompileFlags:
     - -isystem/usr/local/ps2dev/ee/lib/gcc/mips64r5900el-ps2-elf/15.2.0/include-fixed
     - -isystem/usr/local/ps2dev/ee/mips64r5900el-ps2-elf/include
 ```
+
+>[!Warning]
+>Ces trois `-isystem` ne couvrent que les en-têtes **builtin de GCC** (`stddef.h`, `stdint.h`…). Aucun ne pointe vers le PS2SDK : `draw.h`, `graph.h`, `tamtypes.h` restent introuvables pour le LSP, qui souligne en rouge tout le fichier alors que la compilation passe. Il manque ce que `Makefile.eeglobal` injecte via `EE_INCS` :
+>```
+>    - -I/usr/local/ps2dev/ps2sdk/ee/include
+>    - -I/usr/local/ps2dev/ps2sdk/common/include
+>```
+>C'est exactement ce que `bear -- make` résout tout seul en capturant les vraies lignes de compilation dans `compile_commands.json` : quand il est présent et à jour, clangd s'en sert et le `.clangd` devient un simple filet de sécurité.
+
+## Les variables des Makefile du SDK
+
+Quatre fichiers interviennent dans un build EE. Savoir lequel définit quoi évite de chercher `EE_CC` au mauvais endroit.
+
+| Fichier | Rôle | Nb de variables |
+|---|---|---|
+| `Makefile` du projet | ce qu'on écrit soi-même | 7 |
+| `$PS2SDK/samples/Makefile.pref` | noms des outils (toolchain, shell) | 28, **toutes en `?=`** |
+| `$PS2SDK/samples/Makefile.eeglobal` | flags de compilation/link + règles | 16 |
+| `$PS2SDK/Defs.make` | même contenu que `Makefile.pref`, pour construire **le SDK lui-même** | 29 |
+
+`Makefile.eeglobal` annonce lui-même son contrat d'interface en commentaire :
+
+```
+# Externally defined variables: EE_BIN, EE_OBJS, EE_LIB
+```
+
+Tout le reste a une valeur par défaut ; ces trois-là sont à nous.
+
+### 1. Ce que le projet définit
+
+| Variable | Opérateur | Rôle |
+|---|---|---|
+| `EE_BIN` | `=` | nom de l'ELF produit — **contrat** |
+| `EE_OBJS` | `=` | objets à lier — **contrat** |
+| `EE_LIBS` | `=` | bibliothèques applicatives (`-l…`), cf. section précédente |
+| `EE_CFLAGS` | `+=` | flags de compilation supplémentaires |
+| `EE_LDFLAGS` | `=` | `-L` supplémentaires (souvent inutile, voir plus bas) |
+| `PS2SDK` | `=` | racine du SDK — redondant si déjà dans l'environnement |
+| `ISO_TGT` | `=` | cible ISO, propre à ce projet (pas une variable du SDK) |
+
+`EE_LIB` (au singulier, sans `S`) est une **autre** variable : elle sert à produire une bibliothèque `.a` au lieu d'un exécutable. À ne pas confondre avec `EE_LIBS`.
+
+### 2. `Makefile.pref` — les noms des outils
+
+28 variables, **toutes déclarées en `?=`**, donc toutes surchargeables depuis l'environnement ou la ligne de commande (`make EE_CC=ma-version-de-gcc`).
+
+| Groupe | Variables | Valeur de tête |
+|---|---|---|
+| Toolchain EE (10) | `EE_TOOL_PREFIX`, puis `EE_CC` `EE_CXX` `EE_AS` `EE_LD` `EE_AR` `EE_OBJCOPY` `EE_STRIP` `EE_ADDR2LINE` `EE_RANLIB` | `EE_TOOL_PREFIX ?= mips64r5900el-ps2-elf-` |
+| Toolchain IOP (9) | `IOP_TOOL_PREFIX` + les mêmes dérivés | `IOP_TOOL_PREFIX ?= mipsel-none-elf-` |
+| Toolchain hôte (6) | `CC` `AS` `LD` `AR` `OBJCOPY` `STRIP` | `CC ?= cc` |
+| Shell (5) | `MKDIR` `RMDIR` `ECHO` `PRINTF` `MAKEREC` | `MAKEREC ?= $(MAKE) -C` |
+
+Tous les outils sont dérivés du préfixe : `EE_CC ?= $(EE_TOOL_PREFIX)gcc`.
+
+>[!Note] Deux préfixes différents, deux architectures
+>`mips64r5900el-ps2-elf-` pour l'EE (MIPS III, cœur r5900, 64 bits) et `mipsel-none-elf-` pour l'IOP (MIPS I, hérité de la PS1 — cf. chapitre 1). Ce ne sont pas deux configurations du même compilateur mais **deux toolchains complets et distincts**. Le troisième groupe (`CC ?= cc`) désigne le compilateur **du PC**, pour les outils qui tournent côté hôte au moment du build (`bin2c` par exemple).
+
+### 3. `Makefile.eeglobal` — les flags, et le motif qui les compose
+
+| Variable | Valeur |
+|---|---|
+| `EE_INCS` | `:= -I$(PS2SDK)/ee/include -I$(PS2SDK)/common/include -I. $(EE_INCS)` |
+| `EE_OPTFLAGS` | `?= -O2` |
+| `EE_WARNFLAGS` | `?= -Wall` |
+| `EE_DBGINFOFLAGS` | `?= -gdwarf-2 -gz` |
+| `EE_CFLAGS` | `:= -D_EE -G0 $(EE_OPTFLAGS) $(EE_WARNFLAGS) $(EE_DBGINFOFLAGS) $(EE_CFLAGS)` |
+| `EE_CXXFLAGS` | idem, pour le C++ |
+| `EE_LDFLAGS` | `:= -L$(PS2SDK)/ee/lib -Wl,-zmax-page-size=128 $(EE_LDFLAGS)` |
+| `EE_ASFLAGS` | `:= -G0 $(EE_ASFLAGS)` |
+| `EE_LINKFILE` | `:= $(PS2SDK)/ee/startup/linkfile` (si non défini) |
+| `EE_C_COMPILE` | `= $(EE_CC) $(EE_CFLAGS) $(EE_INCS)` |
+| `DIR_GUARD` | `= @$(MKDIR) -p $(@D)` |
+| `NEWLIB_NANO` | testé, non défini → pilote `NODEFAULTLIBS`, `LIBC`, `LIBM`, `EXTRA_LDFLAGS` |
+
+C'est la ligne `EE_INCS` qui rend `#include <draw.h>` possible **sans rien déclarer dans le projet** : les deux répertoires d'en-têtes du SDK sont injectés d'office.
+
+>[!Important] Le motif `X := <défauts SDK> $(X)`
+>Chaque variable de flags est reconstruite en plaçant les valeurs du SDK **devant** et en concaténant les nôtres **derrière**. Deux conséquences :
+>- `:=` évalue immédiatement, donc `$(X)` capture ce que le projet a défini **avant** l'`include` — d'où le fait que `EE_CFLAGS += -Wall --std=c99` fonctionne alors qu'il précède la ligne `include`.
+>- Nos flags se retrouvant en fin de ligne, ils **l'emportent** en cas de conflit : chez `gcc`, le dernier flag gagne. Mettre `EE_OPTFLAGS = -O0` dans le projet écrase bien le `-O2` du SDK.
+>
+>Le `?=` de `Makefile.pref` obéit à une autre règle : il n'affecte que si la variable est **vide et non héritée de l'environnement**. C'est pourquoi un `PS2SDK` exporté dans le shell suffit (vérifié avec `env -u PS2SDK make`, cf. la note sur `=` / `:=` plus haut).
+
+### `NEWLIB_NANO` : la variante réduite de la libc
+
+Non définie par défaut. Si on la met à `1`, `Makefile.eeglobal` bascule sur `-lc_nano` / `-lm_nano` et remplit `EXTRA_LDFLAGS` avec une liste explicite :
+
+```makefile
+EXTRA_LDFLAGS = -nodefaultlibs $(LIBM) -lgcc -Wl,--start-group $(LIBC) \
+                -lcdvd -lcglue -lpthread -lpthreadglue -lkernel -Wl,--end-group
+```
+
+On retrouve ici, écrit à la main, le `--start-group` que les specs GCC injectent d'office dans le cas normal (section suivante) : `-nodefaultlibs` ayant désactivé l'injection automatique, il faut reconstruire le groupe soi-même. Utile pour réduire la taille de l'ELF sur un projet qui n'utilise pas toute la newlib.
+
+### Les deux seules macros qui atteignent le code C
+
+À distinguer des variables Make, qui ne franchissent jamais la frontière du préprocesseur :
+
+| Flag | Nature | Effet |
+|---|---|---|
+| `-D_EE` | vraie macro préprocesseur | identifie la cible Emotion Engine, testable par `#ifdef _EE`. C'est ainsi que les en-têtes partagés `common/include/` se compilent différemment côté EE et côté IOP |
+| `-G0` | flag MIPS, **pas un define** | seuil de placement en *small data section* mis à 0, ce qui désactive complètement le mécanisme |
+
+### 4. `Defs.make` : le piège de la recherche
+
+`$PS2SDK/Defs.make` reprend **à l'identique** les 28 variables de `samples/Makefile.pref`, plus une : `EE_PKG_CONFIG ?= $(EE_TOOL_PREFIX)pkg-config`. C'est la copie utilisée pour compiler le SDK lui-même ; `samples/Makefile.pref` est celle destinée aux projets.
+
+>[!Warning]
+>Un `grep -r 'EE_CC' $PS2SDK` remonte donc **deux définitions** de chaque variable de toolchain. Celle qui s'applique à un projet est celle de `samples/Makefile.pref` — c'est elle que le `Makefile` inclut. `Defs.make` n'est jamais lu par un projet utilisateur.
+
+## Où vivent les en-têtes et les bibliothèques
+
+>[!Note] Variables d'environnement posées par l'installation
+>`PS2DEV=/usr/local/ps2dev` et `PS2SDK=/usr/local/ps2dev/ps2sdk`, avec `$PS2DEV/{bin,ee/bin,iop/bin,dvp/bin,ps2sdk/bin}` déjà dans le `PATH`. Les outils s'appellent donc directement, sans chemin absolu — mais **sous leur nom complet** : le compilateur EE est `mips64r5900el-ps2-elf-gcc`, il n'existe **aucun alias `ee-gcc`** (contrairement à ce qu'on lit dans de vieux tutos ps2dev). Même logique pour `-ld`, `-as`, `-objdump`, `-nm`, `-gdb`.
+
+Trois répertoires à ne pas confondre, tous sous `$PS2SDK` (= `/usr/local/ps2dev/ps2sdk`) :
+
+| Chemin | Contenu | Injecté par |
+|--------|---------|-------------|
+| `ee/include/` | en-têtes spécifiques EE : `dma.h`, `draw.h`, `graph.h`, `kernel.h`, `packet.h`, `debug.h`, `dma_tags.h` | `EE_INCS` |
+| `common/include/` | en-têtes partagés EE/IOP : `tamtypes.h`, `gif_tags.h`, `gs_gp.h`, `gs_psm.h` | `EE_INCS` |
+| `ee/lib/` | **toutes** les archives `.a` | `EE_LDFLAGS` |
+
+Poids indicatif des archives du projet — `libkernel` écrase tout le reste, c'est elle qui embarque les syscalls et la gestion de threads :
+
+```
+libdma.a      49 Ko      libdebug.a   108 Ko
+libpacket.a   23 Ko      libgraph.a   111 Ko
+libdraw.a    172 Ko      libkernel.a  1,3 Mo
+```
+
+### Le piège : tout en-tête n'a pas sa bibliothèque
+
+Application directe du principe en-tête ≠ archive (**7c**) : une partie du SDK est *header-only*. Ces fichiers ne contiennent que des `#define` et des `typedef`, entièrement résolus à la compilation — il n'existe donc **aucune archive à lier**, et le réflexe « un `#include` → un `-l` » produit une erreur. L'inventaire complet est en fin de section suivante, « Les en-têtes sans archive ».
+
+Mettre un `-l` par `#include` donne donc :
+
+```
+ld: cannot find -lgif_tags: Aucun fichier ou dossier de ce nom
+ld: have you installed the static version of the gif_tags library ?
+```
+
+Message trompeur — il n'y a rien à installer, la bibliothèque n'a jamais existé. Le réflexe correct avant d'ajouter un `-l` :
+
+```bash
+ls $PS2SDK/ee/lib/lib*.a
+```
+
+>[!Note]
+>Attention aux noms : l'en-tête s'appelle `dma_tags.h` (avec underscore) mais aucune archive `libdma_tags.a` ni `libdmatags.a` n'existe. `GIF_SET_TAG`, `GIF_SET_PRIM`, `PACK_GIFTAG`, `GS_PSM_32` sont tous des macros — voir 3c et 3f.
+
+## Que contient chaque bibliothèque
+
+Relevé fait sur l'installation locale en croisant `nm -g --defined-only` sur chaque archive avec les identifiants déclarés dans `ee/include/*.h` et `common/include/*.h`. **491 fonctions publiques** au total sur les six archives du projet.
+
+| Archive | `#include` de tête | En-têtes servis | Fonctions |
+|---|---|---|---|
+| `libpacket.a` | `packet.h` | 1 | 3 |
+| `libdma.a` | `dma.h` | 1 | 13 |
+| `libgraph.a` | `graph.h` | 3 | 29 |
+| `libdebug.a` | `debug.h` | 3 | 41 |
+| `libdraw.a` | `draw.h` | 12 | 53 |
+| `libkernel.a` | `kernel.h` | 21 | 352 |
+
+>[!Note]
+>Un symbole déclaré dans plusieurs en-têtes est rattaché ici à un seul. Les comptes donnent l'ordre de grandeur et la répartition, pas un inventaire exact au symbole près.
+
+### libpacket (3) et libdma (13) — les plus simples
+
+```
+packet.h   packet_init  packet_reset  packet_free
+```
+
+```
+dma.h      dma_channel_initialize  dma_channel_shutdown  dma_reset
+           dma_channel_send_normal   dma_channel_send_normal_ucab
+           dma_channel_send_chain    dma_channel_send_chain_ucab
+           dma_channel_receive_normal  dma_channel_receive_chain
+           dma_channel_send_packet2  dma_channel_wait
+           dma_channel_fast_waits    dma_wait_fast
+```
+
+Toute l'API DMA tient en 13 fonctions, organisées en trois axes : sens (`send` / `receive`), mode (`normal` / `chain`, cf. 3e) et attente (`wait` / `fast_waits`, cf. 3m). Le suffixe `_ucab` désigne les variantes *UnCached Accelerated*, qui contournent le cache pour écrire directement en mémoire.
+
+### libgraph (29) — trois en-têtes
+
+| En-tête | Nb | Domaine |
+|---|---|---|
+| `graph.h` | 19 | mode vidéo, sortie, synchronisation verticale |
+| `graph_config.h` | 5 | `graph_get_config` `graph_set_config` `graph_make_config` `graph_load_config` `graph_save_config` |
+| `graph_vram.h` | 4 | `graph_vram_allocate` `graph_vram_free` `graph_vram_clear` `graph_vram_size` |
+
+`graph.h` se découpe lui-même en trois familles : initialisation (`graph_initialize` `graph_shutdown` `graph_set_mode` `graph_set_screen` `graph_set_output` `graph_set_smode1`), framebuffer (`graph_set_framebuffer` `graph_set_framebuffer_filtered` `graph_set_bgcolor` `graph_enable_output` `graph_disable_output`), et synchronisation (`graph_wait_vsync` `graph_wait_hsync` `graph_start_vsync` `graph_check_vsync` `graph_add_vsync_handler` `graph_remove_vsync_handler`), plus `graph_get_region` et `graph_aspect_ratio`.
+
+>[!Note]
+>`graph_get_field` est exporté par l'archive mais **déclaré dans aucun en-tête** : utilisable seulement en le déclarant soi-même, donc à considérer comme non public.
+
+### libdraw (53) — `draw.h` est un chapeau
+
+Un seul `#include <draw.h>` suffit parce que ce fichier n'est presque qu'une liste d'inclusions :
+
+```c
+#include <tamtypes.h>
+#include <draw_blending.h>   #include <draw_buffers.h>
+#include <draw_dithering.h>  #include <draw_fog.h>
+#include <draw_masking.h>    #include <draw_primitives.h>
+#include <draw_sampling.h>   #include <draw_tests.h>
+#include <draw_types.h>      #include <draw2d.h>
+#include <draw3d.h>
+```
+
+| En-tête | Nb | Fonctions |
+|---|---|---|
+| `draw2d.h` | 15 | `draw_point` `draw_line` `draw_triangle_filled` `draw_triangle_outline` `draw_rect_filled` `draw_rect_filled_strips` `draw_rect_outline` `draw_rect_textured` `draw_rect_textured_strips` `draw_round_rect_filled` `draw_round_rect_outline` `draw_arc_filled` `draw_arc_outline` `draw_enable_blending` `draw_disable_blending` |
+| `draw.h` en propre | 6 | `draw_setup_environment` `draw_clear` `draw_finish` `draw_wait_finish` `draw_texture_transfer` `draw_texture_flush` |
+| `draw3d.h` | 6 | `draw_prim_start` `draw_prim_end` `draw_convert_xyz` `draw_convert_st` `draw_convert_rgbaq` `draw_convert_rgbq` |
+| `draw_buffers.h` | 6 | `draw_framebuffer` `draw_zbuffer` `draw_texturebuffer` `draw_clutbuffer` `draw_clut_offset` `draw_log2` |
+| `draw_sampling.h` | 5 | `draw_texture_sampling` `draw_texture_wrapping` `draw_texture_expand_alpha` `draw_mipmap1` `draw_mipmap2` |
+| `draw_tests.h` | 4 | `draw_enable_tests` `draw_disable_tests` `draw_pixel_test` `draw_scissor_area` |
+| `draw_blending.h` | 3 | `draw_alpha_blending` `draw_alpha_correction` `draw_pixel_alpha_control` |
+| `draw_primitives.h` | 3 | `draw_primitive_override` `draw_primitive_override_setting` `draw_primitive_xyoffset` |
+| `draw_dithering.h` | 2 | `draw_dithering` `draw_dither_matrix` |
+| `draw_masking.h` | 2 | `draw_color_clamping` `draw_scan_masking` |
+| `draw_fog.h` | 1 | `draw_fog_color` |
+
+Les six fonctions de `draw.h` en propre sont exactement celles utilisées dans le squelette de rendu (3b). Le reste est du confort : `draw2d.h` évite d'écrire les GIFtags à la main pour les formes courantes.
+
+### libdebug (41) — trois en-têtes, dont un inattendu
+
+| En-tête | Nb | Domaine |
+|---|---|---|
+| `hwbp.h` | 18 | points d'arrêt **matériels** via les registres COP0 : `InitBPC` `SetBPC` `GetBPC`, les paires `Set/Get` pour `IAB` `IABM` `DAB` `DABM` `DVB` `DVBM`, et les trois enveloppes `SetInstructionBP` `SetDataAddrBP` `SetDataValueBP` |
+| `debug.h` | 16 | console texte : `init_scr` `scr_printf` `scr_vprintf` `scr_putchar` `scr_clear` `scr_clearline` `scr_clearchar` `scr_setXY` `scr_getX` `scr_getY` `scr_setCursor` `scr_setfontcolor` `scr_setbgcolor` `scr_setcursorcolor` `scr_change_defaultcolor` `ps2GetStackTrace` |
+| `screenshot.h` | 2 | `ps2_screenshot` `ps2_screenshot_file` |
+
+`hwbp.h` est la partie méconnue : elle donne accès aux breakpoints matériels de l'EE (arrêt sur adresse d'instruction, sur adresse de donnée, ou sur *valeur* de donnée) sans passer par un debugger externe — voir 3n.
+
+>[!Note]
+>Cinq fonctions sont exportées sans être déclarées dans un en-tête : `ps2GetReturnAddress` `ps2GetStackPointer` `ps2_screenshot_16to32_buffer` `ps2_screenshot_16to32_line` `scr_setfontcolorescape`. Utilisables, mais hors contrat.
+
+### libkernel (352) — 21 en-têtes
+
+De loin la plus grosse. `kernel.h` en concentre la moitié :
+
+| En-tête | Nb | Domaine |
+|---|---|---|
+| `kernel.h` | 170 | threads, sémaphores, interruptions, cache, TLB, système |
+| `timer.h` | 27 | compteurs matériels de l'EE |
+| `fileio.h` | 22 | `fio*` — I/O historique passant par l'IOP (cf. 6c) |
+| `loadfile.h` | 19 | `SifLoadModule` & co, chargement des IRX (cf. 6a) |
+| `osd_config.h` | 17 | configuration console (langue, fuseau, date) |
+| `sifrpc-common.h` | 13 | `sceSifInitRpc` `sceSifBindRpc` `sceSifCallRpc`… |
+| `sifcmd-common.h` | 11 | couche commande du bus SIF |
+| `deci2.h` | 10 | protocole de debug DECI2 (kit de développement Sony) |
+| `sio.h` | 10 | port série de debug |
+| `iopheap.h`, `timer_alarm.h` | 5 chacun | tas côté IOP, alarmes |
+| `rom0_info.h`, `iopcontrol.h` | 4 chacun | infos ROM, `SifIopReset` / `SifIopReboot` |
+| `tty.h` | 3 | sortie console |
+| `delaythread.h`, `kernel_util.h`, `ps2sdkapi.h` | 1 chacun | `DelayThread`, `WaitSemaEx`, … |
+
+Les familles de `kernel.h` :
+
+| Famille | Fonctions représentatives |
+|---|---|
+| Threads | `CreateThread` `DeleteThread` `StartThread` `ExitThread` `TerminateThread` `SuspendThread` `ResumeThread` `SleepThread` `WakeupThread` `ChangeThreadPriority` `RotateThreadReadyQueue` `GetThreadId` `ReferThreadStatus` |
+| Sémaphores | `CreateSema` `DeleteSema` `SignalSema` `WaitSema` `PollSema` `ReferSemaStatus` |
+| Interruptions | `AddIntcHandler` `RemoveIntcHandler` `EnableIntc` `DisableIntc` `AddDmacHandler` `RemoveDmacHandler` `EnableDmac` `DisableDmac` `DIntr` `EIntr` |
+| Cache / mémoire | `FlushCache` `InvalidDCache` `SyncDCache` `SetMemoryMode` `GetMemorySize` `SetupHeap` `EndOfHeap` `ExpandScratchPad` `KSeg0` |
+| TLB | `InitTLB` `SetTLBEntry` `GetTLBEntry` `PutTLBEntry` `ProbeTLBEntry` |
+| Alarmes / timers | `InitAlarm` `SetAlarm` `ReleaseAlarm` `SetCPUTimer` `SetCPUTimerHandler` |
+| SIF (pont EE↔IOP) | `sceSifSetDma` `sceSifDmaStat` `sceSifSetDChain` `sceSifSetReg` `sceSifGetReg` |
+| Exécution / système | `ExecPS2` `LoadExecPS2` `ExecOSD` `ResetEE` `Exit` `MachineType` `SetSyscall` `SetGP` |
+| GS côté noyau | `GsGetIMR` `GsPutIMR` `SetGsCrt` `SetGsHParam` `SetGsVParam` `SetVSyncFlag` `SetVInterruptHandler` |
+
+`SleepThread`, utilisé en fin de `main()` (voir « Architecture de base d'un programme »), vient de cette première famille. `DelayThread` en revanche est dans `delaythread.h`, pas dans `kernel.h` — c'est une cause classique de `implicit declaration`.
+
+### La convention de préfixe `i` et `_`
+
+C'est le point le plus utile à retenir de `libkernel` : **43 fonctions existent en doublon préfixé `i`**, dont 42 ont leur jumelle sans préfixe.
+
+```
+WakeupThread   ↔  iWakeupThread
+SignalSema     ↔  iSignalSema
+EnableIntc     ↔  iEnableIntc
+FlushCache     ↔  iFlushCache
+```
+
+Le préfixe `i` = version appelable **depuis un contexte d'interruption** : elle ne reprogramme pas l'ordonnanceur et ne peut pas se mettre en attente. Appeler la version sans `i` depuis un gestionnaire d'interruption est une faute qui se paie par un blocage ou une corruption d'état.
+
+Le préfixe `_` (37 fonctions : `_EnableDmac` `_DisableIntc` `_ExecPS2` `_InitSys`…) marque les variantes internes bas niveau, en dessous de la couche publique. Les deux se combinent (`_iEnableDmac`).
+
+>[!Note]
+>29 symboles de `libkernel` ne sont déclarés nulle part, dont cinq nommés `RFU009` `RFU059` `RFU060` `RFU061` `RFU105` — *Reserved for Future Use*, des emplacements de syscalls que Sony n'a jamais attribués.
+
+### Les en-têtes sans archive
+
+Instanciation PS2 du principe en-tête ≠ archive (**7c**) : ces fichiers ne contiennent que des `#define` et des `typedef`, donc **aucun `-l` ne leur correspond**.
+
+| En-tête | Contenu | `-l` |
+|---|---|---|
+| `common/include/gs_gp.h` | 120 defines — registres GS, macros `GS_SET_*` | **aucun** |
+| `common/include/gif_tags.h` | 42 defines — `GIF_SET_TAG`, `GIF_REG_*` (cf. 3c) | **aucun** |
+| `ee/include/dma_tags.h` | 21 defines — DMAtags (cf. 3e) | **aucun** |
+| `common/include/gs_psm.h` | 19 defines — `GS_PSM_*` (cf. 3f) | **aucun** |
+| `common/include/tamtypes.h` | 35 typedefs, 2 defines — `u8`/`u32`/`u128`… | **aucun** |
+| `ee/include/draw_types.h` | 7 typedefs, 1 define — `framebuffer_t`, `zbuffer_t`… | via `libdraw` |
+
+`draw_types.h` est le cas mixte : il ne définit que des types, mais ces types sont consommés par des fonctions de `libdraw`. C'est le `#include <draw.h>` qui l'amène, et `-ldraw` qui fournit le code.
+
+### Aucune variable globale dans l'API
+
+Résultat notable du relevé : **l'API publique du PS2SDK côté EE n'exporte pratiquement aucune variable globale**. Tout passe par des fonctions et des structures transmises par pointeur (`framebuffer_t *`, `zbuffer_t *`, `packet_t *`) — ce qui explique la forme de tous les exemples du SDK.
+
+Les seuls symboles de données publics sont :
+
+- `erl_id` et `erl_dependancies`, présents dans **toutes** les archives : métadonnées ERL (*Executable Relocatable Linkable*, cf. la note sur les `.erl`), pas de l'API ;
+- `msx` dans `libdebug` (en `R`, lecture seule) : la fonte bitmap de la console texte ;
+- dans `libkernel` uniquement, de l'état interne non documenté — `_fio_cd` `_fio_io_sema` `_fio_block_mode` `_sif_cmd_data` `_sif_rpc_data` `g_Timer` `g_AlarmBuf` `g_CounterBuf` `g_rom0_info_data` `_iop_reboot_count` `stack` `tinfo`… **à ne jamais toucher directement**.
+
+## Ce que le toolchain PS2 ajoute d'office à l'édition de liens
+
+>[!Info] Prérequis générique
+>Les mécanismes sous-jacents — `gcc` comme *driver*, la convention `-lfoo` → `libfoo.a`, la résolution des archives de gauche à droite — n'ont rien de spécifique à la PS2 et sont traités au chapitre **7 - La chaîne de compilation C**. Cette section ne couvre que ce que la chaîne ps2dev fait *en plus*.
+
+### Les specs GCC injectent déjà une liste de bibliothèques
+
+`EE_LIBS` n'est pas la liste complète des bibliothèques liées. Les *specs* de ce toolchain en ajoutent d'autres après les nôtres, visible avec `-###` (cf. 7b) :
+
+```
+main.o  -ldma -lpacket  -lgcc -lm --start-group -lc -lcdvd -lpthread -lpthreadglue -lcglue -lkernel --end-group -lgcc
+        └─ nos EE_LIBS ─┘└──────────── ajoutées par le driver ps2dev ─────────────────────────┘
+```
+
+Deux conséquences :
+
+- **`-lkernel` dans `EE_LIBS` est redondant** — il figure déjà dans le groupe injecté. Le garder ne casse rien (le link passe aussi bien sans), mais ce n'est pas lui qui fait le travail.
+- Le `--start-group` / `--end-group` autour de `libc`, `libcdvd`, `libcglue` et `libkernel` n'est pas décoratif : ces quatre-là ont des **dépendances croisées** (`libcglue` fait le pont entre la libc et les syscalls du noyau EE, qui eux-mêmes rappellent des fonctions de la libc). Sans le groupe, aucun ordre linéaire ne les satisferait — voir 7f.
+
+C'est aussi ce qui explique que `newlib` soit disponible sans effort : `printf`, `malloc`, `cosf` viennent de `-lc` / `-lm` injectées, jamais déclarées dans le `Makefile`.
+
+### Le lien est intégralement statique
+
+La PS2 n'a ni chargeur dynamique ni bibliothèques partagées. `ld` ne tente donc **jamais** d'ouvrir un `.so` (contrairement au cas hébergé décrit en 7d) — la trace `-Wl,--verbose` ne montre que des `.a` :
+
+```
+attempt to open /tmp/libdebug.a failed
+attempt to open /usr/local/ps2dev/ps2sdk/ee/lib/libdebug.a succeeded
+```
+
+Tout le code utilisé est recopié dans l'ELF, d'où un `test.elf` d'environ **1,4 Mo pour une centaine de lignes de C** — l'essentiel étant `libkernel` et la newlib.
+
+>[!Note]
+>Les `SEARCH_DIR` internes de ce `ld` pointent vers les chemins de la machine de CI qui a construit le toolchain (`/__w/ps2dev/…`) et sont préfixés `=`, donc relatifs au sysroot. Ils ne résolvent rien d'utile ici : **tout vient des `-L`** posés par `EE_LDFLAGS` et `Makefile.eeglobal`.
+
+### Le plugin LTO masque les erreurs d'ordre
+
+Sur cette chaîne, mettre les bibliothèques *avant* les objets — l'erreur classique décrite en 7f — **passe quand même** quand on invoque `gcc`. Le plugin d'édition de liens (`liblto_plugin.so`, actif par défaut) réexamine les archives et rattrape l'ordre. L'échec ne réapparaît qu'en le désactivant :
+
+```bash
+# passe (plugin LTO actif, comportement par défaut)
+mips64r5900el-ps2-elf-gcc ... -ldma -lgraph -ldraw -lpacket main.o
+
+# échoue : undefined reference to `dma_channel_initialize', `draw_setup_environment'...
+mips64r5900el-ps2-elf-gcc -fno-use-linker-plugin ... -ldma -lgraph -ldraw -lpacket main.o
+mips64r5900el-ps2-elf-ld ...                        -ldma -lgraph -ldraw -lpacket main.o
+```
+
+Conclusion pratique : respecter l'ordre malgré tout. Le jour où on appelle `ld` à la main, où on désactive LTO, ou sur une autre chaîne d'outils, l'erreur ressort.
+
+### Symptômes rencontrés sur ce projet
+
+| Message de `ld` | Cause | Correction |
+|---|---|---|
+| `undefined reference to 'packet_init'` | `-lpacket` absent de `EE_LIBS` alors que `packet.h` est inclus | ajouter `-lpacket` |
+| `cannot find -lgif_tags` (et `-lgs_gp`, `-lgs_psm`, `-ltamtypes`, `-ldmatags`) | un `-l` a été ajouté pour un en-tête *header-only* | retirer le `-l`, garder le `#include` |
+| `cannot find -l…` alors que l'archive existe | `-L` pointant vers un répertoire inexistant (`ee/common/lib`) | corriger le `-L` |
 
 ## Architecture de base d'un programme
 
@@ -814,9 +1209,6 @@ q = draw_primitive_xyoffset(q, 0, (2048 - 320), (2048 - 256)); // recentre pour 
 </svg>
 
 Légende : le grand carré est l'espace de coordonnées du GS (12 bits non signés, 0..4095), posé implicitement par `draw_setup_environment()`. Le point/carré en pointillé est `XYOFFSET_1`, par défaut `(2048,2048)` — exactement le centre de cet espace. Le petit carré bleu est le framebuffer 512×512 du projet, dont le coin `(0,0)` logique coïncide avec cet offset.
-
->[!Note]
->Ce SVG est intégré en HTML brut dans la note (pas dans un bloc de code) et utilise les variables CSS d'Obsidian (`var(--text-normal)`, `var(--text-accent)`, `var(--interactive-accent)`, etc.) pour s'adapter automatiquement au thème clair/sombre.
 
 ## i) - Les contextes de dessin (`_1` / `_2`)
 
@@ -1495,3 +1887,167 @@ Contrairement à SIO2MAN/PADMAN/MCMAN, ces modules sont **déjà chargés par le
 | Multitap | `MTAPMAN` | Permet 4 manettes/cartes mémoire par port. |
 | Alim. | `POWEROFF` | RPC pour un arrêt propre de la console. |
 
+# 7 - La chaîne de compilation C (générique)
+
+>[!Info]
+>Ce chapitre ne contient **rien de spécifique à la PS2**. Il décrit des mécanismes valables pour n'importe quel projet C sur n'importe quelle plateforme Unix. Le chapitre `2 - Sdk` s'y réfère plutôt que de les réexpliquer ; l'instanciation PS2 de chaque principe s'y trouve.
+
+## a) Les quatre étapes
+
+Ce qu'on appelle « compiler » est en réalité un enchaînement de quatre programmes distincts. Comprendre lequel fait quoi, c'est savoir à qui s'adresse chaque option et à quelle étape une erreur donnée peut survenir.
+
+| Étape | Programme | Entrée → Sortie | Options qui le concernent |
+|---|---|---|---|
+| Préprocesseur | `cpp` (intégré à `cc1`) | `.c` → `.i` | `-I`, `-D`, `-U`, `#include`, `#define` |
+| Compilation | `cc1` | `.i` → `.s` | `-O`, `-Wall`, `--std=`, `-g` |
+| Assemblage | `as` | `.s` → `.o` | `-Wa,…` |
+| Édition de liens | `ld` (via `collect2`) | `.o` + `.a` → exécutable | `-l`, `-L`, `-T`, `-Wl,…` |
+
+```mermaid
+%%{init: {"flowchart": {"useMaxWidth": true, "htmlLabels": true}}}%%
+graph LR
+    SRC["foo.c"] --> CPP["préprocesseur<br/>résout #include, #define<br/><b>-I -D</b>"]
+    CPP --> I["foo.i<br/>(C pur, sans directive)"]
+    I --> CC1["cc1<br/><i>le vrai compilateur</i><br/><b>-O -Wall --std=</b><br/>ne voit jamais -l"]
+    CC1 --> ASM["foo.s<br/>(assembleur)"]
+    ASM --> AS["as<br/>assembleur"]
+    AS --> OBJ["foo.o<br/>(code machine,<br/>symboles non résolus)"]
+    OBJ --> LD["ld<br/><i>éditeur de liens</i><br/><b>-l -L -T</b><br/>seul à connaître les bibliothèques"]
+    ARCH["libfoo.a<br/>libbar.a"] --> LD
+    LD --> BIN["exécutable"]
+
+    style CC1 fill:#2d3f52,color:#fff
+    style LD fill:#4a3d2d,color:#fff
+```
+
+On peut s'arrêter à n'importe quelle étape : `gcc -E` (préprocesseur seul), `-S` (jusqu'à l'assembleur), `-c` (jusqu'à l'objet, **sans link**).
+
+## b) `gcc` n'est pas un compilateur, c'est un *driver*
+
+`gcc` ne compile rien lui-même : il analyse ses arguments, décide quels programmes lancer, et leur distribue les options. `-###` affiche ce qu'il exécuterait, sans rien exécuter :
+
+```bash
+gcc -### -o prog foo.o -L/chemin/lib -lfoo
+```
+
+On y voit `collect2` (l'enveloppe de `ld`) recevoir `-L` et `-lfoo` **recopiés tels quels**. Le compilateur proprement dit, `cc1`, ne les voit jamais.
+
+Corollaires directs :
+
+- `gcc -c -lfoo foo.c` ne produit **aucune erreur et aucun effet** : `-c` s'arrête avant le link, l'option est simplement inutilisée.
+- Inversement, `-I` n'a aucun sens à l'étape de link.
+- Une erreur `undefined reference to …` ne vient **jamais** du compilateur : le code a compilé, c'est `ld` qui n'a pas trouvé la définition.
+
+## c) En-tête ≠ bibliothèque : déclarer vs définir
+
+C'est la distinction qui explique la moitié des erreurs de build en C.
+
+| | En-tête (`.h`) | Bibliothèque (`.a` / `.so`) |
+|---|---|---|
+| Contient | des **déclarations** : prototypes, types, macros | des **définitions** : le code machine des fonctions |
+| Consommé par | le préprocesseur (`#include`) | l'éditeur de liens (`-l`) |
+| Localisé par | `-I` | `-L` |
+| Si absent | `unknown type name`, `implicit declaration of function` | `undefined reference to 'f'` |
+
+Les deux sont indépendants, et c'est pour ça que le réflexe « un `#include` → un `-l` » est faux dans les deux sens :
+
+- Un en-tête peut n'être composé que de `#define`, de macros et de `static inline` — tout est résolu à la compilation, **il n'existe aucune archive à lier**. C'est la catégorie dite *header-only* (instanciation PS2 en 2, section « Où vivent les en-têtes et les bibliothèques »).
+- À l'inverse, une bibliothèque peut être liée sans qu'on inclue le moindre de ses en-têtes, si un autre objet en réclame les symboles.
+
+## d) La convention `-lfoo` → `libfoo.a`
+
+Pour `-lfoo`, `ld` construit le nom de fichier en collant le préfixe `lib` et le suffixe d'archive, puis cherche :
+
+1. dans chaque répertoire `-L`, **dans l'ordre où ils apparaissent** sur la ligne de commande ;
+2. puis dans ses `SEARCH_DIR` internes (compilés dans le linker, visibles via `ld --verbose`).
+
+Sur une cible hébergée classique, il tente `libfoo.so` avant `libfoo.a`, le lien dynamique étant privilégié. Sur une cible purement statique (pas de chargeur dynamique), seul `libfoo.a` est sondé.
+
+`-Wl,--verbose` rend le parcours observable :
+
+```
+attempt to open /tmp/libfoo.a failed
+attempt to open /usr/lib/libfoo.a succeeded
+```
+
+**Ce n'est que du sucre syntaxique.** Donner le chemin complet de l'archive produit exactement le même binaire :
+
+```bash
+gcc -o prog foo.o /usr/lib/libfoo.a /usr/lib/libbar.a   # équivaut à -L/usr/lib -lfoo -lbar
+```
+
+## e) Qui a décidé de cette convention ?
+
+Trois étages, du plus strict au plus souple :
+
+- **Le langage C** — n'en dit rien. La norme ISO ne connaît ni fichier objet, ni bibliothèque, ni édition de liens : tout cela est hors périmètre. Elle ne décrit que la traduction d'unités de compilation.
+- **POSIX** — standardise `-l` et `-L` pour les utilitaires `c99` / `cc` et pour `ld`, mapping `libfoo.a` compris. C'est l'étage où la convention devient contractuelle.
+- **Les chaînes d'outils** — GNU binutils l'implémente, comme LLVM `lld`.
+
+Ce n'est donc **pas universel**, seulement très répandu :
+
+| Plateforme | Écriture | Fichier cherché |
+|---|---|---|
+| Unix / Linux / *BSD | `-lfoo` | `libfoo.so`, `libfoo.a` |
+| macOS | `-lfoo` | `libfoo.dylib`, `libfoo.a` |
+| MSVC | `foo.lib` (ou `/DEFAULTLIB:foo`) | `foo.lib` — **pas de préfixe `lib`** |
+
+Le préfixe `lib` est un héritage direct d'Unix des années 70, conservé par compatibilité.
+
+## f) Résolution des archives : une seule passe, de gauche à droite
+
+Une archive `.a` n'est pas un bloc monolithique : c'est un **sac de fichiers objets** accompagné d'un index de symboles. `ld` la parcourt en une seule passe et n'en extrait que les membres résolvant un symbole **déjà indéfini à cet instant précis**. Ce qui n'est pas réclamé au moment où l'archive est lue est abandonné définitivement.
+
+D'où la règle : **les objets d'abord, les bibliothèques ensuite**.
+
+```bash
+# ÉCHOUE — au moment où libfoo est lue, aucun symbole n'est encore attendu :
+#   elle est ignorée, puis foo.o réclame ses fonctions… trop tard.
+ld -o prog -lfoo foo.o
+#   undefined reference to `fonction_de_foo'
+
+# CORRECT
+ld -o prog foo.o -lfoo
+```
+
+Le corollaire vaut aussi entre bibliothèques : si `libA` a besoin de `libB`, il faut écrire `-lA -lB` (la plus dépendante en premier).
+
+**Dépendances croisées.** Quand `libA` a besoin de `libB` *et réciproquement*, aucun ordre linéaire ne fonctionne. Deux solutions :
+
+```bash
+gcc ... -lA -lB -lA                        # répéter l'archive
+gcc ... -Wl,--start-group -lA -lB -Wl,--end-group   # relire le groupe jusqu'à stabilisation
+```
+
+`--start-group` demande à `ld` de reparcourir le groupe en boucle jusqu'à ce qu'aucun nouveau symbole ne soit résolu. C'est plus coûteux, d'où son usage réservé aux cas réellement circulaires — typiquement le trio libc / glue / noyau.
+
+>[!Note]
+>Le plugin d'édition de liens de GCC (LTO), actif par défaut sur beaucoup de chaînes, réexamine les archives et **masque** les erreurs d'ordre : un link mal ordonné peut passer via `gcc` et échouer via `ld` direct ou avec `-fno-use-linker-plugin`. Ne pas s'y fier. Manifestation sur le toolchain PS2 en 2, section « Ce que le toolchain PS2 ajoute d'office à l'édition de liens ».
+
+## g) GNU Make : le but par défaut est la première cible non-implicite
+
+Rien à voir avec le compilateur, mais c'est le même genre de règle silencieuse.
+
+Invoqué sans argument, `make` ne construit **pas** `all` : il construit `.DEFAULT_GOAL`, c'est-à-dire **la première cible explicite (non-implicite, non-pattern) rencontrée en lisant le fichier**, `include` compris et dans l'ordre de lecture.
+
+Conséquence : un `include` placé avant la première règle du fichier peut voler le but par défaut, si le fichier inclus définit lui-même une cible. Aucun message d'erreur — `make` construit simplement autre chose que ce qu'on croit.
+
+```makefile
+include regles.mk      # si regles.mk définit une cible, elle devient le but par défaut
+all: monprog           # ← n'est PLUS le but par défaut
+```
+
+Trois façons de s'en prémunir :
+
+```makefile
+.DEFAULT_GOAL := all   # explicite, robuste quel que soit l'ordre
+```
+…ou déclarer `all:` **avant** tout `include`, ou invoquer `make all` systématiquement.
+
+Diagnostic :
+
+```bash
+make -p -n | grep '^\.DEFAULT_GOAL'
+```
+
+Manifestation PS2 (`Makefile.eeglobal` définit `$(EE_BIN)`, un `make` nu construit l'ELF sans l'ISO) : voir chapitre 2, section « Makefile ».

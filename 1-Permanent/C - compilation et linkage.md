@@ -62,6 +62,8 @@ gcc -std=c11 main.c -o prog       # Standard C11
 
 - [[C - organisation multi-fichiers (headers)]] - Projets multi-fichiers
 - [[Makefile - automatisation compilation C]] - Automatisation
+- [[ELF - Executable and Linkable Format]] - Le format du binaire produit par l'étape de linkage
+- [[GCC - driver et non compilateur]] - Le détail des quatre étapes
 
 ## Sources
 - Fichier source : `0-Inbox/Apprendre le C/Les Bases/Les Bases.md`

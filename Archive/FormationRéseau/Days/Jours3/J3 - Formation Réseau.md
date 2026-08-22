@@ -25,7 +25,7 @@ switchport mode access vlan 10    #active le vlan10 pour le port fa0/10
 La trame réseau, une fois entrée dans par le port VLAN, se voit assigner un flag (un PVID : Port Vlan ID). Se PVID ne suit la trame que part le port TRUNK du switch, pour permettre d'identifier au sein du réseau quels sont les appareils qui appartiennent au VLAN.
 
 
-![[0-Inbox/FormationRéseau/Days/Jours3/TP2.canvas]]
+![[Archive/FormationRéseau/Days/Jours3/TP2.canvas]]
 
 ```cli-cisco
 enable
