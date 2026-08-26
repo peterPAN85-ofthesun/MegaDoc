@@ -38,19 +38,19 @@ Après subnetting (/26) :
 
 ### Masques courants
 
-| CIDR | Masque décimal | Hôtes utilisables | Usage |
-|------|----------------|-------------------|-------|
-| /8 | 255.0.0.0 | 16 777 214 | Classe A (très rare) |
-| /16 | 255.255.0.0 | 65 534 | Classe B |
-| /24 | 255.255.255.0 | 254 | Classe C (standard PME) |
-| /25 | 255.255.255.128 | 126 | Subnet /24 en 2 |
-| /26 | 255.255.255.192 | 62 | Subnet /24 en 4 |
-| /27 | 255.255.255.224 | 30 | Petit département |
-| /28 | 255.255.255.240 | 14 | Très petit subnet |
-| /29 | 255.255.255.248 | 6 | Lien point-to-point |
-| /30 | 255.255.255.252 | 2 | Lien routeur ↔ routeur |
-| /31 | 255.255.255.254 | 2 | RFC 3021 (point-to-point) |
-| /32 | 255.255.255.255 | 1 | Hôte unique (loopback) |
+| CIDR | Masque décimal  | Hôtes utilisables | Usage                     |
+| ---- | --------------- | ----------------- | ------------------------- |
+| /8   | 255.0.0.0       | 16 777 214        | Classe A (très rare)      |
+| /16  | 255.255.0.0     | 65 534            | Classe B                  |
+| /24  | 255.255.255.0   | 254               | Classe C (standard PME)   |
+| /25  | 255.255.255.128 | 126               | Subnet /24 en 2           |
+| /26  | 255.255.255.192 | 62                | Subnet /24 en 4           |
+| /27  | 255.255.255.224 | 30                | Petit département         |
+| /28  | 255.255.255.240 | 14                | Très petit subnet         |
+| /29  | 255.255.255.248 | 6                 | Lien point-to-point       |
+| /30  | 255.255.255.252 | 2                 | Lien routeur ↔ routeur    |
+| /31  | 255.255.255.254 | 2                 | RFC 3021 (point-to-point) |
+| /32  | 255.255.255.255 | 1                 | Hôte unique (loopback)    |
 
 ## Calcul de subnetting
 

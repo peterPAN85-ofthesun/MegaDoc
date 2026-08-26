@@ -116,6 +116,7 @@ Le C est un langage de programmation impératif créé dans les années 1970, en
 
 - [[C - programmation orientée objet]] - Simulation de POO avec struct + pointeurs de fonctions
 - [[IEEE-754 - simple précision 32 bits]] - Représentation binaire des flottants, convertir vs réinterpréter
+- [[C - qualificatif volatile]] - Empêche l'optimisation d'accès à une variable modifiable hors du flux normal (registre matériel, ISR, DMA)
 
 ---
 
@@ -168,6 +169,7 @@ Le C est un langage de programmation impératif créé dans les années 1970, en
 24. [[C - ordre de résolution des archives au link]]
 25. [[MAKE - but par défaut DEFAULT_GOAL]]
 26. [[IEEE-754 - simple précision 32 bits]]
+27. [[C - qualificatif volatile]]
 
 ---
 
@@ -191,9 +193,9 @@ Le C est un langage de programmation impératif créé dans les années 1970, en
 
 ## 🎯 Statistiques
 
-- **Total de notes** : 32 notes permanentes
+- **Total de notes** : 33 notes permanentes
 - **Date de création** : 2025-11-13
-- **Dernière mise à jour** : 2026-08-22
+- **Dernière mise à jour** : 2026-08-26
 
 ---
 

@@ -2051,3 +2051,293 @@ make -p -n | grep '^\.DEFAULT_GOAL'
 ```
 
 Manifestation PS2 (`Makefile.eeglobal` définit `$(EE_BIN)`, un `make` nu construit l'ELF sans l'ISO) : voir chapitre 2, section « Makefile ».
+
+# 8 - gsKit : bibliothèque de haut niveau au-dessus du SDK brut
+
+`gsKit` n'est **pas** un module du PS2SDK proprement dit — c'est un projet tiers historique (Chris "Neovanglist" Gilbert, licence Academic Free License 2.0), installé à côté du SDK (`/usr/local/ps2dev/gsKit`) et non dedans. Il s'appuie sur les mêmes briques bas niveau vues en chapitre 3b (`dma`, `graph`, `draw`, paquets GIF) mais les encapsule pour éviter de les manipuler à la main.
+
+## a) Un seul header d'entrée, un seul objet de contexte
+
+`gsKit.h` est un header « maître » — son propre commentaire est explicite : *« Include \_ONLY\_THIS\_HEADER\_ for gsKit. (Do NOT include gsFont.h, gsCore.h, etc) »*. Il inclut lui-même `dmaKit.h`, `gsInit.h`, `gsMisc.h`, `gsCore.h`, `gsPrimitive.h`, `gsTexture.h`, `gsFontM.h`, `gsHires.h`, `gsTexManager.h`.
+
+Toute la lib tourne autour d'une seule structure, `struct gsGlobal` / `typedef GSGLOBAL` (`gsInit.h`), qui centralise ce qu'on gérait dispersé en chapitre 3b (`framebuffer_t`, `zbuffer_t`, `packet_t`) : `Width`, `Height`, `PSM`, `PSMZ`, `DoubleBuffering`, `ZBuffering`, `ZBuffer`, `ScreenBuffer[2]`, `ActiveBuffer`, `CurQueue`/`Per_Queue`/`Os_Queue`, etc. Toutes les fonctions gsKit prennent un `GSGLOBAL *gsGlobal` en premier paramètre.
+
+## b) Initialisation : deux appels remplacent `init_gs()` du chapitre 3b
+
+```c
+GSGLOBAL *gsGlobal = gsKit_init_global();   // macro, cf. ci-dessous
+gsGlobal->Width  = 640;
+gsGlobal->Height = 512;
+gsGlobal->PSM    = GS_PSM_CT32;
+gsGlobal->ZBuffering = GS_SETTING_OFF;
+gsKit_init_screen(gsGlobal);                 // alloue + relie le framebuffer à l'affichage
+```
+
+`gsKit_init_global()` (`gsInit.h:1134`) est une macro qui appelle `gsKit_init_global_custom(GS_RENDER_QUEUE_OS_POOLSIZE, GS_RENDER_QUEUE_PER_POOLSIZE)` — elle alloue le `GSGLOBAL` et ses deux files de dessin internes (« Oneshot » et « Persistent », champs `Os_Queue`/`Per_Queue`). `gsKit_init_screen(gsGlobal)` (`gsInit.h:1124`, « Initialize Screen and GS Registers ») fait ensuite l'équivalent de `graph_vram_allocate` + `graph_initialize` + `draw_setup_environment` réunis — les trois étapes qu'on enchaînait à la main dans `init_gs()`/`init_drawing_environment()`.
+
+## c) Le double buffering : la vraie différence structurelle avec le chapitre 3b
+
+Le `graph.c` du chapitre 3b n'a **pas** de double buffering : un seul framebuffer, sur lequel on dessine pendant qu'il est affiché (risque de tearing), avec `graph_wait_vsync()` en seule protection.
+
+gsKit gère nativement l'alternance de deux buffers via `gsGlobal->DoubleBuffering` (`ScreenBuffer[2]` + `ActiveBuffer` dans la struct) et `gsKit_sync_flip(gsGlobal)` (`gsCore.h:109`, commentaire : *« This calls gsKit\_vsync\_wait, then calls gsKit\_setactive »*) — un seul appel qui attend le VBlank **et** bascule le buffer actif (`gsKit_setactive`, `gsCore.h:137`), au lieu du simple `graph_wait_vsync()` sans flip qu'on avait.
+
+## d) Primitives : fini le `PACK_GIFTAG` manuel
+
+Le bloc de `render()` (chapitre 3b) qui construit à la main les tags GIF (`GIF_SET_TAG`, `GIF_SET_PRIM`, `GIF_SET_RGBAQ`, `GIF_SET_XYZ2`) pour dessiner un carré devient un appel unique, `gsPrimitive.h` :
+
+```c
+gsKit_prim_quad(gsGlobal, x1, y1, x2, y2, x3, y3, x4, y4, z, color);
+gsKit_prim_triangle(gsGlobal, x1, y1, x2, y2, x3, y3, z, color);
+gsKit_prim_triangle_gouraud(gsGlobal, x1, y1, x2, y2, x3, y3, z, color1, color2, color3);
+```
+
+Les variantes `*_3d` (avec `iz` explicite par sommet) sont les fonctions réelles ; les macros sans `_3d` (`gsKit_prim_quad`, `gsKit_prim_triangle`, …) ne sont que du sucre qui répète le même `z` sur tous les sommets. Il existe aussi des points (`gsKit_prim_point`), lignes (`gsKit_prim_line*`), sprites (`gsKit_prim_sprite`), fan/strip (`gsKit_prim_triangle_fan`/`_strip`), et des variantes `gsKit_prim_list_*` pour envoyer un lot de primitives en une fois (`GSPRIMPOINT[]`) plutôt qu'une boucle d'appels individuels — utile pour ne pas reconstruire le paquet GIF sommet par sommet comme le fait la boucle `for` du chapitre 3b.
+
+`gsKit_clear(gsGlobal, color)` (`gsCore.h:179`) remplace `draw_clear(q, ...)` + le paquet manuel qui l'entourait.
+
+## e) La queue DMA interne : `gsKit_queue_exec` remplace le cycle manuel
+
+gsKit maintient en interne une file de primitives (`CurQueue`/`Per_Queue`/`Os_Queue` dans `GSGLOBAL`) au lieu d'un `packet_t` explicite. Le triplet manuel du chapitre 3b —
+
+```c
+q = draw_finish(q);
+dma_channel_send_normal(DMA_CHANNEL_GIF, packet->data, q - packet->data, 0, 0);
+draw_wait_finish();
+```
+
+— devient :
+
+```c
+gsKit_queue_exec(gsGlobal);   // gsCore.h:247, envoie la queue courante par DMA
+gsKit_finish();                // gsCore.h:140, attend la fin (équivalent draw_wait_finish)
+gsKit_sync_flip(gsGlobal);    // vsync + flip de buffer, cf. c)
+```
+
+## f) Ce que gsKit ajoute et que le SDK brut n'offre pas du tout
+
+- **Textures** (`gsTexture.h`) : `gsKit_texture_png`/`gsKit_texture_bmp` chargent une image et gèrent l'upload en VRAM (`gsKit_texture_upload`, `gsKit_texture_send`), via une structure `GSTEXTURE` (`Width`, `Height`, `PSM`, `ClutPSM`, `TBW`, `Mem` pointeur EE, `Vram` pointeur GS, `Filter` NEAREST/LINEAR). En PS2SDK nu, il faudrait écrire soi-même le parsing du format image et la construction du paquet GIF d'upload.
+- **Police bitmap** (`gsFontM.h`) : `gsKit_fontm_print(gsGlobal, font, x, y, z, color, "texte")` (macro sur `gsKit_fontm_print_scaled`) affiche du texte à l'écran via le pipeline GS normal — différent de `scr_printf` (chapitre 3a, `libdebug`) qui est une console de debug à part, pas des primitives GS.
+
+## g) Table de correspondance — chapitre 3b (bas niveau) ↔ gsKit
+
+| Chapitre 3b (raw PS2SDK) | gsKit |
+|---|---|
+| `framebuffer_t` + `zbuffer_t` + `packet_t` | un seul `GSGLOBAL *gsGlobal` |
+| `graph_vram_allocate` + `graph_initialize` (`init_gs`) | `gsKit_init_global()` + `gsKit_init_screen()` |
+| `draw_setup_environment` (`init_drawing_environment`) | fait par `gsKit_init_screen` |
+| `draw_clear` + paquet manuel | `gsKit_clear(gsGlobal, color)` |
+| `PACK_GIFTAG(...PRIM/RGBAQ/XYZ2...)` en boucle | `gsKit_prim_quad`/`gsKit_prim_triangle`/... |
+| `draw_finish` + `dma_channel_send_normal` + `draw_wait_finish` | `gsKit_queue_exec` + `gsKit_finish` |
+| `graph_wait_vsync()` (sans flip, pas de double buffer) | `gsKit_sync_flip(gsGlobal)` (vsync **+** flip) |
+| `graph_vram_free` + `packet_free` | `gsKit_deinit_global(gsGlobal)` |
+| *(rien)* | `gsKit_texture_png`/`bmp` (textures) |
+| *(rien)* | `gsKit_fontm_print` (texte via GS) |
+
+>[!Note]
+>Correspondance des constantes `PSM` entre les deux mondes (`GS_PSM_32` bas niveau vs `GS_PSM_CT32` gsKit, valeurs Z-buffer **différentes** entre `gs_psm.h` et `gsInit.h`) : déjà détaillée section « PSM », chapitre 3, ne pas dupliquer ici.
+
+## h) Build : ce que ça change dans le Makefile
+
+`gsKit` vit hors de l'arborescence `$(PS2SDK)`, donc `-lgskit` seul ne suffit pas — il faut pointer explicitement vers son propre préfixe d'installation :
+
+```makefile
+GSKIT = /usr/local/ps2dev/gsKit
+
+EE_LIBS   += -lgskit -ldmakit
+EE_INCS   += -I$(GSKIT)/include
+EE_LDFLAGS += -L$(GSKIT)/lib
+```
+
+`gsKit.h` inclut lui-même `dmaKit.h` (sa propre couche DMA, distincte de `dma.h` du PS2SDK) — une fois basculé sur gsKit, `-ldma`/`-ldraw`/`-lgraph` de `EE_LIBS` (chapitre 2/3b) deviennent en grande partie redondants, gsKit réimplémentant sa propre gestion DMA/GS par-dessus.
+
+## i) Squelette complet — programme minimal
+
+Assemble tout ce qui précède (b, c, d, e) en un seul fichier autonome : init, boucle de rendu avec un triangle, sortie propre.
+
+```c
+#include <tamtypes.h>
+#include <kernel.h>
+
+#include <gsKit.h>
+#include <dmaKit.h>
+
+int main(int argc, char *argv[])
+{
+    GSGLOBAL *gsGlobal = gsKit_init_global();
+
+    gsGlobal->Mode            = GS_MODE_NTSC;
+    gsGlobal->Width           = 640;
+    gsGlobal->Height          = 448;
+    gsGlobal->PSM             = GS_PSM_CT32;
+    gsGlobal->PSMZ            = GS_PSMZ_16S;
+    gsGlobal->ZBuffering      = GS_SETTING_OFF;
+    gsGlobal->DoubleBuffering = GS_SETTING_ON;
+    gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
+
+    // Couche DMA propre à gsKit (dmaKit.h) — distincte de dma_channel_initialize (dma.h, chapitre 3b).
+    dmaKit_init(D_CTRL_RELE_OFF, D_CTRL_MFD_OFF, D_CTRL_STS_UNSPEC,
+                D_CTRL_STD_OFF, D_CTRL_RCYC_8, 1 << DMA_CHANNEL_GIF);
+    dmaKit_chan_init(DMA_CHANNEL_GIF);
+
+    gsKit_init_screen(gsGlobal);      // graph_vram_allocate + graph_initialize + draw_setup_environment (cf. b)
+    gsKit_mode_switch(gsGlobal, GS_ONESHOT);
+
+    while (1) {
+        gsKit_clear(gsGlobal, GS_SETREG_RGBAQ(0x40, 0x40, 0x40, 0x00, 0x00));
+
+        gsKit_prim_triangle(gsGlobal,
+            100.0f, 100.0f,
+            300.0f, 100.0f,
+            200.0f, 300.0f,
+            1,
+            GS_SETREG_RGBAQ(0xff, 0x00, 0x00, 0x80, 0x00));
+
+        gsKit_queue_exec(gsGlobal);   // envoie la queue par DMA (cf. e)
+        gsKit_finish();               // attend la fin du transfert
+        gsKit_sync_flip(gsGlobal);    // vsync + flip de buffer (cf. c)
+    }
+
+    gsKit_deinit_global(gsGlobal);
+    return 0;
+}
+```
+
+*Makefile associé* — reprend h), avec `GSKIT` pointant hors de `$(PS2SDK)` :
+
+```makefile
+EE_BIN  = test.elf
+EE_OBJS = main.o
+
+GSKIT = /usr/local/ps2dev/gsKit
+
+EE_LIBS    += -lgskit -ldmakit
+EE_INCS    += -I$(GSKIT)/include
+EE_LDFLAGS += -L$(GSKIT)/lib
+
+PS2SDK = /usr/local/ps2dev/ps2sdk
+
+include $(PS2SDK)/samples/Makefile.pref
+include $(PS2SDK)/samples/Makefile.eeglobal
+```
+
+>[!Note]
+>`dmaKit_init`/`dmaKit_chan_init` (`dmaInit.h`) ne sont **pas** couverts par `gsKit_init_global()`/`gsKit_init_screen()` — il faut les appeler soi-même avant `gsKit_init_screen`, sans quoi le premier envoi DMA du canal GIF échoue silencieusement. C'est l'équivalent gsKit de `dma_channel_initialize(DMA_CHANNEL_GIF, ...)` du chapitre 3b, mais sur la couche DMA propre à gsKit (`dmaKit.h`), pas `dma.h` du PS2SDK.
+
+### Paramètres de `dmaKit_init`
+
+Signature réelle (`gsKit/include/dmaInit.h:77-78`) :
+```c
+int dmaKit_init(u32 RELE, u32 MFD, u32 STS, u32 STD, u32 RCYC, u16 fastwaitchannels);
+```
+
+Les 5 premiers paramètres (`RELE, MFD, STS, STD, RCYC`) construisent directement le registre matériel `D_CTRL` de l'EE DMAC (`DMA_REG_CTRL = 0x1000E000`) via la macro `DMA_SET_CTRL(A,B,C,D,E,F)` (`dmaInit.h:67-70`), qui empaquette des champs de bits (A@bit0 1bit, B@bit1 1bit, C@bit2 2bit, D@bit4 2bit, E@bit6 2bit, F@bit8 3bit) :
+
+| Paramètre | Rôle | Largeur | Constantes (`dmaInit.h:20-43`) |
+|---|---|---|---|
+| `RELE` | Release cycle — priorité de cession du bus mémoire entre DMA et CPU | 1 bit | `D_CTRL_RELE_OFF` (0) / `D_CTRL_RELE_ON` (1) |
+| `MFD` | Memory FIFO Drain — quel canal utilise le mécanisme anti-sous-alimentation par FIFO mémoire | 2 bits | `D_CTRL_MFD_OFF` / `_RES` / `_VIF` / `_GIF` |
+| `STS` | Stall Control Source — canal source du mécanisme de stall (throttling) | 2 bits | `D_CTRL_STS_UNSPEC` / `_SIF` / `_SPR` / `_IPU` |
+| `STD` | Stall Control Drain — canal destinataire du mécanisme de stall | 2 bits | `D_CTRL_STD_OFF` / `_VIF` / `_GIF` / `_SIF` |
+| `RCYC` | Intervalle de cycle-stealing — nb de cycles bus "volés" au CPU par tranche | 3 bits | `D_CTRL_RCYC_8` / `_16` / `_32` / `_64` / `_128` / `_256` |
+
+Le 6ᵉ paramètre, `fastwaitchannels` (`u16`), n'appartient PAS à ce registre matériel : c'est un masque de bits logiciel, un bit par canal DMA (`DMA_CHANNEL_VIF0`=0 … `DMA_CHANNEL_TOSPR`=9, `dmaInit.h:56-65`), indiquant quels canaux doivent utiliser une attente "fast" (busy-poll, sans interruption) plutôt qu'une attente bloquante classique. Consommé par `dmaKit_wait_fast()` (`dmaCore.h:76`) — équivalent gsKit de `dma_channel_fast_waits`/`dma_wait_fast` déjà documenté en section 3m côté ps2sdk brut.
+
+>[!Note]
+>Dans le squelette (i), le programme n'utilise que le canal GIF : `1 << DMA_CHANNEL_GIF` (soit `1 << 0x2 = 0x4`) suffit comme masque `fastwaitchannels`. Sans le 6ᵉ argument, la compilation échoue avec `too few arguments to function 'dmaKit_init'` — c'était une erreur dans une version antérieure de cet exemple.
+
+### `dmaKit_init` en clair — ce que chaque paramètre décide vraiment
+
+L'EE et le contrôleur DMA se partagent le **même bus mémoire** vers la RAM. Le DMA ne peut pas le monopoliser en continu : il le grignote par intervalles, un mécanisme appelé *cycle stealing*. Les 5 premiers paramètres de `dmaKit_init` sont les règles de partage de ce bus, posées **globalement pour les 10 canaux à la fois** (registre `D_CTRL`, tableau ci-dessus) — seul le 6ᵉ (`fastwaitchannels`) n'a rien de matériel.
+
+- **`RCYC`** — taille des « bouchées » que prend le DMA à chaque vol de cycle avant de rendre la main au CPU. Petite valeur (`_8`) = petites bouchées fréquentes, transfert lissé. Grande valeur (`_256`) = grosses bouchées rares, plus efficace en volume mais à-coups CPU plus longs. `D_CTRL_RCYC_8` est le choix conservateur de tous les exemples.
+- **`RELE`** — une fois une bouchée commencée, le CPU peut-il couper le DMA avant qu'elle soit finie s'il en a besoin (`ON`), ou le DMA doit-il toujours terminer sa bouchée en cours avant de rendre le bus (`OFF`, comportement standard) ?
+- **`MFD`** (Memory FIFO Drain) — utile uniquement pour du streaming continu et critique (ex : décodeur vidéo IPU lisant un flux MPEG, ou pipeline GIF en streaming lourd) où le flux ne doit jamais manquer de données. `OFF` par défaut dès que le programme ne fait pas de streaming vidéo/flux critique — cas de la quasi-totalité des démos de rendu simple.
+- **`STS` / `STD`** — deux moitiés d'un même mécanisme de contre-pression (*stall control*) entre deux canaux DMA chaînés entre eux, pour éviter qu'un canal rapide envoie des données plus vite qu'un canal lent (ex : `SIF`, qui parle à l'IOP via un bus série lent) ne peut les avaler. `STS` (Source) = quel canal rapide est surveillé/freiné ; `STD` (Drain) = quel canal lent donne le signal de ralentissement. `UNSPEC`/`OFF` si le programme n'enchaîne aucun canal DMA entre eux — cas du squelette : EE → GIF direct, sans chaînage.
+- **`fastwaitchannels`** — pas un registre matériel, un masque de bits logiciel consommé par `dmaKit_wait_fast()` (un bit par canal, ex : `1 << DMA_CHANNEL_GIF`). Détermine, canal par canal, le mode d'attente de fin de transfert :
+  - attente active (poll/fast) : le CPU boucle sans arrêt à vérifier « c'est fini ? » — réaction immédiate, mais gaspille le CPU s'il avait autre chose à faire en parallèle ;
+  - attente par interruption : le CPU se met en pause et se réveille sur interruption matérielle — libère le CPU pendant l'attente, léger délai de réveil.
+  
+  Pour une boucle de rendu qui n'a rien d'autre à faire pendant qu'elle attend le GIF (cas du squelette), l'attente active sur ce canal est pertinente : pas de vrai gaspillage puisque le CPU était de toute façon bloqué à attendre.
+
+>[!Note]
+>Les valeurs du squelette (`RELE=OFF, MFD=OFF, STS=UNSPEC, STD=OFF, RCYC=_8, fastwaitchannels=1<<DMA_CHANNEL_GIF`) correspondent au cas « je ne fais rien de spécial » : pas de streaming vidéo, pas de chaînage de canaux. À ne changer que pour du streaming vidéo (`MFD`), du chaînage EE→IOP (`STS`/`STD`), ou de l'optimisation fine CPU/DMA (`RCYC`/`RELE`).
+
+## j) Piège : header et `.a` installés depuis des builds différents
+
+En creusant ce que fait réellement `gsKit_init_global()` (b) — la macro qui « preload gsGlobal with all default values » (commentaire Doxygen `gsInit.h:886`) avant que le code applicatif ne réécrive `Mode`/`Width`/`Height`/`PSM`/`PSMZ`/`ZBuffering`/`DoubleBuffering`/`PrimAlphaEnable` (squelette complet, i) — vérification de la fonction sous-jacente, déclarée `gsInit.h:1129` :
+
+```c
+GSGLOBAL *gsKit_init_global_custom(int Os_AllocSize, int Per_AllocSize);
+```
+
+>[!Warning] Un symbole déclaré dans le header peut être absent de la `.a` installée
+>Sur cette installation locale (`/usr/local/ps2dev/gsKit`), `gsKit_init_global_custom` **n'existe dans aucun objet de `libgskit.a`** — alors qu'elle est bel et bien déclarée dans `gsInit.h`.
+>
+>Démarche de vérification : `ar x libgskit.a` extrait 8 fichiers objets (`gsCore.c.obj`, `gsFontM.c.obj`, `gsHires.c.obj`, `gsInit.c.obj`, `gsMisc.c.obj`, `gsPrimitive.c.obj`, `gsTexManager.c.obj`, `gsTexture.c.obj`). `readelf -S` sur chacun ne montre **aucune section `.text`** réelle, seulement des sections `.gnu.lto_*` : ce sont des objets LTO *slim* — du bytecode GIMPLE, pas de code machine tant que le link final n'a pas eu lieu. Un `nm` nu échoue donc :
+>```
+>nm: gsInit.c.obj: plugin needed to handle lto object
+>```
+>Il faut passer par le plugin LTO du toolchain pour lire la vraie table de symboles :
+>```bash
+>mips64r5900el-ps2-elf-nm --plugin=/usr/local/ps2dev/ee/libexec/gcc/mips64r5900el-ps2-elf/15.2.0/liblto_plugin.so fichier.o
+>```
+>Résultat sur les 8 `.o` de l'archive : **8 fonctions `T` (globales définies) au total**, très peu pour une lib de 1,7 Mo — signe déjà, avant même de chercher le symbole précis, que le binaire ne correspond pas au header. `gsKit_init_global_custom` ne figure dans aucune des 8 tables.
+
+Cause : décalage de date entre le header installé et la bibliothèque compilée — `gsInit.h` modifié le 26/08 (03:38), `libgskit.a` compilée le 3/08 (00:35), soit 23 jours d'écart. Les deux ne proviennent donc pas du même build : le header installé est plus récent que la `.a` liée. Un vrai piège de toolchain local, pas une limite d'outillage de lecture (le `--plugin` résout bien la lecture des objets LTO *slim*, cf. note ci-dessous).
+
+Conséquence pratique : ne pas faire confiance aveuglément à la déclaration d'une fonction dans un header ps2dev/gsKit sans vérifier qu'elle a un symbole correspondant dans la `.a` installée (`ar t libfoo.a` puis `nm --plugin=<liblto_plugin.so>` pour une archive compilée en LTO). Si le link échoue avec `undefined reference` sur une fonction pourtant déclarée et documentée, envisager d'abord un décalage header/lib (réinstaller/rebuild gsKit) avant de chercher ailleurs.
+
+>[!Note] À ne pas confondre avec le piège LTO du chapitre 2
+>Le paragraphe « Le plugin LTO masque les erreurs d'ordre » (chapitre 2, section « Ce que le toolchain PS2 ajoute d'office à l'édition de liens ») concerne un problème d'**ordre de link** (bibliothèques avant les objets) que le plugin LTO masque au moment du `gcc`. Ici le problème est différent : ce n'est pas l'ordre qui pose souci mais une **désynchronisation de version** entre le header installé et l'archive statique — le plugin LTO n'intervient que comme outil de *lecture* des `.o` slim pour diagnostiquer, pas comme cause du problème.
+
+## k) `gsKit_mode_switch` : deux files de dessin, pas deux modes de rendu
+
+```c
+/// Set Current Draw Queue (Between GS_ONESHOT and GS_PERSISTENT)
+void gsKit_mode_switch(GSGLOBAL *gsGlobal, u8 mode);
+```
+
+gsKit maintient **deux** files de dessin internes (`gsGlobal->Os_Queue` et `gsGlobal->Per_Queue`, structs `GSQUEUE`, `gsKit/include/gsInit.h:849,930-932` — déjà vues en e) comme `CurQueue`/`Per_Queue`/`Os_Queue`), et les envoie **toutes les deux** au GS à chaque `gsKit_queue_exec()` (`gsKit/include/gsCore.h:247`, commentaire : « Kicks Oneshot and Persistent Queues »). `gsKit_mode_switch(gsGlobal, mode)` ne fait que choisir dans laquelle des deux les prochains `gsKit_prim_*` vont s'ajouter (`gsGlobal->CurQueue`) — ce n'est **pas** un mode de rendu, juste un aiguillage d'écriture.
+
+| Mode | Valeur | Buffering | Comportement |
+|---|---|---|---|
+| `GS_ONESHOT` | `0x01` (`gsInit.h:22`) | double (`gsInit.h:26-27` : « Size of Oneshot drawbuffer (Double Buffered, so it uses this size \* 2) ») | réinitialisée/basculée automatiquement à chaque frame |
+| `GS_PERSISTENT` | `0x00` (`gsInit.h:20`) | simple (`gsInit.h:24-25`) | **pas** réinitialisée automatiquement, conserve son contenu d'une frame à l'autre |
+
+**`GS_ONESHOT`** est le mode par défaut, utilisé par le squelette complet (i) : le triangle est ré-ajouté à la queue à chaque tour de `while(1)`, comme un rendu "immediate mode" classique — la double-bufferisation de la queue elle-même (indépendante du double buffering d'écran vu en c) évite d'écraser un contenu encore en cours d'envoi DMA.
+
+**`GS_PERSISTENT`** ne se vide pas toute seule : `gsKit_queue_reset` (`gsCore.h:243`) est décrite comme « Useful for clearing the Persistent Queue », sous-entendu que sans cet appel explicite elle reste telle quelle. On appelle les `gsKit_prim_*` une seule fois après avoir basculé en `GS_PERSISTENT`, et gsKit renvoie ce même contenu par DMA à chaque `gsKit_queue_exec()` suivant, sans qu'on ait besoin de le redessiner dans la boucle. Utile pour un fond statique, un HUD ou toute géométrie qui ne change pas frame après frame — ça économise le travail CPU de reconstruire le paquet GIF à chaque tour. Pour vider/remplacer son contenu : `gsKit_queue_reset(gsGlobal->Per_Queue)`.
+
+**Lien avec `DrawOrder`** (`gsGlobal->DrawOrder`, `gsInit.h:909`, valeurs `GS_PER_OS`/`GS_OS_PER`, `gsInit.h:30-32`) : décide laquelle des deux files part en premier dans le paquet DMA envoyé au GS à chaque `gsKit_queue_exec()`. Pertinent car le GS n'a pas de vrai tri par profondeur sans Z-buffer actif (peintre à l'ancienne, cf. section 3f) : la file envoyée en dernier s'affiche par-dessus l'autre. `GS_PER_OS` (par défaut, « Draw Persistent objects first, before oneshot objects ») dessine le persistant d'abord (donc en dessous) puis l'oneshot par-dessus — logique pour un fond statique recouvert par des objets dynamiques.
+
+>[!Note]
+>Le squelette complet (i) appelle `gsKit_mode_switch(gsGlobal, GS_ONESHOT)` une seule fois avant la boucle, alors que c'est déjà le mode par défaut à l'initialisation — l'appel n'y est donc pas strictement nécessaire, il rend juste le choix explicite. Un vrai usage de `GS_PERSISTENT` demanderait un second basculement (`gsKit_mode_switch(gsGlobal, GS_PERSISTENT)`, dessiner une fois, puis revenir en `GS_ONESHOT` pour la partie dynamique de la boucle).
+
+
+# 9 - Annotations
+
+Notes complémentaires, détachées du flux principal.
+
+## `_16` vs `_16S` : même profondeur, agencement VRAM différent
+
+*(rattaché à la section 3f — PSM)*
+
+>[!Note] `_16` vs `_16S` : même profondeur, agencement VRAM différent
+>`gsKit/include/gsInit.h:129-136` :
+>```c
+>/// R8 G8 B8 A8 (RGBA32) ZBuffer
+>#define GS_PSMZ_32 0x00
+>/// R8 G8 B8 (RGB24) ZBuffer
+>#define GS_PSMZ_24 0x01
+>/// RGBA16 ZBuffer
+>#define GS_PSMZ_16 0x02
+>/// RGBA16 ZBuffer ?
+>#define GS_PSMZ_16S 0x0A
+>```
+>`GS_PSMZ_16` et `GS_PSMZ_16S` désignent le **même format** de profondeur 16 bits (Z16, pas de composante alpha, juste 16 bits de profondeur par pixel) — seul l'agencement mémoire en VRAM diffère :
+>- `GS_PSMZ_16` (0x02) : organisation "standard" par blocs, pour un rendu progressif classique.
+>- `GS_PSMZ_16S` (0x0A) : variante "S" (*striped*, stockage entrelacé) — les pixels sont rangés différemment dans les pages VRAM, pensée pour un affichage entrelacé (`vmode` interlace, champs pair/impair) ou certains schémas de double-buffering où le circuit de lecture du GS attend cet agencement alterné.
+>
+>En pratique : `GS_PSMZ_16` pour un rendu progressif standard ; `GS_PSMZ_16S` seulement si le `vmode` visé est entrelacé.
+>
+>Pourquoi `0x02`/`0x0A` et pas `0x32`/`0x3A` comme dans la table `gs_psm.h` ci-dessus : le champ `PSM` du registre **ZBUF** (`GS_REG_ZBUF_1`/`_2`, section 3c) réutilise le même encodage réduit que les formats couleur, parce que ce registre n'a pas besoin d'exprimer les formats indexés (`T8`/`T4`) — d'où le rappel déjà fait plus haut (« reprend les mêmes valeurs numériques que la couleur »). `0x32`/`0x3A` (colonne `gs_psm.h`) sont les valeurs "pleine échelle" telles que documentées dans le GS User's Manual (`PSMZ16`/`PSMZ16S`), pas des erreurs de duplication entre les deux headers.
