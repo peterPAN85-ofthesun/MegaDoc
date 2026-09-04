@@ -8,7 +8,9 @@ https://www.psdevwiki.com/ps2/Main_Page
 Vidéo présentations : https://www.youtube.com/watch?v=kX_JpzxR2Qg&list=PLFZsvEE0TWOsFhZr-9KwLED3Rzlwra_Rm
 
 
-# 1 - Hardware infrastructure
+# Part1
+
+## 1 - Hardware infrastructure
 
 La PS2 n'a pas un seul CPU mais plusieurs processeurs spécialisés qui communiquent entre eux. L'arborescence du SDK reflète cette architecture (`ee/`, `iop/`, `dvp/`, `gsKit/`).
 
@@ -97,10 +99,10 @@ Ce diagramme consolide tout ce qui est détaillé plus loin dans la note : les 1
 - Le GS n'est pas programmable comme un GPU moderne : pas de shaders, on lui envoie des paquets GIF (registres/textures/primitives) — `gsKit` évite d'avoir à les construire à la main.
 
 
-# 2 - Sdk
+## 2 - Sdk
 
 
-## Makefile
+### Makefile
 
 *Exemple Makefile:*
 ```Makefile
@@ -207,7 +209,7 @@ CompileFlags:
 >```
 >C'est exactement ce que `bear -- make` résout tout seul en capturant les vraies lignes de compilation dans `compile_commands.json` : quand il est présent et à jour, clangd s'en sert et le `.clangd` devient un simple filet de sécurité.
 
-## Les variables des Makefile du SDK
+### Les variables des Makefile du SDK
 
 Quatre fichiers interviennent dans un build EE. Savoir lequel définit quoi évite de chercher `EE_CC` au mauvais endroit.
 
@@ -226,7 +228,7 @@ Quatre fichiers interviennent dans un build EE. Savoir lequel définit quoi évi
 
 Tout le reste a une valeur par défaut ; ces trois-là sont à nous.
 
-### 1. Ce que le projet définit
+#### 1. Ce que le projet définit
 
 | Variable | Opérateur | Rôle |
 |---|---|---|
@@ -240,7 +242,7 @@ Tout le reste a une valeur par défaut ; ces trois-là sont à nous.
 
 `EE_LIB` (au singulier, sans `S`) est une **autre** variable : elle sert à produire une bibliothèque `.a` au lieu d'un exécutable. À ne pas confondre avec `EE_LIBS`.
 
-### 2. `Makefile.pref` — les noms des outils
+#### 2. `Makefile.pref` — les noms des outils
 
 28 variables, **toutes déclarées en `?=`**, donc toutes surchargeables depuis l'environnement ou la ligne de commande (`make EE_CC=ma-version-de-gcc`).
 
@@ -256,7 +258,7 @@ Tous les outils sont dérivés du préfixe : `EE_CC ?= $(EE_TOOL_PREFIX)gcc`.
 >[!Note] Deux préfixes différents, deux architectures
 >`mips64r5900el-ps2-elf-` pour l'EE (MIPS III, cœur r5900, 64 bits) et `mipsel-none-elf-` pour l'IOP (MIPS I, hérité de la PS1 — cf. chapitre 1). Ce ne sont pas deux configurations du même compilateur mais **deux toolchains complets et distincts**. Le troisième groupe (`CC ?= cc`) désigne le compilateur **du PC**, pour les outils qui tournent côté hôte au moment du build (`bin2c` par exemple).
 
-### 3. `Makefile.eeglobal` — les flags, et le motif qui les compose
+#### 3. `Makefile.eeglobal` — les flags, et le motif qui les compose
 
 | Variable | Valeur |
 |---|---|
@@ -282,7 +284,7 @@ C'est la ligne `EE_INCS` qui rend `#include <draw.h>` possible **sans rien décl
 >
 >Le `?=` de `Makefile.pref` obéit à une autre règle : il n'affecte que si la variable est **vide et non héritée de l'environnement**. C'est pourquoi un `PS2SDK` exporté dans le shell suffit (vérifié avec `env -u PS2SDK make`, cf. la note sur `=` / `:=` plus haut).
 
-### `NEWLIB_NANO` : la variante réduite de la libc
+#### `NEWLIB_NANO` : la variante réduite de la libc
 
 Non définie par défaut. Si on la met à `1`, `Makefile.eeglobal` bascule sur `-lc_nano` / `-lm_nano` et remplit `EXTRA_LDFLAGS` avec une liste explicite :
 
@@ -293,7 +295,7 @@ EXTRA_LDFLAGS = -nodefaultlibs $(LIBM) -lgcc -Wl,--start-group $(LIBC) \
 
 On retrouve ici, écrit à la main, le `--start-group` que les specs GCC injectent d'office dans le cas normal (section suivante) : `-nodefaultlibs` ayant désactivé l'injection automatique, il faut reconstruire le groupe soi-même. Utile pour réduire la taille de l'ELF sur un projet qui n'utilise pas toute la newlib.
 
-### Les deux seules macros qui atteignent le code C
+#### Les deux seules macros qui atteignent le code C
 
 À distinguer des variables Make, qui ne franchissent jamais la frontière du préprocesseur :
 
@@ -302,14 +304,14 @@ On retrouve ici, écrit à la main, le `--start-group` que les specs GCC injecte
 | `-D_EE` | vraie macro préprocesseur | identifie la cible Emotion Engine, testable par `#ifdef _EE`. C'est ainsi que les en-têtes partagés `common/include/` se compilent différemment côté EE et côté IOP |
 | `-G0` | flag MIPS, **pas un define** | seuil de placement en *small data section* mis à 0, ce qui désactive complètement le mécanisme |
 
-### 4. `Defs.make` : le piège de la recherche
+#### 4. `Defs.make` : le piège de la recherche
 
 `$PS2SDK/Defs.make` reprend **à l'identique** les 28 variables de `samples/Makefile.pref`, plus une : `EE_PKG_CONFIG ?= $(EE_TOOL_PREFIX)pkg-config`. C'est la copie utilisée pour compiler le SDK lui-même ; `samples/Makefile.pref` est celle destinée aux projets.
 
 >[!Warning]
 >Un `grep -r 'EE_CC' $PS2SDK` remonte donc **deux définitions** de chaque variable de toolchain. Celle qui s'applique à un projet est celle de `samples/Makefile.pref` — c'est elle que le `Makefile` inclut. `Defs.make` n'est jamais lu par un projet utilisateur.
 
-## Où vivent les en-têtes et les bibliothèques
+### Où vivent les en-têtes et les bibliothèques
 
 >[!Note] Variables d'environnement posées par l'installation
 >`PS2DEV=/usr/local/ps2dev` et `PS2SDK=/usr/local/ps2dev/ps2sdk`, avec `$PS2DEV/{bin,ee/bin,iop/bin,dvp/bin,ps2sdk/bin}` déjà dans le `PATH`. Les outils s'appellent donc directement, sans chemin absolu — mais **sous leur nom complet** : le compilateur EE est `mips64r5900el-ps2-elf-gcc`, il n'existe **aucun alias `ee-gcc`** (contrairement à ce qu'on lit dans de vieux tutos ps2dev). Même logique pour `-ld`, `-as`, `-objdump`, `-nm`, `-gdb`.
@@ -330,7 +332,7 @@ libpacket.a   23 Ko      libgraph.a   111 Ko
 libdraw.a    172 Ko      libkernel.a  1,3 Mo
 ```
 
-### Le piège : tout en-tête n'a pas sa bibliothèque
+#### Le piège : tout en-tête n'a pas sa bibliothèque
 
 Application directe du principe en-tête ≠ archive (**7c**) : une partie du SDK est *header-only*. Ces fichiers ne contiennent que des `#define` et des `typedef`, entièrement résolus à la compilation — il n'existe donc **aucune archive à lier**, et le réflexe « un `#include` → un `-l` » produit une erreur. L'inventaire complet est en fin de section suivante, « Les en-têtes sans archive ».
 
@@ -350,7 +352,7 @@ ls $PS2SDK/ee/lib/lib*.a
 >[!Note]
 >Attention aux noms : l'en-tête s'appelle `dma_tags.h` (avec underscore) mais aucune archive `libdma_tags.a` ni `libdmatags.a` n'existe. `GIF_SET_TAG`, `GIF_SET_PRIM`, `PACK_GIFTAG`, `GS_PSM_32` sont tous des macros — voir 3c et 3f.
 
-## Que contient chaque bibliothèque
+### Que contient chaque bibliothèque
 
 Relevé fait sur l'installation locale en croisant `nm -g --defined-only` sur chaque archive avec les identifiants déclarés dans `ee/include/*.h` et `common/include/*.h`. **491 fonctions publiques** au total sur les six archives du projet.
 
@@ -366,7 +368,7 @@ Relevé fait sur l'installation locale en croisant `nm -g --defined-only` sur ch
 >[!Note]
 >Un symbole déclaré dans plusieurs en-têtes est rattaché ici à un seul. Les comptes donnent l'ordre de grandeur et la répartition, pas un inventaire exact au symbole près.
 
-### libpacket (3) et libdma (13) — les plus simples
+#### libpacket (3) et libdma (13) — les plus simples
 
 ```
 packet.h   packet_init  packet_reset  packet_free
@@ -383,7 +385,7 @@ dma.h      dma_channel_initialize  dma_channel_shutdown  dma_reset
 
 Toute l'API DMA tient en 13 fonctions, organisées en trois axes : sens (`send` / `receive`), mode (`normal` / `chain`, cf. 3e) et attente (`wait` / `fast_waits`, cf. 3m). Le suffixe `_ucab` désigne les variantes *UnCached Accelerated*, qui contournent le cache pour écrire directement en mémoire.
 
-### libgraph (29) — trois en-têtes
+#### libgraph (29) — trois en-têtes
 
 | En-tête | Nb | Domaine |
 |---|---|---|
@@ -396,7 +398,7 @@ Toute l'API DMA tient en 13 fonctions, organisées en trois axes : sens (`send` 
 >[!Note]
 >`graph_get_field` est exporté par l'archive mais **déclaré dans aucun en-tête** : utilisable seulement en le déclarant soi-même, donc à considérer comme non public.
 
-### libdraw (53) — `draw.h` est un chapeau
+#### libdraw (53) — `draw.h` est un chapeau
 
 Un seul `#include <draw.h>` suffit parce que ce fichier n'est presque qu'une liste d'inclusions :
 
@@ -426,7 +428,7 @@ Un seul `#include <draw.h>` suffit parce que ce fichier n'est presque qu'une lis
 
 Les six fonctions de `draw.h` en propre sont exactement celles utilisées dans le squelette de rendu (3b). Le reste est du confort : `draw2d.h` évite d'écrire les GIFtags à la main pour les formes courantes.
 
-### libdebug (41) — trois en-têtes, dont un inattendu
+#### libdebug (41) — trois en-têtes, dont un inattendu
 
 | En-tête | Nb | Domaine |
 |---|---|---|
@@ -439,7 +441,7 @@ Les six fonctions de `draw.h` en propre sont exactement celles utilisées dans l
 >[!Note]
 >Cinq fonctions sont exportées sans être déclarées dans un en-tête : `ps2GetReturnAddress` `ps2GetStackPointer` `ps2_screenshot_16to32_buffer` `ps2_screenshot_16to32_line` `scr_setfontcolorescape`. Utilisables, mais hors contrat.
 
-### libkernel (352) — 21 en-têtes
+#### libkernel (352) — 21 en-têtes
 
 De loin la plus grosse. `kernel.h` en concentre la moitié :
 
@@ -475,7 +477,7 @@ Les familles de `kernel.h` :
 
 `SleepThread`, utilisé en fin de `main()` (voir « Architecture de base d'un programme »), vient de cette première famille. `DelayThread` en revanche est dans `delaythread.h`, pas dans `kernel.h` — c'est une cause classique de `implicit declaration`.
 
-### La convention de préfixe `i` et `_`
+#### La convention de préfixe `i` et `_`
 
 C'est le point le plus utile à retenir de `libkernel` : **43 fonctions existent en doublon préfixé `i`**, dont 42 ont leur jumelle sans préfixe.
 
@@ -493,7 +495,7 @@ Le préfixe `_` (37 fonctions : `_EnableDmac` `_DisableIntc` `_ExecPS2` `_InitSy
 >[!Note]
 >29 symboles de `libkernel` ne sont déclarés nulle part, dont cinq nommés `RFU009` `RFU059` `RFU060` `RFU061` `RFU105` — *Reserved for Future Use*, des emplacements de syscalls que Sony n'a jamais attribués.
 
-### Les en-têtes sans archive
+#### Les en-têtes sans archive
 
 Instanciation PS2 du principe en-tête ≠ archive (**7c**) : ces fichiers ne contiennent que des `#define` et des `typedef`, donc **aucun `-l` ne leur correspond**.
 
@@ -508,7 +510,7 @@ Instanciation PS2 du principe en-tête ≠ archive (**7c**) : ces fichiers ne co
 
 `draw_types.h` est le cas mixte : il ne définit que des types, mais ces types sont consommés par des fonctions de `libdraw`. C'est le `#include <draw.h>` qui l'amène, et `-ldraw` qui fournit le code.
 
-### Aucune variable globale dans l'API
+#### Aucune variable globale dans l'API
 
 Résultat notable du relevé : **l'API publique du PS2SDK côté EE n'exporte pratiquement aucune variable globale**. Tout passe par des fonctions et des structures transmises par pointeur (`framebuffer_t *`, `zbuffer_t *`, `packet_t *`) — ce qui explique la forme de tous les exemples du SDK.
 
@@ -518,12 +520,12 @@ Les seuls symboles de données publics sont :
 - `msx` dans `libdebug` (en `R`, lecture seule) : la fonte bitmap de la console texte ;
 - dans `libkernel` uniquement, de l'état interne non documenté — `_fio_cd` `_fio_io_sema` `_fio_block_mode` `_sif_cmd_data` `_sif_rpc_data` `g_Timer` `g_AlarmBuf` `g_CounterBuf` `g_rom0_info_data` `_iop_reboot_count` `stack` `tinfo`… **à ne jamais toucher directement**.
 
-## Ce que le toolchain PS2 ajoute d'office à l'édition de liens
+### Ce que le toolchain PS2 ajoute d'office à l'édition de liens
 
 >[!Info] Prérequis générique
 >Les mécanismes sous-jacents — `gcc` comme *driver*, la convention `-lfoo` → `libfoo.a`, la résolution des archives de gauche à droite — n'ont rien de spécifique à la PS2 et sont traités au chapitre **7 - La chaîne de compilation C**. Cette section ne couvre que ce que la chaîne ps2dev fait *en plus*.
 
-### Les specs GCC injectent déjà une liste de bibliothèques
+#### Les specs GCC injectent déjà une liste de bibliothèques
 
 `EE_LIBS` n'est pas la liste complète des bibliothèques liées. Les *specs* de ce toolchain en ajoutent d'autres après les nôtres, visible avec `-###` (cf. 7b) :
 
@@ -539,7 +541,7 @@ Deux conséquences :
 
 C'est aussi ce qui explique que `newlib` soit disponible sans effort : `printf`, `malloc`, `cosf` viennent de `-lc` / `-lm` injectées, jamais déclarées dans le `Makefile`.
 
-### Le lien est intégralement statique
+#### Le lien est intégralement statique
 
 La PS2 n'a ni chargeur dynamique ni bibliothèques partagées. `ld` ne tente donc **jamais** d'ouvrir un `.so` (contrairement au cas hébergé décrit en 7d) — la trace `-Wl,--verbose` ne montre que des `.a` :
 
@@ -553,7 +555,7 @@ Tout le code utilisé est recopié dans l'ELF, d'où un `test.elf` d'environ **1
 >[!Note]
 >Les `SEARCH_DIR` internes de ce `ld` pointent vers les chemins de la machine de CI qui a construit le toolchain (`/__w/ps2dev/…`) et sont préfixés `=`, donc relatifs au sysroot. Ils ne résolvent rien d'utile ici : **tout vient des `-L`** posés par `EE_LDFLAGS` et `Makefile.eeglobal`.
 
-### Le plugin LTO masque les erreurs d'ordre
+#### Le plugin LTO masque les erreurs d'ordre
 
 Sur cette chaîne, mettre les bibliothèques *avant* les objets — l'erreur classique décrite en 7f — **passe quand même** quand on invoque `gcc`. Le plugin d'édition de liens (`liblto_plugin.so`, actif par défaut) réexamine les archives et rattrape l'ordre. L'échec ne réapparaît qu'en le désactivant :
 
@@ -568,7 +570,7 @@ mips64r5900el-ps2-elf-ld ...                        -ldma -lgraph -ldraw -lpacke
 
 Conclusion pratique : respecter l'ordre malgré tout. Le jour où on appelle `ld` à la main, où on désactive LTO, ou sur une autre chaîne d'outils, l'erreur ressort.
 
-### Symptômes rencontrés sur ce projet
+#### Symptômes rencontrés sur ce projet
 
 | Message de `ld` | Cause | Correction |
 |---|---|---|
@@ -576,7 +578,7 @@ Conclusion pratique : respecter l'ordre malgré tout. Le jour où on appelle `ld
 | `cannot find -lgif_tags` (et `-lgs_gp`, `-lgs_psm`, `-ltamtypes`, `-ldmatags`) | un `-l` a été ajouté pour un en-tête *header-only* | retirer le `-l`, garder le `#include` |
 | `cannot find -l…` alors que l'archive existe | `-L` pointant vers un répertoire inexistant (`ee/common/lib`) | corriger le `-L` |
 
-## Architecture de base d'un programme
+### Architecture de base d'un programme
 
 Pas d'OS derrière l'ELF : le programme tourne "bare metal" sur l'EE. Le squelette qui revient dans presque tous les samples (`graph.c`, `pad.c`, `mc_example.c`, `filexio/main.c`) :
 
@@ -593,11 +595,11 @@ Pas d'OS derrière l'ELF : le programme tourne "bare metal" sur l'EE. Le squelet
 > Il existe une variante "module relocatable" (`.erl`, voir `samples/hello`) chargée dynamiquement par un `erl-loader.elf`, mais c'est un cas plus avancé (chargement dynamique de code) — le cas standard reste l'ELF autonome + `SYSTEM.CNF` déjà documenté plus haut.
 
 
-# 3 - Afficher quelque chose à l'écran
+## 3 - Afficher quelque chose à l'écran
 
 Deux niveaux, du plus simple au plus "réel" :
 
-## a) Texte de debug rapide (`libdebug`)
+### a) Texte de debug rapide (`libdebug`)
 
 Pratique pour débugger sans passer par le pipeline graphique complet (`samples/debug/helloworld`) :
 
@@ -642,7 +644,7 @@ include $(PS2SDK)/samples/Makefile.eeglobal
 
 `scr_printf` dessine du texte directement via le GS, un peu comme une console — pas besoin de gérer framebuffer/DMA/GIF soi-même.
 
-## b) Vrai rendu graphique (`libgraph` + `libdraw`, bas niveau)
+### b) Vrai rendu graphique (`libgraph` + `libdraw`, bas niveau)
 
 Le principe, en résumé, avant le code :
 
@@ -806,7 +808,7 @@ include $(PS2SDK)/samples/Makefile.pref
 include $(PS2SDK)/samples/Makefile.eeglobal
 ```
 
-## c) Paquets GIF : `PACK_GIFTAG` et les registres `GIF_REG_*`
+### c) Paquets GIF : `PACK_GIFTAG` et les registres `GIF_REG_*`
 
 `PACK_GIFTAG` est la macro la plus bas niveau du dessin en libdraw/libgraph : elle écrit un quadword (128 bits) brut dans le paquet, en assemblant deux valeurs 64 bits (`common/include/gif_tags.h:76-78`) :
 
@@ -882,7 +884,7 @@ Registres GS ciblables via A+D, `common/include/gif_tags.h` (liste non exhaustiv
 >[!Note]
 >Un GIFtag peut fonctionner selon 3 modes (`flg` dans `GIF_SET_TAG`, constantes `GIF_FLG_PACKED`/`GIF_FLG_REGLIST`/`GIF_FLG_IMAGE`) : **PACKED** (le plus courant, données sur 128 bits alignées, dont A+D est un cas particulier), **REGLIST** (données compactées sur 64 bits, sans padding), **IMAGE** (transfert brut vers la VRAM, ex: upload de texture). `graph.c` (section 3b) utilise PACKED + A+D car c'est le plus simple à écrire à la main ; **gsKit** fait exactement ce travail de construction de GIFtag/registres à la place du développeur.
 
-### GIF_REG_AD (0x0E) : deux tables de "registres" à ne pas confondre
+#### GIF_REG_AD (0x0E) : deux tables de "registres" à ne pas confondre
 
 >[!Note]
 >- Le champ `NREG`/la liste de descripteurs 4 bits de la GIFtag (mode PACKED, table `GIF_REG_*` ci-dessus, `common/include/gif_tags.h`) décrit le **format** du contenu de chaque qword de données (« ce qword, c'est un PRIM », « celui d'après, un RGBAQ »...) — le registre GS destinataire est alors **implicite**, déduit de la position du descripteur dans `NREG`.
@@ -949,7 +951,7 @@ Chaque macro `GIF_SET_*` (ou `DMATAG`, section 3e) est un encodeur d'instruction
 4. OR de tous les champs → mot 64 bits final.
 5. Pour un GIFtag en mode PACKED, le second qword (`D1` dans `PACK_GIFTAG`) contient la liste des registres (4 bits chacun, jusqu'à `NREG` entrées) qui dit dans quel ordre interpréter les qwords de données suivants — sauf en mode A+D (`GIF_REG_AD`) où chaque qword de donnée porte lui-même son adresse de registre (voir ci-dessus).
 
-## d) Les 10 canaux DMA de l'EE
+### d) Les 10 canaux DMA de l'EE
 
 Le tableau matériel (section 1) mentionne le contrôleur DMA "10 canaux" — détail des canaux, `ee/include/dma.h:22-31` :
 
@@ -972,7 +974,7 @@ Points à retenir :
 - `fromSPR`/`toSPR` servent à décharger du travail vers la scratchpad RAM (16 Ko) de l'EE, sans passer par le bus principal.
 - `fromIPU`/`toIPU` ne sont utiles que pour du décodage MPEG/vidéo côté EE (`samples/mpeg`).
 
-## e) Le DMAtag — chaînage côté DMA, et sa relation avec le GIFtag
+### e) Le DMAtag — chaînage côté DMA, et sa relation avec le GIFtag
 
 Il y a deux langages de tags séparés, à deux étages différents du pipeline. Le GIFtag (section 3c) et le DMAtag ne sont pas la même chose et ne sont pas lus par le même matériel :
 
@@ -1023,7 +1025,7 @@ Opcodes (`ID`), `dma_tags.h:28-44` :
 
 `PACK_DMATAG(Q, D0, W2, W3)` (`dma_tags.h:51-54`) fait comme `PACK_GIFTAG` : pose la valeur brute `D0` (le tag) dans `Q->dw[0]`, et deux mots 32 bits optionnels (`W2`/`W3`, souvent STADR pour le mode `CNTS`) dans les positions hautes du qword.
 
-## f) PSM — format de stockage des pixels
+### f) PSM — format de stockage des pixels
 
 **PSM** = *Pixel Storage Method* (aussi vu "Pixel Storage Mode/Matrix" selon les docs). C'est le format d'encodage des pixels utilisé par le GS pour un framebuffer, une texture ou un Z-buffer en VRAM (profondeur de couleur, présence d'alpha, indexé ou non). C'est le champ `frame->psm`/`z->zsm` vu dans `init_gs()` ci-dessus (`GS_PSM_32`, section 3b), et `gsGlobal->PSM`/`PSMZ` côté gsKit.
 
@@ -1043,7 +1045,7 @@ Formats couleur/texture, `common/include/gs_psm.h:9-29` (ps2sdk) et `gsKit/inclu
 | 0x13 | `GS_PSM_8` | `GS_PSM_T8` | Indexé 8 bits (palette/CLUT) |
 | 0x14 | `GS_PSM_4` | `GS_PSM_T4` | Indexé 4 bits (palette/CLUT) |
 
-### Framebuffer vs Z-buffer
+#### Framebuffer vs Z-buffer
 
 Deux buffers VRAM distincts, chacun avec son propre PSM, décrits par des structs séparées `ee/include/draw_buffers.h:40-54` :
 
@@ -1084,7 +1086,7 @@ Formats Z-buffer, `common/include/gs_psm.h:30-37` (ps2sdk) vs `gsKit/include/gsI
 
 Le choix du PSM a un impact direct sur la consommation de VRAM (le GS n'en a que 4 Mo) et la qualité de couleur/alpha disponible : `CT24` économise de la VRAM mais perd l'alpha, `CT16`/`CT16S` divisent par deux la taille mais réduisent la précision couleur (5 bits/canal, 1 bit d'alpha), `T8`/`T4` sont réservés aux textures indexées (avec CLUT via `gsKit_texture_send`/`GS_SET_TEXA` côté texturing, non détaillé ici).
 
-### Allocation VRAM (`graph_vram_allocate`) vs XYOFFSET : deux mécanismes à ne pas confondre
+#### Allocation VRAM (`graph_vram_allocate`) vs XYOFFSET : deux mécanismes à ne pas confondre
 
 `graph_vram_allocate(width, height, psm, alignment)` (`ee/include/graph_vram.h:23`) répond à une question différente de celle du registre **XYOFFSET** (section 3g) : **où le buffer est physiquement placé en VRAM**, pas comment les coordonnées des sommets sont interprétées une fois qu'on dessine dedans.
 
@@ -1102,7 +1104,7 @@ Ce paramètre ne fait qu'allouer un emplacement en VRAM et retourner une adresse
 >[!Note]
 >Les deux mécanismes sont complémentaires, pas substituables : l'allocation VRAM (avec son alignement page/bloc) doit exister *avant* même de pouvoir poser XYOFFSET, puisque XYOFFSET ne fait que positionner le rendu par rapport à un framebuffer déjà alloué et relié via `graph_initialize`. Changer `GRAPH_ALIGN_PAGE` en `GRAPH_ALIGN_BLOCK` ne changerait rien à l'endroit où atterrit un pixel dessiné en `(0,0)` ; changer XYOFFSET ne déplace pas le framebuffer en VRAM.
 
-## g) Fixed-point 12.4 des coordonnées XYZ, et le registre XYOFFSET
+### g) Fixed-point 12.4 des coordonnées XYZ, et le registre XYOFFSET
 
 Dans les paquets GIF vus en 3b/3c, les positions de sommets ne sont **pas des entiers pixel simples** : le GS attend un format **fixed-point 12.4** (12 bits partie entière + 4 bits partie fractionnaire) pour les champs X/Y de `XYZ2`/`XYZ3`. C'est ce qui explique le `<< 4` dans `graph.c`/`main.c` (section 3b) :
 
@@ -1129,7 +1131,7 @@ Sur les 16 bits de X/Y, seuls 12 bits servent de partie entière (0-4095) et 4 b
 >[!Note]
 >Le champ Z de `XYZ2`, lui, reste un entier simple (32 bits, pas de fraction) — c'est uniquement X/Y qui portent ce format fixed-point.
 
-### XYOFFSET : recentrer l'origine dans l'espace de coordonnées du GS
+#### XYOFFSET : recentrer l'origine dans l'espace de coordonnées du GS
 
 L'espace de coordonnées interne du GS est **non signé** (12 bits entiers → 0-4095, avant le décalage fixed-point). Il n'y a pas de coordonnées négatives possibles au niveau du rasterizer. Le registre privilégié **XYOFFSET** (`GS_REG_XYOFFSET_1`/`_2` = 0x18/0x19, un par contexte de dessin — voir 3c) sert à décaler toutes les coordonnées X/Y des sommets *avant* rasterization, ce qui permet de définir une origine logique "au milieu" de cet espace et donc de simuler des positions positives/négatives autour de ce centre.
 
@@ -1172,7 +1174,7 @@ q = draw_primitive_xyoffset(q, 0, (2048 - 320), (2048 - 256)); // recentre pour 
 >[!Note]
 >Voir 3i pour le détail des contextes de dessin (`_1`/`_2`) et du bit `CTXT`.
 
-## h) - Schéma : référentiel de coordonnées posé par draw_setup_environment
+### h) - Schéma : référentiel de coordonnées posé par draw_setup_environment
 
 <svg viewBox="0 0 640 380" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;font-family:sans-serif;">
   <defs>
@@ -1210,7 +1212,7 @@ q = draw_primitive_xyoffset(q, 0, (2048 - 320), (2048 - 256)); // recentre pour 
 
 Légende : le grand carré est l'espace de coordonnées du GS (12 bits non signés, 0..4095), posé implicitement par `draw_setup_environment()`. Le point/carré en pointillé est `XYOFFSET_1`, par défaut `(2048,2048)` — exactement le centre de cet espace. Le petit carré bleu est le framebuffer 512×512 du projet, dont le coin `(0,0)` logique coïncide avec cet offset.
 
-## i) - Les contextes de dessin (`_1` / `_2`)
+### i) - Les contextes de dessin (`_1` / `_2`)
 
 Le GS duplique en **deux exemplaires indépendants** tous les registres qui définissent *où* et *comment* une primitive est rasterisée. Chaque exemplaire est un **contexte de dessin** (contexte 1 ou 2), `common/include/gs_gp.h` :
 
@@ -1229,7 +1231,7 @@ Intérêt pratique : dessiner alternativement vers deux zones VRAM différentes 
 >[!Note]
 >Dans ce projet (`main.c`), un seul contexte est utilisé : le `0` passé en premier argument de `draw_setup_environment(q, 0, frame, z)` (cf. section 3h). La bascule de contexte ne joue donc aucun rôle actuellement dans ce code.
 
-## j) - GIF_SET_PRIM : le registre PRIM
+### j) - GIF_SET_PRIM : le registre PRIM
 
 `GIF_SET_PRIM` (définie dans `/usr/local/ps2dev/ps2sdk/common/include/gif_tags.h:85-90`) construit la valeur 64 bits à envoyer dans le registre GS `PRIM` (`GIF_REG_PRIM = 0x00`, `gif_tags.h:42`), qui décrit quel type de primitive dessiner et comment la rasteriser :
 
@@ -1263,7 +1265,7 @@ PACK_GIFTAG(q, GIF_SET_PRIM(6, 0, 0, 0, 0, 0, 0, 0, 0), GIF_REG_PRIM);
 >[!Note]
 >Sources consultées : `gif_tags.h:85-90` et `gif_tags.h:42` (macro et registre), `gs_gp.h:151-163` (constantes `GS_PRIM_*`), sample officiel `/usr/local/ps2dev/ps2sdk/samples/graph/graph.c:121` qui utilise le même pattern (`GIF_SET_PRIM(6, 0, 0, 0, 0, 0, 0, 0, 0)` pour dessiner des carrés en `GS_PRIM_SPRITE`).
 
-## k) - `packet_t` : le buffer DMA (`packet.h`)
+### k) - `packet_t` : le buffer DMA (`packet.h`)
 
 `packet_t` (`ee/include/packet.h:23-28`) encapsule un buffer mémoire aligné 64 octets, prêt pour DMA, dans lequel on construit une chaîne de qwords (GIFtags + données de primitives, sections 3c/3e) avant envoi au GIF. C'est le type de `packet` utilisé dans `init_drawing_environment`/`render` (section 3b, `graph.c`/`main.c`).
 
@@ -1296,7 +1298,7 @@ Dans `main.c`/`graph.c` : `packet_init(50, PACKET_NORMAL)` alloue 50 qwords — 
 >[!Note]
 >Sous-dimensionner le buffer entraîne une écriture hors bornes silencieuse — la PS2 n'a pas de protection mémoire stricte côté EE, donc pas de crash immédiat garanti, juste de la corruption mémoire potentielle. Sur-dimensionner ne coûte que quelques centaines d'octets négligeables : en pratique, mieux vaut prévoir large.
 
-## l) - GIF_SET_RGBAQ : le registre RGBAQ (64 bits)
+### l) - GIF_SET_RGBAQ : le registre RGBAQ (64 bits)
 
 `GIF_SET_RGBAQ` (`common/include/gif_tags.h:92-95`) construit la valeur 64 bits à envoyer dans le registre GS `RGBAQ` (`GIF_REG_RGBAQ = 0x01`, section 3c) — la couleur/alpha courants appliqués au(x) prochain(s) sommet(s) :
 
@@ -1326,7 +1328,7 @@ R et B varient avec la boucle (dégradé rouge↔bleu), `G=0`, `A=0x80` (128, se
 >[!Note]
 >Le champ `Q` n'a **pas** de macro de conversion float→u32 : `GIF_SET_RGBAQ` traite son 5ᵉ argument comme un entier 32 bits brut (`(Q)&0xFFFFFFFF`), qu'on le pose en hexadécimal (`0x3F800000`) ou via un cast de type (`*(u32*)&(float){1.0f}`). Écrire `GIF_SET_RGBAQ(r, g, b, a, 1)` serait un bug silencieux : ça pose `Q` à l'entier `1` réinterprété comme float, soit une valeur dénormalisée proche de zéro — pas `1.0f`.
 
-#### Aparté : IEEE-754 simple précision (32 bits), pourquoi `0x3F800000` = `1.0f`
+##### Aparté : IEEE-754 simple précision (32 bits), pourquoi `0x3F800000` = `1.0f`
 
 Le GS n'a aucune notion de type — comme le DMA/GIF en général (section 3c/3e), il ne fait que déplacer et écrire des patterns binaires bruts dans des registres. Un `float` C, une fois casté en `u32` pour être empaqueté dans un tag, doit donc déjà être sous la forme binaire que l'IEEE-754 impose — il n'y a pas de conversion implicite entier→flottant faite par le matériel au moment de l'écriture du registre.
 
@@ -1352,7 +1354,7 @@ Décodage de `0x3F800000` :
 >[!Note]
 >Point clé à retenir pour tout champ flottant packé à la main dans un tag GIF/DMA (`Q` ici, mais le principe est général) : le GS/GIF attend le pattern binaire IEEE-754 brut en mémoire, jamais une conversion automatique. On écrit donc soit l'hex du bit pattern directement (`0x3F800000`), soit on caste explicitement l'adresse d'un `float` en `u32*` en C — jamais un `(u32)1.0f`, qui tronquerait `1.0f` en l'entier `1` au lieu de réinterpréter ses bits.
 
-## m) - Synchronisation CPU/DMA : `dma_channel_fast_waits` / `dma_wait_fast`
+### m) - Synchronisation CPU/DMA : `dma_channel_fast_waits` / `dma_wait_fast`
 
 Le DMA (section 3d) transfère les données (ex: un paquet GIF) de la RAM EE vers le GS (ou un autre périphérique) **de façon asynchrone** : `dma_channel_send_normal` rend la main immédiatement, le transfert continue en tâche de fond pendant que l'EE exécute la suite (voir schéma section 3b). Conséquence directe : l'EE **ne doit pas réécrire un buffer** (le `packet_t`, section 3k) tant que le DMA n'a pas fini de le lire — sinon la GS reçoit un mélange de l'ancienne et de la nouvelle frame (corruption visuelle, race condition classique producteur/consommateur).
 
@@ -1387,11 +1389,11 @@ Ce pattern garantit que le GS a fini de lire le buffer précédent avant que l'E
 >[!Note]
 >`dma_wait_fast()` est complémentaire de `draw_wait_finish()` (section 3b), pas redondant : `dma_wait_fast()` attend que le **DMA** ait fini de transférer les octets vers le GIF (couche transport), `draw_wait_finish()` attend que la **GS** ait fini de traiter la primitive **FINISH** en fin de paquet (couche rendu). Dans `graph.c`/`main.c`, les deux sont utilisés à des endroits différents du cycle : `dma_wait_fast()` avant de reconstruire un nouveau paquet, `draw_wait_finish()` juste après l'avoir envoyé.
 
-## n) Outils de debug du PS2SDK
+### n) Outils de debug du PS2SDK
 
 Trois outils indépendants, à des niveaux différents. La section 3a montre déjà l'usage basique de `scr_printf` — ici, le panorama complet des fonctions disponibles, plus deux libs non couvertes ailleurs dans la note.
 
-### `libdebug` / `debug.h` (`-ldebug`) — console texte overlay, déjà liée dans ce projet
+#### `libdebug` / `debug.h` (`-ldebug`) — console texte overlay, déjà liée dans ce projet
 
 Dessine du texte directement par-dessus le framebuffer via le GS, sans dépendre d'un pipeline de rendu fonctionnel — l'outil le plus utilisé en pratique pour du debug rapide (`ee/include/debug.h`).
 
@@ -1419,7 +1421,7 @@ Dessine du texte directement par-dessus le framebuffer via le GS, sans dépendre
 >```
 >Pratique pour visualiser où le code plante/boucle infiniment sans même passer par `scr_printf` : il suffit de changer la couleur d'écran à différents points du code (ex: `DEBUG_BGCOLOR(0xff0000ffUL)` avant une section suspecte) pour voir jusqu'où l'exécution est allée, y compris dans un contexte où le pipeline de rendu normal ne tourne pas encore.
 
-### `libeedebug` / `ee_debug.h` (`-leedebug`) — debug bas niveau via les registres COP0
+#### `libeedebug` / `ee_debug.h` (`-leedebug`) — debug bas niveau via les registres COP0
 
 Pas liée par défaut dans ce projet (`EE_LIBS` ne contient que `-ldebug` actuellement) — nécessiterait d'ajouter `-leedebug` à `EE_LIBS`. Utilise les registres de debug matériels du coprocesseur EE (`ee/include/ee_debug.h`) pour poser des breakpoints matériels et intercepter les exceptions, plutôt que d'instrumenter le code par affichage.
 
@@ -1438,7 +1440,7 @@ Pas liée par défaut dans ce projet (`EE_LIBS` ne contient que `-ldebug` actuel
 | `ee_dbg_set_bpx(addr, mask, opmode_mask)` | Pose un breakpoint matériel sur exécution (*execute*) |
 | `ee_dbg_clr_bps()` / `bpda()` / `bpdv()` / `bpx()` | Efface les breakpoints (généraux / adresse-donnée / valeur-donnée / exécution) |
 
-#### Level 1 / Level 2 : les deux étages du gestionnaire d'exceptions EE
+##### Level 1 / Level 2 : les deux étages du gestionnaire d'exceptions EE
 
 >[!Note]
 >Ce "Level 1 / Level 2" est propre au mécanisme d'exception du CPU EE (MIPS R5900) exposé par `libeedebug` — à ne pas confondre avec d'autres notions de "niveau" vues ailleurs dans le SDK (ex: niveaux de priorité DMA, contextes GS 1/2 en section 3c/3f).
@@ -1487,7 +1489,7 @@ Handler Level 2 (fonction utilisateur, reçoit EE_RegFrame*, indexé par cause)
 
 `cause` correspond au code d'exception MIPS (champ ExcCode extrait du registre CAUSE) — chaque type d'exception (breakpoint, TLB, overflow, syscall...) a son propre `cause` et donc potentiellement son propre handler Level 2, alors que le Level 1 est en pratique unique/générique : même code de sauvegarde de contexte pour toutes les causes, seul le dispatch vers Level 2 varie.
 
-### `screenshot.h` — capture d'écran depuis la VRAM
+#### `screenshot.h` — capture d'écran depuis la VRAM
 
 Pas liée par défaut non plus — nécessite le même ajout de lib que ci-dessus le cas échéant (fonctions déclarées dans `ee/include/screenshot.h`, sans lib dédiée séparée listée dans le Makefile). Dump directement le contenu d'un buffer VRAM (typiquement le framebuffer courant) vers un fichier ou un buffer mémoire — pratique pour inspecter visuellement un rendu sans setup graphique interactif (ex: dans un émulateur headless, ou en CI).
 
@@ -1510,7 +1512,7 @@ Les deux prennent l'adresse VRAM du buffer à capturer (ex: `frame.address`, sec
 >Résumé pratique pour ce projet : seul `libdebug` (`scr_printf`, `DEBUG_BGCOLOR`...) est disponible immédiatement, puisque `EE_LIBS` ne lie que `-ldma -lgraph -ldraw -lkernel -ldebug` (section 2). `libeedebug` (breakpoints matériels) et `screenshot.h` (capture VRAM) nécessitent d'ajouter la lib correspondante à `EE_LIBS` avant de pouvoir les utiliser.
 
 
-# 4 - Utiliser la manette (pad)
+## 4 - Utiliser la manette (pad)
 
 Le pad est un périphérique IOP comme un autre : il faut charger ses modules avant de pouvoir le lire (`samples/rpc/pad/pad.c`) :
 
@@ -1608,11 +1610,11 @@ Points notables :
 - Les actuateurs de vibration se pilotent avec `padSetActDirect`/`padSetActAlign`.
 
 
-# 5 - Tour rapide des périphériques (CD-ROM, carte mémoire)
+## 5 - Tour rapide des périphériques (CD-ROM, carte mémoire)
 
 Même logique partout : **charger les modules IOP → initialiser la lib EE → utiliser une API façon fichier**.
 
-## Carte mémoire (`libmc`, `samples/rpc/memorycard/mc_example.c`)
+### Carte mémoire (`libmc`, `samples/rpc/memorycard/mc_example.c`)
 
 *Version complète et compilable (dérivée de `samples/rpc/memorycard/mc_example.c`) :*
 
@@ -1708,7 +1710,7 @@ include $(PS2SDK)/samples/Makefile.eeglobal
 - Beaucoup de fonctions `mc*` sont asynchrones : on lance l'opération puis on appelle `mcSync()` pour bloquer jusqu'au résultat.
 - Une sauvegarde PS2 typique = un dossier contenant `icon.sys` (métadonnées d'affichage dans le browser : couleurs, éclairage 3D de l'icône, nom en SJIS) + les fichiers d'icône `.icn`.
 
-## CD-ROM / DVD (`fileXio`, `samples/rpc/filexio/main.c`)
+### CD-ROM / DVD (`fileXio`, `samples/rpc/filexio/main.c`)
 
 *Fichier complet, `samples/rpc/filexio/main.c` :*
 
@@ -1804,13 +1806,13 @@ include $(PS2SDK)/samples/Makefile.eeglobal
 - Remarque Makefile : la règle `%_irx.c: ... bin2c $(PS2SDK)/iop/irx/$*.irx $@` transforme un `.irx` binaire en tableau C (`.c`) compilé dans l'ELF — c'est la technique standard pour embarquer un module IOP qui n'est pas déjà en ROM.
 
 
-# 6 - Détail des modules IOP (rôles et différences)
+## 6 - Détail des modules IOP (rôles et différences)
 
 Les modules IOP forment une **hiérarchie en couches**, pas une liste plate : (1) un "micro-noyau" IOP toujours présent, (2) un bus partagé pad/carte mémoire arbitré par SIO2MAN, (3) des paires driver-bas-niveau/serveur-fichier qui reviennent tout le temps, (4) des variantes (X, numérotées, "free") pour des besoins de compatibilité différents.
 
 **Le schéma à retenir partout :** *driver bas niveau* (parle au hardware, secteurs/blocs bruts) → *couche serveur/filesystem* (donne une vue fichiers/répertoires) → *client RPC côté EE* (l'API qu'on appelle réellement : `libpad`, `libmc`, `fileXio`...).
 
-## a) Le "micro-noyau" IOP (déjà chargé, on n'y touche presque jamais)
+### a) Le "micro-noyau" IOP (déjà chargé, on n'y touche presque jamais)
 
 | Module | Rôle |
 |---|---|
@@ -1825,7 +1827,7 @@ Les modules IOP forment une **hiérarchie en couches**, pas une liste plate : (1
 
 Ces modules sont normalement déjà chargés par le firmware avant que l'ELF démarre — on ne les charge soi-même que pour un loader/BIOS custom.
 
-## b) Bus partagé pad + carte mémoire : SIO2MAN
+### b) Bus partagé pad + carte mémoire : SIO2MAN
 
 Manettes et cartes mémoire passent par le **même bus série (SIO2)**, un par port. `SIO2MAN` arbitre ce bus ; `PADMAN` et `MCMAN`/`MCSERV` sont construits par-dessus.
 
@@ -1852,7 +1854,7 @@ Manettes et cartes mémoire passent par le **même bus série (SIO2)**, un par p
 - **Suffixes numériques** (`-1300`/`-1400`/`-2000`/`-old`) : builds différents correspondant à des **révisions de BIOS/ROM** de console (comportement corrigé/changé entre versions). Le fichier sans suffixe = version générique recommandée par défaut.
 - **Préfixe `free`** (`freepad`, `freesio2`, `freemtap`) : **réimplémentations libres/homebrew** de ces modules (pas des dumps ROM Sony), utiles quand `rom0:` n'est pas disponible (loaders non officiels, absence de BIOS complet).
 
-## c) IOMAN vs IOMANX vs fileXio — la confusion la plus fréquente
+### c) IOMAN vs IOMANX vs fileXio — la confusion la plus fréquente
 
 | Module | Rôle | Où ça tourne |
 |---|---|---|
@@ -1862,7 +1864,7 @@ Manettes et cartes mémoire passent par le **même bus série (SIO2)**, un par p
 
 `IOMAN`/`IOMANX` sont des API **internes à l'IOP** : le code EE ne peut pas les appeler directement (pas de mémoire partagée transparente). Il faut un pont RPC comme `fileXio` pour qu'un `open()`/`read()` côté EE traverse le SIF jusqu'à IOMANX côté IOP. D'où le sample `filexio/main.c` qui charge `iomanX.irx` **et** `fileXio.irx` ensemble : IOMANX fait le travail de filesystem, fileXio fait le pont RPC.
 
-## d) CD/DVD — même schéma driver/filesystem que la carte mémoire
+### d) CD/DVD — même schéma driver/filesystem que la carte mémoire
 
 | Module | Rôle |
 |---|---|
@@ -1872,7 +1874,7 @@ Manettes et cartes mémoire passent par le **même bus série (SIO2)**, un par p
 
 Contrairement à SIO2MAN/PADMAN/MCMAN, ces modules sont **déjà chargés par le firmware** au démarrage — le sample `filexio` ne charge que `iomanX`+`fileXio`, pas `cdvdman`/`cdvdfsv`, car supposés déjà présents.
 
-## e) Autres familles de modules (panorama)
+### e) Autres familles de modules (panorama)
 
 | Domaine | Modules | Rôle |
 |---|---|---|
@@ -1887,12 +1889,12 @@ Contrairement à SIO2MAN/PADMAN/MCMAN, ces modules sont **déjà chargés par le
 | Multitap | `MTAPMAN` | Permet 4 manettes/cartes mémoire par port. |
 | Alim. | `POWEROFF` | RPC pour un arrêt propre de la console. |
 
-# 7 - La chaîne de compilation C (générique)
+## 7 - La chaîne de compilation C (générique)
 
 >[!Info]
 >Ce chapitre ne contient **rien de spécifique à la PS2**. Il décrit des mécanismes valables pour n'importe quel projet C sur n'importe quelle plateforme Unix. Le chapitre `2 - Sdk` s'y réfère plutôt que de les réexpliquer ; l'instanciation PS2 de chaque principe s'y trouve.
 
-## a) Les quatre étapes
+### a) Les quatre étapes
 
 Ce qu'on appelle « compiler » est en réalité un enchaînement de quatre programmes distincts. Comprendre lequel fait quoi, c'est savoir à qui s'adresse chaque option et à quelle étape une erreur donnée peut survenir.
 
@@ -1922,7 +1924,7 @@ graph LR
 
 On peut s'arrêter à n'importe quelle étape : `gcc -E` (préprocesseur seul), `-S` (jusqu'à l'assembleur), `-c` (jusqu'à l'objet, **sans link**).
 
-## b) `gcc` n'est pas un compilateur, c'est un *driver*
+### b) `gcc` n'est pas un compilateur, c'est un *driver*
 
 `gcc` ne compile rien lui-même : il analyse ses arguments, décide quels programmes lancer, et leur distribue les options. `-###` affiche ce qu'il exécuterait, sans rien exécuter :
 
@@ -1938,7 +1940,7 @@ Corollaires directs :
 - Inversement, `-I` n'a aucun sens à l'étape de link.
 - Une erreur `undefined reference to …` ne vient **jamais** du compilateur : le code a compilé, c'est `ld` qui n'a pas trouvé la définition.
 
-## c) En-tête ≠ bibliothèque : déclarer vs définir
+### c) En-tête ≠ bibliothèque : déclarer vs définir
 
 C'est la distinction qui explique la moitié des erreurs de build en C.
 
@@ -1954,7 +1956,7 @@ Les deux sont indépendants, et c'est pour ça que le réflexe « un `#include` 
 - Un en-tête peut n'être composé que de `#define`, de macros et de `static inline` — tout est résolu à la compilation, **il n'existe aucune archive à lier**. C'est la catégorie dite *header-only* (instanciation PS2 en 2, section « Où vivent les en-têtes et les bibliothèques »).
 - À l'inverse, une bibliothèque peut être liée sans qu'on inclue le moindre de ses en-têtes, si un autre objet en réclame les symboles.
 
-## d) La convention `-lfoo` → `libfoo.a`
+### d) La convention `-lfoo` → `libfoo.a`
 
 Pour `-lfoo`, `ld` construit le nom de fichier en collant le préfixe `lib` et le suffixe d'archive, puis cherche :
 
@@ -1976,7 +1978,7 @@ attempt to open /usr/lib/libfoo.a succeeded
 gcc -o prog foo.o /usr/lib/libfoo.a /usr/lib/libbar.a   # équivaut à -L/usr/lib -lfoo -lbar
 ```
 
-## e) Qui a décidé de cette convention ?
+### e) Qui a décidé de cette convention ?
 
 Trois étages, du plus strict au plus souple :
 
@@ -1994,7 +1996,7 @@ Ce n'est donc **pas universel**, seulement très répandu :
 
 Le préfixe `lib` est un héritage direct d'Unix des années 70, conservé par compatibilité.
 
-## f) Résolution des archives : une seule passe, de gauche à droite
+### f) Résolution des archives : une seule passe, de gauche à droite
 
 Une archive `.a` n'est pas un bloc monolithique : c'est un **sac de fichiers objets** accompagné d'un index de symboles. `ld` la parcourt en une seule passe et n'en extrait que les membres résolvant un symbole **déjà indéfini à cet instant précis**. Ce qui n'est pas réclamé au moment où l'archive est lue est abandonné définitivement.
 
@@ -2024,7 +2026,7 @@ gcc ... -Wl,--start-group -lA -lB -Wl,--end-group   # relire le groupe jusqu'à 
 >[!Note]
 >Le plugin d'édition de liens de GCC (LTO), actif par défaut sur beaucoup de chaînes, réexamine les archives et **masque** les erreurs d'ordre : un link mal ordonné peut passer via `gcc` et échouer via `ld` direct ou avec `-fno-use-linker-plugin`. Ne pas s'y fier. Manifestation sur le toolchain PS2 en 2, section « Ce que le toolchain PS2 ajoute d'office à l'édition de liens ».
 
-## g) GNU Make : le but par défaut est la première cible non-implicite
+### g) GNU Make : le but par défaut est la première cible non-implicite
 
 Rien à voir avec le compilateur, mais c'est le même genre de règle silencieuse.
 
@@ -2052,17 +2054,19 @@ make -p -n | grep '^\.DEFAULT_GOAL'
 
 Manifestation PS2 (`Makefile.eeglobal` définit `$(EE_BIN)`, un `make` nu construit l'ELF sans l'ISO) : voir chapitre 2, section « Makefile ».
 
-# 8 - gsKit : bibliothèque de haut niveau au-dessus du SDK brut
+# Part2
+
+## 8 - gsKit : bibliothèque de haut niveau au-dessus du SDK brut
 
 `gsKit` n'est **pas** un module du PS2SDK proprement dit — c'est un projet tiers historique (Chris "Neovanglist" Gilbert, licence Academic Free License 2.0), installé à côté du SDK (`/usr/local/ps2dev/gsKit`) et non dedans. Il s'appuie sur les mêmes briques bas niveau vues en chapitre 3b (`dma`, `graph`, `draw`, paquets GIF) mais les encapsule pour éviter de les manipuler à la main.
 
-## a) Un seul header d'entrée, un seul objet de contexte
+### a) Un seul header d'entrée, un seul objet de contexte
 
 `gsKit.h` est un header « maître » — son propre commentaire est explicite : *« Include \_ONLY\_THIS\_HEADER\_ for gsKit. (Do NOT include gsFont.h, gsCore.h, etc) »*. Il inclut lui-même `dmaKit.h`, `gsInit.h`, `gsMisc.h`, `gsCore.h`, `gsPrimitive.h`, `gsTexture.h`, `gsFontM.h`, `gsHires.h`, `gsTexManager.h`.
 
 Toute la lib tourne autour d'une seule structure, `struct gsGlobal` / `typedef GSGLOBAL` (`gsInit.h`), qui centralise ce qu'on gérait dispersé en chapitre 3b (`framebuffer_t`, `zbuffer_t`, `packet_t`) : `Width`, `Height`, `PSM`, `PSMZ`, `DoubleBuffering`, `ZBuffering`, `ZBuffer`, `ScreenBuffer[2]`, `ActiveBuffer`, `CurQueue`/`Per_Queue`/`Os_Queue`, etc. Toutes les fonctions gsKit prennent un `GSGLOBAL *gsGlobal` en premier paramètre.
 
-## b) Initialisation : deux appels remplacent `init_gs()` du chapitre 3b
+### b) Initialisation : deux appels remplacent `init_gs()` du chapitre 3b
 
 ```c
 GSGLOBAL *gsGlobal = gsKit_init_global();   // macro, cf. ci-dessous
@@ -2075,13 +2079,13 @@ gsKit_init_screen(gsGlobal);                 // alloue + relie le framebuffer à
 
 `gsKit_init_global()` (`gsInit.h:1134`) est une macro qui appelle `gsKit_init_global_custom(GS_RENDER_QUEUE_OS_POOLSIZE, GS_RENDER_QUEUE_PER_POOLSIZE)` — elle alloue le `GSGLOBAL` et ses deux files de dessin internes (« Oneshot » et « Persistent », champs `Os_Queue`/`Per_Queue`). `gsKit_init_screen(gsGlobal)` (`gsInit.h:1124`, « Initialize Screen and GS Registers ») fait ensuite l'équivalent de `graph_vram_allocate` + `graph_initialize` + `draw_setup_environment` réunis — les trois étapes qu'on enchaînait à la main dans `init_gs()`/`init_drawing_environment()`.
 
-## c) Le double buffering : la vraie différence structurelle avec le chapitre 3b
+### c) Le double buffering : la vraie différence structurelle avec le chapitre 3b
 
 Le `graph.c` du chapitre 3b n'a **pas** de double buffering : un seul framebuffer, sur lequel on dessine pendant qu'il est affiché (risque de tearing), avec `graph_wait_vsync()` en seule protection.
 
 gsKit gère nativement l'alternance de deux buffers via `gsGlobal->DoubleBuffering` (`ScreenBuffer[2]` + `ActiveBuffer` dans la struct) et `gsKit_sync_flip(gsGlobal)` (`gsCore.h:109`, commentaire : *« This calls gsKit\_vsync\_wait, then calls gsKit\_setactive »*) — un seul appel qui attend le VBlank **et** bascule le buffer actif (`gsKit_setactive`, `gsCore.h:137`), au lieu du simple `graph_wait_vsync()` sans flip qu'on avait.
 
-## d) Primitives : fini le `PACK_GIFTAG` manuel
+### d) Primitives : fini le `PACK_GIFTAG` manuel
 
 Le bloc de `render()` (chapitre 3b) qui construit à la main les tags GIF (`GIF_SET_TAG`, `GIF_SET_PRIM`, `GIF_SET_RGBAQ`, `GIF_SET_XYZ2`) pour dessiner un carré devient un appel unique, `gsPrimitive.h` :
 
@@ -2095,7 +2099,7 @@ Les variantes `*_3d` (avec `iz` explicite par sommet) sont les fonctions réelle
 
 `gsKit_clear(gsGlobal, color)` (`gsCore.h:179`) remplace `draw_clear(q, ...)` + le paquet manuel qui l'entourait.
 
-## e) La queue DMA interne : `gsKit_queue_exec` remplace le cycle manuel
+### e) La queue DMA interne : `gsKit_queue_exec` remplace le cycle manuel
 
 gsKit maintient en interne une file de primitives (`CurQueue`/`Per_Queue`/`Os_Queue` dans `GSGLOBAL`) au lieu d'un `packet_t` explicite. Le triplet manuel du chapitre 3b —
 
@@ -2113,12 +2117,12 @@ gsKit_finish();                // gsCore.h:140, attend la fin (équivalent draw_
 gsKit_sync_flip(gsGlobal);    // vsync + flip de buffer, cf. c)
 ```
 
-## f) Ce que gsKit ajoute et que le SDK brut n'offre pas du tout
+### f) Ce que gsKit ajoute et que le SDK brut n'offre pas du tout
 
 - **Textures** (`gsTexture.h`) : `gsKit_texture_png`/`gsKit_texture_bmp` chargent une image et gèrent l'upload en VRAM (`gsKit_texture_upload`, `gsKit_texture_send`), via une structure `GSTEXTURE` (`Width`, `Height`, `PSM`, `ClutPSM`, `TBW`, `Mem` pointeur EE, `Vram` pointeur GS, `Filter` NEAREST/LINEAR). En PS2SDK nu, il faudrait écrire soi-même le parsing du format image et la construction du paquet GIF d'upload.
 - **Police bitmap** (`gsFontM.h`) : `gsKit_fontm_print(gsGlobal, font, x, y, z, color, "texte")` (macro sur `gsKit_fontm_print_scaled`) affiche du texte à l'écran via le pipeline GS normal — différent de `scr_printf` (chapitre 3a, `libdebug`) qui est une console de debug à part, pas des primitives GS.
 
-## g) Table de correspondance — chapitre 3b (bas niveau) ↔ gsKit
+### g) Table de correspondance — chapitre 3b (bas niveau) ↔ gsKit
 
 | Chapitre 3b (raw PS2SDK) | gsKit |
 |---|---|
@@ -2136,7 +2140,7 @@ gsKit_sync_flip(gsGlobal);    // vsync + flip de buffer, cf. c)
 >[!Note]
 >Correspondance des constantes `PSM` entre les deux mondes (`GS_PSM_32` bas niveau vs `GS_PSM_CT32` gsKit, valeurs Z-buffer **différentes** entre `gs_psm.h` et `gsInit.h`) : déjà détaillée section « PSM », chapitre 3, ne pas dupliquer ici.
 
-## h) Build : ce que ça change dans le Makefile
+### h) Build : ce que ça change dans le Makefile
 
 `gsKit` vit hors de l'arborescence `$(PS2SDK)`, donc `-lgskit` seul ne suffit pas — il faut pointer explicitement vers son propre préfixe d'installation :
 
@@ -2150,7 +2154,7 @@ EE_LDFLAGS += -L$(GSKIT)/lib
 
 `gsKit.h` inclut lui-même `dmaKit.h` (sa propre couche DMA, distincte de `dma.h` du PS2SDK) — une fois basculé sur gsKit, `-ldma`/`-ldraw`/`-lgraph` de `EE_LIBS` (chapitre 2/3b) deviennent en grande partie redondants, gsKit réimplémentant sa propre gestion DMA/GS par-dessus.
 
-## i) Squelette complet — programme minimal
+### i) Squelette complet — programme minimal
 
 Assemble tout ce qui précède (b, c, d, e) en un seul fichier autonome : init, boucle de rendu avec un triangle, sortie propre.
 
@@ -2159,7 +2163,6 @@ Assemble tout ce qui précède (b, c, d, e) en un seul fichier autonome : init, 
 #include <kernel.h>
 
 #include <gsKit.h>
-#include <dmaKit.h>
 
 int main(int argc, char *argv[])
 {
@@ -2223,7 +2226,7 @@ include $(PS2SDK)/samples/Makefile.eeglobal
 >[!Note]
 >`dmaKit_init`/`dmaKit_chan_init` (`dmaInit.h`) ne sont **pas** couverts par `gsKit_init_global()`/`gsKit_init_screen()` — il faut les appeler soi-même avant `gsKit_init_screen`, sans quoi le premier envoi DMA du canal GIF échoue silencieusement. C'est l'équivalent gsKit de `dma_channel_initialize(DMA_CHANNEL_GIF, ...)` du chapitre 3b, mais sur la couche DMA propre à gsKit (`dmaKit.h`), pas `dma.h` du PS2SDK.
 
-### Paramètres de `dmaKit_init`
+#### Paramètres de `dmaKit_init`
 
 Signature réelle (`gsKit/include/dmaInit.h:77-78`) :
 ```c
@@ -2245,7 +2248,7 @@ Le 6ᵉ paramètre, `fastwaitchannels` (`u16`), n'appartient PAS à ce registre 
 >[!Note]
 >Dans le squelette (i), le programme n'utilise que le canal GIF : `1 << DMA_CHANNEL_GIF` (soit `1 << 0x2 = 0x4`) suffit comme masque `fastwaitchannels`. Sans le 6ᵉ argument, la compilation échoue avec `too few arguments to function 'dmaKit_init'` — c'était une erreur dans une version antérieure de cet exemple.
 
-### `dmaKit_init` en clair — ce que chaque paramètre décide vraiment
+#### `dmaKit_init` en clair — ce que chaque paramètre décide vraiment
 
 L'EE et le contrôleur DMA se partagent le **même bus mémoire** vers la RAM. Le DMA ne peut pas le monopoliser en continu : il le grignote par intervalles, un mécanisme appelé *cycle stealing*. Les 5 premiers paramètres de `dmaKit_init` sont les règles de partage de ce bus, posées **globalement pour les 10 canaux à la fois** (registre `D_CTRL`, tableau ci-dessus) — seul le 6ᵉ (`fastwaitchannels`) n'a rien de matériel.
 
@@ -2262,7 +2265,14 @@ L'EE et le contrôleur DMA se partagent le **même bus mémoire** vers la RAM. L
 >[!Note]
 >Les valeurs du squelette (`RELE=OFF, MFD=OFF, STS=UNSPEC, STD=OFF, RCYC=_8, fastwaitchannels=1<<DMA_CHANNEL_GIF`) correspondent au cas « je ne fais rien de spécial » : pas de streaming vidéo, pas de chaînage de canaux. À ne changer que pour du streaming vidéo (`MFD`), du chaînage EE→IOP (`STS`/`STD`), ou de l'optimisation fine CPU/DMA (`RCYC`/`RELE`).
 
-## j) Piège : header et `.a` installés depuis des builds différents
+>[!Note]
+>Différence entre une mémoire FIFO (*_First In, First Out_*) et LIFO(*_Last In, First Out_*)
+>**FIFO :** On lit la mémoire par la fin de la pile, dans l'ordre d'entrée
+>**LIFO :** On lit la mémoire par le début, à l'inverse de l'ordre d'entrée
+
+
+ 
+### j) Piège : header et `.a` installés depuis des builds différents
 
 En creusant ce que fait réellement `gsKit_init_global()` (b) — la macro qui « preload gsGlobal with all default values » (commentaire Doxygen `gsInit.h:886`) avant que le code applicatif ne réécrive `Mode`/`Width`/`Height`/`PSM`/`PSMZ`/`ZBuffering`/`DoubleBuffering`/`PrimAlphaEnable` (squelette complet, i) — vérification de la fonction sous-jacente, déclarée `gsInit.h:1129` :
 
@@ -2290,7 +2300,7 @@ Conséquence pratique : ne pas faire confiance aveuglément à la déclaration d
 >[!Note] À ne pas confondre avec le piège LTO du chapitre 2
 >Le paragraphe « Le plugin LTO masque les erreurs d'ordre » (chapitre 2, section « Ce que le toolchain PS2 ajoute d'office à l'édition de liens ») concerne un problème d'**ordre de link** (bibliothèques avant les objets) que le plugin LTO masque au moment du `gcc`. Ici le problème est différent : ce n'est pas l'ordre qui pose souci mais une **désynchronisation de version** entre le header installé et l'archive statique — le plugin LTO n'intervient que comme outil de *lecture* des `.o` slim pour diagnostiquer, pas comme cause du problème.
 
-## k) `gsKit_mode_switch` : deux files de dessin, pas deux modes de rendu
+### k) `gsKit_mode_switch` : deux files de dessin, pas deux modes de rendu
 
 ```c
 /// Set Current Draw Queue (Between GS_ONESHOT and GS_PERSISTENT)
@@ -2314,11 +2324,7 @@ gsKit maintient **deux** files de dessin internes (`gsGlobal->Os_Queue` et `gsGl
 >Le squelette complet (i) appelle `gsKit_mode_switch(gsGlobal, GS_ONESHOT)` une seule fois avant la boucle, alors que c'est déjà le mode par défaut à l'initialisation — l'appel n'y est donc pas strictement nécessaire, il rend juste le choix explicite. Un vrai usage de `GS_PERSISTENT` demanderait un second basculement (`gsKit_mode_switch(gsGlobal, GS_PERSISTENT)`, dessiner une fois, puis revenir en `GS_ONESHOT` pour la partie dynamique de la boucle).
 
 
-# 9 - Annotations
-
-Notes complémentaires, détachées du flux principal.
-
-## `_16` vs `_16S` : même profondeur, agencement VRAM différent
+## 9 - `_16` vs `_16S` : même profondeur, agencement VRAM différent
 
 *(rattaché à la section 3f — PSM)*
 
@@ -2341,3 +2347,360 @@ Notes complémentaires, détachées du flux principal.
 >En pratique : `GS_PSMZ_16` pour un rendu progressif standard ; `GS_PSMZ_16S` seulement si le `vmode` visé est entrelacé.
 >
 >Pourquoi `0x02`/`0x0A` et pas `0x32`/`0x3A` comme dans la table `gs_psm.h` ci-dessus : le champ `PSM` du registre **ZBUF** (`GS_REG_ZBUF_1`/`_2`, section 3c) réutilise le même encodage réduit que les formats couleur, parce que ce registre n'a pas besoin d'exprimer les formats indexés (`T8`/`T4`) — d'où le rappel déjà fait plus haut (« reprend les mêmes valeurs numériques que la couleur »). `0x32`/`0x3A` (colonne `gs_psm.h`) sont les valeurs "pleine échelle" telles que documentées dans le GS User's Manual (`PSMZ16`/`PSMZ16S`), pas des erreurs de duplication entre les deux headers.
+
+## 10 - Les pragmas IWYU : dire à l'outillage quel en-tête inclure
+
+*(rattaché à la section 7c — En-tête ≠ bibliothèque : déclarer vs définir)*
+
+>[!Note] Les pragmas IWYU : dire à l'outillage quel en-tête inclure
+>**Le compilateur ne les voit jamais.** Un pragma IWYU n'est pas une directive préprocesseur (`#pragma`) mais un simple **commentaire** de forme `// IWYU pragma: …`. Il disparaît à l'étape 1 de la chaîne (section 7a, suppression des commentaires) : `gcc` compile exactement pareil avec ou sans. Seuls des outils d'analyse le lisent — [include-what-you-use](https://include-what-you-use.org/) dont il tire son nom, et le moteur *include-cleaner* intégré à `clangd`.
+>
+>**Le problème qu'ils résolvent.** Le préprocesseur se moque de savoir *quel* fichier a déclaré un symbole : dès qu'une déclaration est atteignable, même à travers dix niveaux d'inclusion, la compilation passe. La discipline « include what you use » exige l'inverse : chaque unité de traduction inclut **directement** l'en-tête qui déclare ce qu'elle utilise, pour que les dépendances soient lisibles et que supprimer un include intermédiaire ne casse rien à distance. Les deux règles s'opposent frontalement dès qu'une bibliothèque expose un **en-tête chapeau** (*umbrella header*) qui n'existe que pour en inclure d'autres : l'auteur veut qu'on inclue le chapeau, la règle IWYU veut qu'on inclue le fichier déclarant. Le pragma est le moyen pour l'auteur de trancher.
+>
+>**Où ça se manifeste concrètement :** dans l'éditeur, pas à la compilation. `clangd` attache aux items de complétion un `additionalTextEdits` qui insère l'en-tête déclarant le symbole — comportement piloté par `--header-insertion=iwyu`, **qui est son mode par défaut**. Valider une complétion ajoute donc une ligne `#include` que le programmeur n'a pas demandée. Ce n'est pas une double inclusion au sens du préprocesseur (les gardes d'inclusion font leur travail), juste une ligne redondante — et éventuellement contraire au contrat de la bibliothèque.
+>
+>**Ce qui marche et ce qui ne marche pas.** Matrice vérifiée sur `clangd 21.1.8`, cas minimal `main.c` → `umbrella.h` → `priv.h`, complétion d'un symbole déclaré par `priv.h` alors que seul `umbrella.h` est inclus :
+>
+>| Réglage | Insertion proposée |
+>|---|---|
+>| aucun (défaut clangd) | `#include "priv.h"` |
+>| `--header-insertion=iwyu` explicite | `#include "priv.h"` |
+>| `// IWYU pragma: private, include "umbrella.h"` dans `priv.h` | **aucune** |
+>| `// IWYU pragma: private` seul dans `priv.h` | `#include "priv.h"` |
+>| `// IWYU pragma: export` sur la ligne d'include de `umbrella.h` | `#include "priv.h"` |
+>| `// IWYU pragma: begin_exports` / `end_exports` dans `umbrella.h` | `#include "priv.h"` |
+>| `--header-insertion=never` | **aucune** |
+>| `.clangd` : `Completion: HeaderInsertion: Never`, sans flag CLI | **aucune** |
+>| `.clangd` : `Completion: HeaderInsertion: Never`, **avec** `--header-insertion=iwyu` | `#include "priv.h"` |
+>
+>Deux enseignements contre-intuitifs :
+>
+>1. **Seul `private, include` fait le travail.** Les formes `export` / `begin_exports` déclarent que le chapeau est *aussi* un fournisseur légitime, mais ne disqualifient pas le fichier déclarant — clangd continue de le préférer. `private` sans argument ne suffit pas non plus : il faut nommer le remplaçant.
+>2. **Un flag CLI explicite rend le `.clangd` inopérant.** `Completion: HeaderInsertion` n'est appliqué que si `--header-insertion=` n'est pas passé en ligne de commande. Comme le défaut de clangd est déjà `iwyu`, passer ce flag « pour être explicite » dans la configuration de l'éditeur ne change rien au comportement mais **supprime silencieusement** la possibilité de le surcharger par projet. Aucun avertissement n'est émis.
+>
+>La graphie du pragma est reprise **verbatim** dans l'include généré : `private, include <foo.h>` produit `#include <foo.h>`, `private, include "foo.h"` produit `#include "foo.h"`. Choisir la forme qui correspond à l'usage habituel de la bibliothèque, sans quoi clang-format créera deux catégories d'includes distinctes.
+>
+>Le pragma se place n'importe où dans le fichier concerné ; la convention est juste après la garde d'inclusion :
+>
+>```c
+>#ifndef PRIV_H
+>#define PRIV_H
+>// IWYU pragma: private, include <umbrella.h>
+>
+>int ma_fonction(void);
+>#endif
+>```
+>
+>**Piège de vérification :** `clangd --check=fichier.c` ne révèle rien de tout ça — ce mode ne construit ni requête de complétion ni diagnostic include-cleaner. Pour observer le comportement réel il faut une vraie session LSP, ou l'éditeur lui-même. Penser aussi à supprimer le cache d'index (`.cache/clangd/`) après avoir ajouté un pragma : les en-têtes fournisseurs y sont mémorisés.
+
+## 11 - gsKit : en-tête chapeau non déclaré, et l'include parasite qui en découle
+
+*(rattaché à la section 8a — Un seul header d'entrée, un seul objet de contexte)*
+
+>[!Note] gsKit : en-tête chapeau non déclaré, et l'include parasite qui en découle
+>Application directe du chapitre 10, côté PS2. `gsKit.h` est explicitement un en-tête chapeau — son propre commentaire l'écrit en majuscules :
+>
+>```c
+>// gsKit.h - Master header for gsKit. Include _ONLY_THIS_HEADER_
+>//           for gsKit. (Do NOT include gsFont.h, gsCore.h, etc)
+>```
+>
+>Mais **aucun pragma IWYU n'est présent dans `/usr/local/ps2dev/gsKit/include/`** : le contrat n'est écrit qu'en prose, donc invisible pour l'outillage. Conséquence en édition, avec la configuration clangd par défaut : compléter `gsKit_init_global` dans un fichier qui inclut déjà `<gsKit.h>` fait apparaître un `#include "gsInit.h"` — parce que la macro est bien déclarée dans `gsInit.h:1134` (section 8b), et que c'est ce fichier-là que clangd désigne comme fournisseur. Même chose pour tout symbole des 9 en-têtes que `gsKit.h` agrège (`dmaKit.h`, `gsInit.h`, `gsMisc.h`, `gsCore.h`, `gsPrimitive.h`, `gsTexture.h`, `gsFontM.h`, `gsHires.h`, `gsTexManager.h`).
+>
+>Le symptôme est trompeur : la ligne n'apparaît pas au moment de la complétion mais **à l'enregistrement**, parce que clang-format retrie alors les includes et remonte `"gsInit.h"` (guillemets = première catégorie) au-dessus de `<gsKit.h>`. On accuse le formateur, qui n'a fait que déplacer.
+>
+>**Deux correctifs possibles.** Ils sont indépendants et ne se recouvrent pas :
+>
+>| | Chemin A — configuration de clangd | Chemin B — pragmas dans gsKit |
+>|---|---|---|
+>| Portée | tout le projet, tous les en-têtes | les 9 sous-en-têtes gsKit seulement |
+>| Fichiers modifiés | config de l'éditeur **+** `.clangd` du projet | 9 fichiers dans `/usr/local/ps2dev/gsKit/include/` |
+>| Insertion automatique ailleurs | supprimée | conservée |
+>| Survit à une réinstallation du toolchain | oui | non |
+>
+>### Chemin A — deux fichiers, dans cet ordre
+>
+>**1. La configuration de l'éditeur** (avec LazyVim : `~/.config/nvim/lua/plugins/lsp/lspconfig.lua`, bloc `cmd` du serveur `clangd`) — **supprimer** la ligne :
+>
+>```lua
+>"--header-insertion=iwyu",
+>```
+>
+>Elle est redondante avec le défaut de clangd, donc la retirer ne change aucun comportement ; mais tant qu'elle est là, l'étape 2 n'a **strictement aucun effet** (enseignement 2 ci-dessus).
+>
+>**2. Le `.clangd` du projet** — le réglage est une clé de **premier niveau**, à côté de `CompileFlags`, pas dedans :
+>
+>```yaml
+>CompileFlags:
+>  Add:
+>    - --target=mips64el-unknown-elf
+>    # … les -isystem / -I du projet, inchangés
+>
+>Completion:
+>  HeaderInsertion: Never
+>```
+>
+>>[!Warning] `--header-insertion=never` n'est pas un flag de compilation
+>>Le glisser dans `CompileFlags: Add:` est l'erreur naturelle, et elle est silencieuse. Ce n'est pas un argument de `clang` mais de l'exécutable `clangd` : placé là, il est transmis au **compilateur**, qui le rejette. Vérifié avec `clangd --check` :
+>>
+>>```
+>>E [drv_unknown_argument] Line 1: unknown argument: '--header-insertion=never'
+>>```
+>>
+>>Double dégât : aucune insertion n'est bloquée, et une erreur permanente s'affiche en ligne 1 du fichier édité. Deux emplacements valides, et deux seulement — la ligne de commande de l'éditeur (`--header-insertion=never`, forme CLI) ou la clé `Completion: HeaderInsertion: Never` du `.clangd` (forme YAML).
+>
+>### Chemin B — une ligne dans chacun des 9 en-têtes
+>
+>À insérer juste après la garde d'inclusion de chaque fichier de `/usr/local/ps2dev/gsKit/include/` :
+>
+>```c
+>// IWYU pragma: private, include <gsKit.h>
+>```
+>
+>| Fichier | Garde | Insérer après la ligne |
+>|---|---|---|
+>| `dmaKit.h` | `__DMAKIT_H__` | 16 |
+>| `gsInit.h` | `__GSINIT_H__` | 15 |
+>| `gsMisc.h` | `__GSMISC_H__` | 13 |
+>| `gsCore.h` | `__GSCORE_H__` | 15 |
+>| `gsPrimitive.h` | `__GSPRIMITIVE_H__` | 15 |
+>| `gsTexture.h` | `__GSTEXTURE_H__` | 13 |
+>| `gsFontM.h` | `__GSFONTM_H__` | 13 |
+>| `gsHires.h` | `__GSHIRES_H__` | 14 |
+>| `gsTexManager.h` | `__GSTEXMANAGER_H__` | 14 |
+>
+>Ce chemin ne demande **aucune** modification de l'éditeur : `--header-insertion=iwyu` peut rester, c'est précisément le mode qui lit les pragmas. Les fichiers appartiennent à l'utilisateur, pas de `sudo` nécessaire.
+>
+>>[!Warning] Ces fichiers sont hors du dépôt du projet
+>>`/usr/local/ps2dev/gsKit/` est reconstruit par les scripts d'installation ps2dev : le patch est perdu à chaque réinstallation du toolchain. Le garder dans un script rejouable, au même titre que les autres réglages d'environnement :
+>>
+>>```bash
+>>cd /usr/local/ps2dev/gsKit/include
+>>for h in dmaKit gsInit gsMisc gsCore gsPrimitive gsTexture gsFontM gsHires gsTexManager; do
+>>	grep -q 'IWYU pragma' "$h.h" || sed -i \
+>>		'0,/^#define __[A-Z0-9_]*_H__\r\?$/s@@&\n\/\/ IWYU pragma: private, include <gsKit.h>@' \
+>>		"$h.h"
+>>done
+>>```
+>>
+>>Le `\r\?` n'est pas décoratif : `gsTexManager.h` est le seul des neuf en CRLF, et un `$` nu ne matche pas sa garde.
+>
+>### Dans les deux cas, pour finir
+>
+>Supprimer l'index (`rm -rf .cache/clangd/` à la racine du projet) puis redémarrer le serveur (`:LspRestart`) — les fournisseurs d'en-têtes y sont mémorisés, et sans purge le correctif semble inopérant. Le contrôle se fait dans l'éditeur, pas avec `clangd --check` (voir le piège de vérification du chapitre 10).
+
+## 12 - S, T, Q, U, V, W : la projection d'une texture, coefficient par coefficient
+
+*(rattaché aux sections 3c — registres `GIF_REG_ST`/`GIF_REG_UV`/`GIF_REG_RGBAQ`, 3j — bit `FST` de `PRIM`, et 3l — champ `Q` de `RGBAQ`)*
+
+>[!Note] S, T, Q, U, V, W : la projection d'une texture, coefficient par coefficient
+>Les six lettres n'appartiennent pas au même étage du pipeline, et c'est la première chose à démêler : `W` ne quitte jamais l'EE, `Q`/`S`/`T` traversent le GIF, `U`/`V` sont ce que la GS finit par adresser en VRAM.
+>
+>| Coef | Où il vit | Type | Qui le calcule | Qui le consomme |
+>|---|---|---|---|---|
+>| `W` | 4ᵉ composante du `VECTOR` sommet, en RAM EE | `float` | la matrice de projection (`create_view_screen`) | l'EE/VU seulement — **jamais transmis à la GS** |
+>| `Q` | bits 32-63 du registre `RGBAQ` | `float32` | EE ou VU1 : `Q = 1/W` | la GS, comme diviseur par pixel |
+>| `S`, `T` | registre `ST`, 2 × 32 bits | `float32` | EE ou VU1 : `S = s/W`, `T = t/W` | la GS, interpolés puis divisés |
+>| `U`, `V` | registre `UV`, 2 × 14 bits | virgule fixe 10.4 | le programme, directement en texels | la GS, sans aucune division |
+>
+>`S`/`T` et `U`/`V` sont deux **voies exclusives** pour dire la même chose (« quel point de la texture pour ce sommet »), sélectionnées par le bit `FST` de `PRIM` (section 3j). `Q` et `W` n'appartiennent qu'à la voie `STQ`.
+>
+>```mermaid
+>flowchart TD
+>    V0["sommet objet (x, y, z, 1)"] --> MAT["× local_screen<br/>(matrice de projection)"]
+>    MAT --> HOM["(x, y, z, w) homogène"]
+>    ST0["coords texture (s, t)<br/>fournies avec le mesh"] --> CST
+>    HOM --> XY["÷ w sur x, y, z<br/>→ XYZ2 en 12.4"]
+>    HOM --> CQ["Q = 1/w<br/>→ champ Q de RGBAQ"]
+>    HOM --> CST["S = s × 1/w, T = t × 1/w<br/>→ registre ST"]
+>    XY --> GIF["paquet GIF"]
+>    CQ --> GIF
+>    CST --> GIF
+>    GIF --> GSI["GS : interpolation linéaire<br/>de S, T, Q en espace écran"]
+>    GSI --> PX["par pixel :<br/>u = (S/Q) × 2^TW<br/>v = (T/Q) × 2^TH"]
+>    PX --> TEX["texel lu en VRAM"]
+>```
+>
+>### 1. `W` — la profondeur homogène, produite par la matrice de projection
+>
+>Un sommet part en coordonnées homogènes `(x, y, z, 1)`. La matrice `view_screen` construite par `create_view_screen` (`math3d.h:105`, « Functionally similar to the opengl function: glFrustum() ») recopie une fonction de la profondeur caméra dans la 4ᵉ composante : après multiplication, `w` n'est plus 1, il vaut grosso modo la distance à la caméra. Tout ce que « perspective » veut dire tient dans cette composante — plus un sommet est loin, plus `w` est grand, plus la division qui suit rapproche le point du centre de l'écran.
+>
+>`calculate_vertices` (`math3d.h:129`) fait la multiplication **et** la division, sur le VU0 en mode macro. Le désassemblage de `libmath3d.a` est sans ambiguïté :
+>
+>```
+>f1c: vmulaw.xyzw  $ACCxyzw,$vf4xyzw,$vf0w   # produit matrice × sommet
+>f20: vmaddax.xyzw $ACCxyzw,$vf1xyzw,$vf6x   #   (4 lignes de matrice
+>f24: vmadday.xyzw $ACCxyzw,$vf2xyzw,$vf6y   #    accumulées dans l'ACC)
+>f28: vmaddz.xyzw  $vf7xyzw,$vf3xyzw,$vf6z   # vf7 = (x, y, z, w)
+>f2c: vclipw.xyz   $vf7xyz,$vf7w             # test de clipping contre ±w
+>f58: vdiv         $Q,$vf0w,$vf7w            # Q(du VU) = 1.0 / w
+>f60: vmulq.xyz    $vf7xyz,$vf7xyz,$Q        # x, y, z divisés — w laissé INTACT
+>f64: sqc2         $vf7,0(a0)
+>```
+>
+>Trois choses à retenir de ces huit lignes :
+>
+>- **La division n'affecte que `x`, `y`, `z`** (`vmulq.xyz`, masque `xyz`). Le `w` d'origine survit dans la 4ᵉ composante du vecteur écrit en sortie. Ce n'est pas un détail : c'est précisément ce qui permet aux conversions suivantes (`draw_convert_st`, `draw_convert_rgbq`) de relire `w` alors que le sommet est déjà projeté.
+>- **`w` sert aussi au clipping** (`vclipw.xyz` compare `x`, `y`, `z` à `±w`) : un point est dans le frustum si `-w ≤ x ≤ w`, etc. Le test se fait *avant* la division, en homogène, pour éviter le cas dégénéré `w ≤ 0` (derrière la caméra).
+>- **Le `Q` de cette instruction n'est pas celui de la GS.** Le VU possède un registre matériel nommé `Q`, destination obligatoire de `VDIV`. Que la valeur `1/w` y transite est une coïncidence de nom heureuse, pas une identité : le `Q` du GS est un champ du registre `RGBAQ`, alimenté par le GIF (voir 4 ci-dessous).
+>
+>Aucun registre de la GS n'accepte `w`. Il est consommé côté EE/VU, puis jeté.
+>
+>### 2. Pourquoi une division supplémentaire est nécessaire
+>
+>Une fois les sommets projetés, la GS interpole les attributs **linéairement en espace écran**. Pour la couleur c'est correct ; pour une coordonnée de texture, c'est faux dès que la surface est inclinée par rapport à l'écran, parce que la projection n'est pas affine : à mi-chemin *en pixels* entre deux sommets ne correspond pas le milieu *de la texture*.
+>
+>Exemple à deux sommets, `s` allant de 0 à 1, le second quatre fois plus loin (`w0 = 1`, `w1 = 4`) :
+>
+>| Méthode | Calcul à mi-écran | Résultat |
+>|---|---|---|
+>| Affine (interpolation directe de `s`) | `(0 + 1) / 2` | `0.500` |
+>| Perspective-correct | `(0/1 + 1/4)/2 ÷ (1/1 + 1/4)/2` = `0.125 / 0.625` | `0.200` |
+>
+>L'écart est énorme, et il ondule le long de l'arête : c'est le *texture warping* caractéristique de la PS1, qui n'avait pas ce mécanisme.
+>
+>Ce qui **est** linéaire en espace écran, en revanche, ce sont les quantités `s/w`, `t/w` et `1/w`. D'où la recette, qui est exactement celle du tableau ci-dessus :
+>
+>1. côté EE/VU, transmettre `S = s/w`, `T = t/w` et `Q = 1/w` ;
+>2. côté GS, interpoler ces trois-là linéairement (ce qu'elle sait faire) ;
+>3. par pixel, diviser : `S/Q = (s/w)/(1/w) = s`, la vraie coordonnée.
+>
+>La division par pixel est donc *la contrepartie* de la pré-division par sommet. `Q` n'existe que pour rendre cette division possible.
+>
+>### 3. `S` et `T` — coordonnées normalisées, pré-divisées par `w`
+>
+>`S` est l'axe horizontal de la texture, `T` le vertical, en **fraction de l'image** : `0.0` = bord gauche/haut, `1.0` = bord droit/bas, quelle que soit la taille réelle en texels. C'est la propriété qui fait leur intérêt en 3D — remplacer une texture 256×256 par une 512×512 ne change aucune coordonnée du mesh.
+>
+>Le registre `ST` fait 64 bits, deux `float32` bruts :
+>
+>```c
+>#define GIF_SET_ST(S, T) \
+>    (u64)((S)&0xFFFFFFFF) << 0 | (u64)((T)&0xFFFFFFFF) << 32
+>```
+>
+>Masque `0xFFFFFFFF`, **aucune conversion** : comme pour `Q` (section 3l), il faut y déposer le *bit pattern* IEEE-754, pas un `float` que le compilateur convertirait en entier.
+>
+>La pré-division est le travail de `draw_convert_st` (`draw3d.h:77`, « Calculates the st coordinates from the perspective coordinate q = 1/w »). Le désassemblage de `libdraw.a` montre la boucle complète :
+>
+>```
+>2a8: lwc1  $f2,0(v0)      # f2 = 1.0f   (.rodata.cst4[0] = 0x3f800000)
+>2c0: lwc1  $f0,0(a2)      # f0 = vertices[i].w   (offset +12 du VECTOR, pas 16)
+>2c8: c.eq.s $f0,$f3       # w == 0 ?
+>2d0: bc1t  2dc            #   oui → on saute la division, q reste 1.0f
+>2d8: div.s $f2,$f4,$f0    # q = 1.0f / w
+>2e4: lwc1  $f1,-16(a3)    # s  (coordinates[i].s)
+>2e8: lwc1  $f0,-12(a3)    # t  (coordinates[i].t)
+>2ec: mul.s $f1,$f1,$f2    # S = s × q
+>2f0: mul.s $f0,$f0,$f2    # T = t × q
+>2f4: swc1  $f1,-8(a0)     # → texel_t.s
+>```
+>
+>Autrement dit, **ce qui part vers la GS n'est jamais `s`, mais `s/w`**. Le garde-fou `w == 0` laisse `q = 1.0f` plutôt que produire un infini.
+>
+>Deux types cohabitent, à ne pas confondre (`ee/include/draw_types.h`) :
+>
+>| Type | Taille | Contenu | Rôle |
+>|---|---|---|---|
+>| `texel_f_t` | 128 bits (`VECTOR`) | `s`, `t`, `r`, `q` en `float` | **entrée** : les coordonnées brutes du mesh, format VU |
+>| `texel_t` | 64 bits | `s`, `t` (union avec `u`, `v`) | **sortie** : la valeur du registre `ST`, prête à empaqueter |
+>
+>Le `r` de `texel_f_t` n'a aucun équivalent GS (pas de texture 3D sur PS2) : la structure fait quatre flottants parce qu'un registre VU en fait quatre, pas parce que la GS les lit. Vérifié : `draw_convert_st` ne lit que les offsets 0 et 4 de son 4ᵉ argument, et ignore `r` et `q`.
+>
+>### 4. `Q` — le `1/w` transmis à la GS, logé dans `RGBAQ`
+>
+>`Q` occupe les bits 32-63 du registre `RGBAQ` (section 3l). Le placement paraît absurde — un coefficient de texture rangé avec la couleur — mais il est matériel : **la GS n'a pas de registre `Q` séparé**, et le format PACKED du GIF (section 3c) transporte l'entrée `ST` sur 128 bits, `S` en 0-31, `T` en 32-63 et `Q` en 64-95, ce troisième champ étant recopié par la GS dans le champ `Q` de `RGBAQ` au passage. Le registre `ST` proprement dit, lui, ne fait que 64 bits — d'où un `GIF_SET_ST` à deux arguments et un `GIF_SET_RGBAQ` à cinq.
+>
+>Côté EE, c'est `draw_convert_rgbq`/`draw_convert_rgbaq` (`draw3d.h:71` et `:74`, « and calculates q ») qui produisent `Q` — mêmes instructions que ci-dessus, même garde `w == 0` :
+>
+>```
+>148: lwc1  $f0,0(a2)      # f0 = vertices[i].w
+>160: div.s $f3,$f5,$f0    # q = 1.0f / w
+>18c: swc1  $f3,-4(a0)     # → 32 bits hauts du color_t (le champ q)
+>```
+>
+>Conséquence directe : **la conversion des couleurs et celle des coordonnées de texture lisent le même `w`**, et doivent donc recevoir le même tableau de sommets déjà transformés. Dans le sample officiel `samples/draw/texture/texture.c:232-238`, les trois conversions prennent bien `temp_vertices` — la sortie de `calculate_vertices`, pas les sommets d'origine.
+>
+>>[!Warning] L'ordre des registres dans un sommet conditionne la perspective
+>>`draw3d.h:38-55` documente deux listes de registres qui ne diffèrent que par l'ordre, et le commentaire du SDK est explicite :
+>>
+>>```c
+>>#define DRAW_STQ_REGLIST                 // RGBAQ, ST, XYZ2
+>>#define DRAW_STQ2_REGLIST                // ST, RGBAQ, XYZ2
+>>/* Without that, texture perspective correction will not work.
+>> * Bad example:  1. RGBA -> RGBAQ (q was not set!)  2. STQ -> ST  3. XYZ2
+>> * Good example: 1. STQ  -> ST   2. RGBA -> RGBAQ (q grabbed from STQ)  3. XYZ2 */
+>>```
+>>
+>>`Q` étant physiquement dans `RGBAQ`, écrire `RGBAQ` **après** `ST` récupère le `Q` que le transfert de `ST` vient de déposer ; l'écrire **avant** l'écrase avec le `Q` du sommet précédent. Les deux ordres sont valides, mais pas dans le même contexte : `DRAW_STQ_REGLIST` (`RGBAQ` d'abord) suppose que l'EE a calculé `Q` lui-même dans la valeur `RGBAQ`, ce que fait `draw_convert_rgbq` ; `DRAW_STQ2_REGLIST` (`ST` d'abord) est requis quand les couleurs viennent de VU1 sans champ `Q`. Le dessin est alors sans perspective — et silencieusement, sans la moindre erreur.
+>
+>### 5. Ce que la GS fait, par pixel
+>
+>Pour chaque pixel couvert par la primitive, avec `FST = 0` :
+>
+>```
+>u_texel = (S / Q) × 2^TW
+>v_texel = (T / Q) × 2^TH
+>```
+>
+>`TW` et `TH` sont les champs bits 26-29 et 30-33 du registre `TEX0` (`GS_SET_TEX0`, `gs_gp.h:281`) : ce sont les **log2** des dimensions de la texture, d'où le `draw_log2(256)` → `8` du sample. C'est cette multiplication qui convertit la fraction normalisée en adresse de texel, et c'est pour cela que `S`/`T` peuvent ignorer la taille de l'image : la taille est déjà dans `TEX0`.
+>
+>Ce qui se passe ensuite ne dépend plus de `STQ` : le débordement hors de `[0, 1]` est traité par `CLAMP` (répétition ou clamp), le filtrage entre texels par `TEX1` (`LOD_MAG_NEAREST`/`LINEAR`), la combinaison avec la couleur du sommet par le champ `TFX`/`TCC` de `TEX0` (`TEXTURE_FUNCTION_DECAL` dans le sample).
+>
+>### 6. `U` et `V` — la voie sans division
+>
+>Avec `FST = 1`, la GS lit le registre `UV` et ne divise rien :
+>
+>```c
+>#define GIF_SET_UV(U, V) \
+>    (u64)((U)&0x00003FFF) << 0 | (u64)((V)&0x00003FFF) << 16
+>```
+>
+>Masque `0x3FFF` = 14 bits par composante, en **virgule fixe 10.4** : 10 bits entiers (0 à 1023, ce qui couvre exactement la texture maximale de 1024×1024 de la GS) et 4 bits de décimale. Même famille de format que les coordonnées `XYZ` en 12.4 de la section 3g, mais l'unité n'est pas la même : `UV` compte des **texels**, `XYZ` des pixels écran — et `UV` n'a donc aucun biais de type `2048 << 4` à appliquer.
+>
+>Les 4 bits fractionnaires ne sont pas décoratifs : ils servent au filtrage bilinéaire, qui a besoin d'une position *entre* deux texels, et au centrage sur le centre du texel plutôt que sur son coin.
+>
+>Différence de nature avec `S`/`T` : `U = 128` désigne le 128ᵉ texel, quelle que soit la texture ; `S = 0.5` désigne le milieu, quelle que soit sa taille. Changer la résolution d'une texture invalide toutes les coordonnées `UV` du mesh, et aucune de ses coordonnées `ST`.
+>
+>Comme il n'y a pas de division, l'interpolation reste affine : `UV` n'est correct que si `w` est constant sur toute la primitive — 2D, HUD, sprites plein écran. C'est le cas d'usage exact du `PRIM = 6` de `main.c` : un sprite est un rectangle aligné sur les axes, défini par deux sommets, donc à `w` uniforme par construction ; `Q` n'y apporterait rien.
+>
+>### 7. Choisir la voie, en pratique
+>
+>| | `FST = 0` (STQ) | `FST = 1` (UV) |
+>|---|---|---|
+>| Registre lu | `ST` + le `Q` de `RGBAQ` | `UV` |
+>| Format | 3 × `float32` | 2 × 14 bits, 10.4 |
+>| Division par pixel | oui | non |
+>| Constante `prim_t` | `PRIM_MAP_ST` (`draw_primitives.h:25`) | `PRIM_MAP_UV` (`:26`) |
+>| Reglist | `DRAW_STQ_REGLIST` / `DRAW_STQ2_REGLIST` | `DRAW_UV_REGLIST` / `DRAW_RGBAQ_UV_REGLIST` |
+>| Pour | 3D, surfaces inclinées | 2D, sprites, HUD |
+>
+>Dans `main.c` (section 3b), `GIF_SET_PRIM(6, 0, 0, 0, 0, 0, 0, 0, 0)` pose `TME = 0` : aucune texture, donc ni `ST` ni `UV` ne sont lus. Le `FST = 0` visible en section 3j n'est qu'un zéro par défaut, pas un choix. Et le `Q = 0x3F800000` du `RGBAQ` est la valeur neutre : `S/1 = S`, la division par pixel devient l'identité. C'est ce qu'on met systématiquement en 2D.
+>
+>### 8. Récapitulatif des pièges
+>
+>- **`S`, `T` et `Q` sont des patterns binaires bruts.** Les trois macros masquent sans convertir. `GIF_SET_RGBAQ(r, g, b, a, 1)` pose un dénormalisé proche de zéro, pas `1.0f` (aparté IEEE-754, section 3l) ; `GIF_SET_ST(0, 1)` a le même défaut.
+>- **On envoie `s/w`, jamais `s`.** Oublier la pré-division donne une texture qui rétrécit avec la distance au lieu de se déformer correctement.
+>- **`w` doit survivre à la projection.** `calculate_vertices` le préserve exprès ; une routine de projection maison qui écrirait `1.0f` dans la 4ᵉ composante casserait `draw_convert_st` sans le dire.
+>- **L'ordre `RGBAQ`/`ST` dans le sommet** décide si la correction de perspective fonctionne (encadré de la section 4 ci-dessus).
+>- **`UV` mesure des texels, `ST` des fractions.** Les deux ne se substituent pas l'un à l'autre sans reconvertir : `U = S × 2^TW`.
+>
+>>[!Note] Démarche de vérification
+>>Les sources C de `libdraw`/`libmath3d` ne sont pas installées ; les comportements ci-dessus ont été lus dans le code machine des archives :
+>>
+>>```bash
+>>ar x /usr/local/ps2dev/ps2sdk/ee/lib/libdraw.a       # → draw3d.o
+>>ar x /usr/local/ps2dev/ps2sdk/ee/lib/libmath3d.a     # → math3d.o
+>>mips64r5900el-ps2-elf-objdump -d draw3d.o
+>>mips64r5900el-ps2-elf-objdump -s -j .rodata.cst4 draw3d.o
+>>```
+>>
+>>Les quatre constantes flottantes de `draw3d.o` lèvent toute ambiguïté sur les facteurs employés :
+>>
+>>| Offset | Octets | Valeur | Utilisée par |
+>>|---|---|---|---|
+>>| `+0` | `0000803f` | `1.0f` | numérateur de `q = 1/w` (`draw_convert_st`, `_rgbq`, `_rgbaq`) |
+>>| `+4` | `00000043` | `128.0f` | mise à l'échelle des couleurs flottantes (`draw_convert_rgbq`) |
+>>| `+8` | `00008041` | `16.0f` | passage en virgule fixe 12.4 (`draw_convert_xyz`, section 3g) |
+>>| `+12` | `0000004f` | `2³¹` | mise à l'échelle du `Z` (`draw_convert_xyz`) |
+>>
+>>Le sample de référence complet est `/usr/local/ps2dev/ps2sdk/samples/draw/texture/texture.c` — cube texturé, `PRIM_MAP_ST`, `DRAW_STQ_REGLIST`, seul exemple du SDK qui exerce la chaîne `STQ` de bout en bout.
