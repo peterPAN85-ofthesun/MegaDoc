@@ -21,6 +21,46 @@ La conséquence la plus structurante est une règle de séparation stricte : **l
 
 Cette architecture se lit dans l'arborescence du PS2SDK : `ee/` (en-têtes et toolchain de l'EE), `iop/` (toolchain IOP et 212 modules IRX précompilés), `dvp/` (troisième processeur, marginal), `gsKit/` (couche graphique haut niveau). Deux toolchains complets et distincts cohabitent, `mips64r5900el-ps2-elf-` pour l'EE et `mipsel-none-elf-` pour l'IOP.
 
+<svg viewBox="0 0 450 300" width="100%" style="max-width:450px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Architecture multiprocesseur de la PS2 : EE, GS, IOP, IPU et leurs bus">
+<defs><marker id="p2a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+<rect x="20" y="52" width="170" height="108" rx="7" fill="#4c9aff" fill-opacity="0.08" stroke="#4c9aff" stroke-width="1.7"/>
+<text x="30" y="70" font-size="12" fill="#4c9aff">EE — Emotion Engine</text>
+<text x="30" y="84" font-size="9.5" fill="#4c9aff" opacity="0.85">MIPS III R5900 · 32 Mo RAM</text>
+<rect x="30" y="92" width="68" height="24" rx="4" fill="none" stroke="#4c9aff" stroke-width="1.2"/>
+<text x="52" y="108" font-size="10" fill="#4c9aff">VU0</text>
+<rect x="104" y="92" width="68" height="24" rx="4" fill="none" stroke="#4c9aff" stroke-width="1.2"/>
+<text x="126" y="108" font-size="10" fill="#4c9aff">VU1</text>
+<rect x="30" y="122" width="142" height="24" rx="4" fill="none" stroke="#4c9aff" stroke-width="1.2" stroke-dasharray="3 2"/>
+<text x="52" y="138" font-size="10" fill="#4c9aff">DMAC — 10 canaux</text>
+<rect x="280" y="52" width="150" height="62" rx="7" fill="#27ae60" fill-opacity="0.08" stroke="#27ae60" stroke-width="1.7"/>
+<text x="290" y="70" font-size="12" fill="#27ae60">GS — Graphics Synth.</text>
+<text x="290" y="86" font-size="9.5" fill="#27ae60" opacity="0.85">rasterizer à registres</text>
+<text x="290" y="102" font-size="9.5" fill="#27ae60" opacity="0.85">4 Mo VRAM · aucun shader</text>
+<line x1="190" y1="82" x2="278" y2="82" stroke="currentColor" stroke-width="2.4" marker-end="url(#p2a)"/>
+<text x="206" y="74" font-size="10" fill="currentColor">GIF</text>
+<text x="196" y="98" font-size="9" fill="currentColor" opacity="0.7">paquets DMA</text>
+<rect x="280" y="130" width="150" height="46" rx="7" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="4 3"/>
+<text x="290" y="148" font-size="11" fill="currentColor">IPU</text>
+<text x="290" y="164" font-size="9.5" fill="currentColor" opacity="0.8">décodage MPEG</text>
+<line x1="190" y1="140" x2="278" y2="150" stroke="currentColor" stroke-width="1.3" stroke-dasharray="4 3"/>
+<rect x="20" y="200" width="170" height="80" rx="7" fill="#f2994a" fill-opacity="0.08" stroke="#f2994a" stroke-width="1.7"/>
+<text x="30" y="218" font-size="12" fill="#f2994a">IOP — I/O Processor</text>
+<text x="30" y="232" font-size="9.5" fill="#f2994a" opacity="0.85">MIPS I (PS1) · 2 Mo RAM</text>
+<text x="30" y="248" font-size="9.5" fill="#f2994a" opacity="0.85">modules IRX chargés au runtime</text>
+<text x="30" y="266" font-size="9.5" fill="#f2994a" opacity="0.85">aucun calcul lourd, que de l'I/O</text>
+<line x1="105" y1="160" x2="105" y2="198" stroke="currentColor" stroke-width="2.4" marker-end="url(#p2a)"/>
+<line x1="125" y1="198" x2="125" y2="162" stroke="currentColor" stroke-width="2.4" marker-end="url(#p2a)"/>
+<text x="132" y="182" font-size="10" fill="currentColor">SIF (RPC)</text>
+<rect x="250" y="200" width="180" height="80" rx="7" fill="none" stroke="#f2994a" stroke-width="1.2" stroke-dasharray="4 3"/>
+<text x="260" y="218" font-size="10.5" fill="#f2994a">périphériques</text>
+<text x="260" y="236" font-size="9.5" fill="currentColor" opacity="0.8">manette · carte mémoire · CD/DVD</text>
+<text x="260" y="252" font-size="9.5" fill="currentColor" opacity="0.8">USB · réseau · son</text>
+<text x="260" y="270" font-size="9.5" fill="#e05252">l'EE ne les atteint JAMAIS directement</text>
+<line x1="190" y1="240" x2="248" y2="240" stroke="#f2994a" stroke-width="2" marker-end="url(#p2a)"/>
+<text x="16" y="28" font-size="12" fill="currentColor">cinq processeurs spécialisés, aucun ne fait le travail d'un autre</text>
+<text x="16" y="42" font-size="10.5" fill="currentColor" opacity="0.75">deux toolchains distincts : mips64r5900el-ps2-elf- (EE) et mipsel-none-elf- (IOP)</text>
+</svg>
+
 ## Exemples
 
 ### Schéma d'ensemble

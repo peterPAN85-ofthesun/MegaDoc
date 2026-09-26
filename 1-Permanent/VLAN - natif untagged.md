@@ -26,6 +26,25 @@ VLAN 1  → Trame NON taguée (si VLAN natif = 1)
 
 **Par défaut sur Cisco** : VLAN natif = VLAN 1
 
+<svg viewBox="0 0 440 215" width="100%" style="max-width:440px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="VLAN natif : trames non taguées sur un lien trunk">
+<rect x="20" y="88" width="90" height="34" rx="5" fill="none" stroke="currentColor" stroke-width="1.6"/>
+<text x="44" y="110" font-size="12" fill="currentColor">SWITCH</text>
+<rect x="330" y="88" width="90" height="34" rx="5" fill="none" stroke="currentColor" stroke-width="1.6"/>
+<text x="354" y="110" font-size="12" fill="currentColor">SWITCH</text>
+<line x1="110" y1="105" x2="330" y2="105" stroke="currentColor" stroke-width="4"/>
+<text x="186" y="98" font-size="11" fill="currentColor">lien TRUNK</text>
+<rect x="128" y="36" width="90" height="24" rx="4" fill="#4c9aff" fill-opacity="0.18" stroke="#4c9aff" stroke-width="1.2"/>
+<text x="136" y="52" font-size="10.5" fill="#4c9aff">[tag 10] VLAN 10</text>
+<rect x="128" y="62" width="90" height="24" rx="4" fill="#f2994a" fill-opacity="0.18" stroke="#f2994a" stroke-width="1.2"/>
+<text x="136" y="78" font-size="10.5" fill="#f2994a">[tag 20] VLAN 20</text>
+<rect x="232" y="128" width="130" height="26" rx="4" fill="#27ae60" fill-opacity="0.18" stroke="#27ae60" stroke-width="1.4" stroke-dasharray="4 3"/>
+<text x="240" y="145" font-size="10.5" fill="#27ae60">VLAN 1 — SANS tag</text>
+<line x1="220" y1="105" x2="232" y2="132" stroke="#27ae60" stroke-width="1.2" stroke-dasharray="3 2"/>
+<text x="232" y="170" font-size="10.5" fill="#27ae60">VLAN natif : CDP, VTP, DTP, vieux matériels</text>
+<text x="20" y="196" font-size="11" fill="#f2994a" opacity="0.95">⚠ risque : double tagging — l'attaquant place un faux tag sous le tag natif absent</text>
+<text x="16" y="22" font-size="12" fill="currentColor">sur un trunk, un seul VLAN circule en clair : le VLAN natif</text>
+</svg>
+
 ## Pourquoi un VLAN natif ?
 
 **Historiquement** : Compatibilité avec équipements anciens ne supportant pas 802.1Q

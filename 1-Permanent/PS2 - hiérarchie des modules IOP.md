@@ -21,6 +21,27 @@ En dessous de tout cela vit un micro-noyau IOP déjà chargé par le firmware av
 
 Cette structure explique pourquoi l'ordre de chargement compte : charger `PADMAN` sans `SIO2MAN` échoue, puisque la couche haute s'appuie sur la couche basse. Elle explique aussi pourquoi certains modules ne se chargent jamais explicitement : le firmware l'a déjà fait.
 
+<svg viewBox="0 0 450 295" width="100%" style="max-width:450px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pile en couches des modules IOP, du micro-noyau au client EE">
+<defs><marker id="isa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+<rect x="20" y="42" width="410" height="48" rx="6" fill="#4c9aff" fill-opacity="0.1" stroke="#4c9aff" stroke-width="1.6"/>
+<text x="30" y="60" font-size="11" fill="#4c9aff">CLIENT côté EE — l'API que vous appelez</text>
+<text x="30" y="80" font-size="10" fill="#4c9aff">libpad · libmc · fileXio</text>
+<line x1="225" y1="90" x2="225" y2="106" stroke="currentColor" stroke-width="1.6" marker-end="url(#isa)"/>
+<rect x="20" y="106" width="410" height="48" rx="6" fill="#27ae60" fill-opacity="0.1" stroke="#27ae60" stroke-width="1.6"/>
+<text x="30" y="124" font-size="11" fill="#27ae60">COUCHE SERVEUR — vue fichiers/répertoires + service RPC</text>
+<text x="30" y="144" font-size="10" fill="#27ae60">MCSERV · CDVDFSV · USBHDFSD · AUDSRV</text>
+<line x1="225" y1="154" x2="225" y2="170" stroke="currentColor" stroke-width="1.6" marker-end="url(#isa)"/>
+<rect x="20" y="170" width="410" height="48" rx="6" fill="#f2994a" fill-opacity="0.1" stroke="#f2994a" stroke-width="1.6"/>
+<text x="30" y="188" font-size="11" fill="#f2994a">DRIVER BAS NIVEAU — secteurs et blocs bruts</text>
+<text x="30" y="208" font-size="10" fill="#f2994a">MCMAN · CDVDMAN · USBD · libsd</text>
+<line x1="225" y1="218" x2="225" y2="234" stroke="currentColor" stroke-width="1.6" marker-end="url(#isa)"/>
+<rect x="20" y="234" width="410" height="52" rx="6" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3"/>
+<text x="30" y="252" font-size="11" fill="currentColor">MICRO-NOYAU IOP — déjà chargé par le firmware</text>
+<text x="30" y="268" font-size="9.5" fill="currentColor" opacity="0.85">LOADCORE · SYSMEM · INTRMAN · THREADMAN · EXCEPMAN · VBLANK</text>
+<text x="30" y="281" font-size="9.5" fill="currentColor" opacity="0.85">SIFMAN/SIFCMD/SIFINIT · IOMAN</text>
+<text x="16" y="28" font-size="12" fill="currentColor">le même schéma se répète pour chaque famille de périphériques</text>
+</svg>
+
 ## Exemples
 
 ### Le schéma appliqué à quatre familles

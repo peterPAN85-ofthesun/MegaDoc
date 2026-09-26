@@ -21,6 +21,35 @@ Le transfert DMA est asynchrone : le contrôleur copie les quadwords vers le GIF
 
 Ces attentes ne sont pas redondantes mais **complémentaires**, chacune à un étage différent. `dma_wait_fast()` porte sur la couche transport — les octets sont-ils partis ? `draw_wait_finish()` porte sur la couche rendu — le GS a-t-il traité la primitive FINISH ajoutée en fin de paquet par `draw_finish(q)` ? `graph_wait_vsync()` porte sur l'affichage — le balayage vertical est-il revenu ? Les trois s'utilisent à des endroits différents du cycle de rendu.
 
+<svg viewBox="0 0 450 250" width="100%" style="max-width:450px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Trois attentes complémentaires : transport DMA, traitement GS, balayage écran">
+<defs><marker id="sya" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+<text x="16" y="26" font-size="12" fill="currentColor">trois étages, trois attentes — complémentaires, jamais redondantes</text>
+<rect x="16" y="40" width="128" height="72" rx="6" fill="#4c9aff" fill-opacity="0.09" stroke="#4c9aff" stroke-width="1.5"/>
+<text x="26" y="58" font-size="10" fill="#4c9aff">1 · TRANSPORT</text>
+<text x="26" y="76" font-size="9" fill="#4c9aff" opacity="0.9">les octets sont-ils</text>
+<text x="26" y="88" font-size="9" fill="#4c9aff" opacity="0.9">partis vers le GIF ?</text>
+<text x="26" y="106" font-size="9.5" fill="#4c9aff">dma_wait_fast()</text>
+<line x1="144" y1="76" x2="164" y2="76" stroke="currentColor" stroke-width="1.6" marker-end="url(#sya)"/>
+<rect x="166" y="40" width="128" height="72" rx="6" fill="#27ae60" fill-opacity="0.09" stroke="#27ae60" stroke-width="1.5"/>
+<text x="176" y="58" font-size="10" fill="#27ae60">2 · RENDU</text>
+<text x="176" y="76" font-size="9" fill="#27ae60" opacity="0.9">le GS a-t-il traité</text>
+<text x="176" y="88" font-size="9" fill="#27ae60" opacity="0.9">la primitive FINISH ?</text>
+<text x="176" y="106" font-size="9.5" fill="#27ae60">draw_wait_finish()</text>
+<line x1="294" y1="76" x2="314" y2="76" stroke="currentColor" stroke-width="1.6" marker-end="url(#sya)"/>
+<rect x="316" y="40" width="118" height="72" rx="6" fill="#f2994a" fill-opacity="0.09" stroke="#f2994a" stroke-width="1.5"/>
+<text x="326" y="58" font-size="10" fill="#f2994a">3 · AFFICHAGE</text>
+<text x="326" y="76" font-size="9" fill="#f2994a" opacity="0.9">le balayage vertical</text>
+<text x="326" y="88" font-size="9" fill="#f2994a" opacity="0.9">est-il revenu ?</text>
+<text x="326" y="106" font-size="9.5" fill="#f2994a">graph_wait_vsync()</text>
+<rect x="16" y="132" width="418" height="56" rx="5" fill="#e05252" fill-opacity="0.07" stroke="#e05252" stroke-width="1.3"/>
+<text x="26" y="150" font-size="10.5" fill="#e05252">la race condition à éviter</text>
+<text x="26" y="166" font-size="9.5" fill="#e05252" opacity="0.95">dma_channel_send_normal rend la main IMMÉDIATEMENT — le DMA lit encore le packet_t</text>
+<text x="26" y="180" font-size="9.5" fill="#e05252" opacity="0.95">le réécrire trop tôt : le GS reçoit un mélange de l'ancienne et de la nouvelle frame</text>
+<rect x="16" y="200" width="418" height="38" rx="5" fill="none" stroke="currentColor" stroke-width="1.1" stroke-dasharray="4 3"/>
+<text x="26" y="216" font-size="9.5" fill="currentColor">fast mode : dma_channel_fast_waits(channel) une seule fois à l'init</text>
+<text x="26" y="230" font-size="9" fill="currentColor" opacity="0.8">dma_wait_fast() sait alors quel canal surveiller, sans le repasser à chaque appel</text>
+</svg>
+
 ## Exemples
 
 ### Enregistrement à l'initialisation

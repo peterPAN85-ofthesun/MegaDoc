@@ -21,6 +21,39 @@ Aucun des deux n'étant en ROM, ils sont convertis en tableaux C par `bin2c` au 
 
 Une fois `fileXioInit()` effectué, on accède au disque via le device `cdrom0:` — le même préfixe que dans `SYSTEM.CNF`, avec la syntaxe ISO9660 `cdrom0:\DATA.BIN;1` — à travers les fonctions `fileXio*` ou les I/O standard. Pour un besoin plus bas niveau (secteurs bruts, type de disque, TOC), `libcdvd` existe, mais l'accès façon fichier suffit pour charger des assets.
 
+<svg viewBox="0 0 450 265" width="100%" style="max-width:450px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Chaîne de build et de runtime pour accéder au disque avec fileXio">
+<defs><marker id="fxa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+<text x="16" y="24" font-size="11" fill="#4c9aff">AU BUILD — les deux modules sont absents de la ROM</text>
+<rect x="16" y="32" width="112" height="36" rx="4" fill="none" stroke="#4c9aff" stroke-width="1.3"/>
+<text x="24" y="48" font-size="9" fill="#4c9aff">iomanX.irx</text>
+<text x="24" y="62" font-size="9" fill="#4c9aff">fileXio.irx</text>
+<line x1="128" y1="50" x2="150" y2="50" stroke="currentColor" stroke-width="1.5" marker-end="url(#fxa)"/>
+<rect x="152" y="32" width="90" height="36" rx="4" fill="#4c9aff" fill-opacity="0.15" stroke="#4c9aff" stroke-width="1.3"/>
+<text x="176" y="54" font-size="9.5" fill="#4c9aff">bin2c</text>
+<line x1="242" y1="50" x2="264" y2="50" stroke="currentColor" stroke-width="1.5" marker-end="url(#fxa)"/>
+<rect x="266" y="32" width="168" height="36" rx="4" fill="#4c9aff" fill-opacity="0.1" stroke="#4c9aff" stroke-width="1.3"/>
+<text x="276" y="54" font-size="9.5" fill="#4c9aff">tableaux C liés dans l'ELF</text>
+<text x="16" y="94" font-size="11" fill="#f2994a">AU RUNTIME — séquence obligatoire</text>
+<rect x="16" y="102" width="100" height="40" rx="4" fill="#f2994a" fill-opacity="0.12" stroke="#f2994a" stroke-width="1.3"/>
+<text x="24" y="118" font-size="9" fill="#f2994a">SifIopReset</text>
+<text x="24" y="132" font-size="9" fill="#f2994a">SifIopSync</text>
+<line x1="116" y1="122" x2="134" y2="122" stroke="currentColor" stroke-width="1.5" marker-end="url(#fxa)"/>
+<rect x="136" y="102" width="130" height="40" rx="4" fill="#f2994a" fill-opacity="0.12" stroke="#f2994a" stroke-width="1.3"/>
+<text x="144" y="118" font-size="8.5" fill="#f2994a">sbv_patch_enable_lmb()</text>
+<text x="144" y="132" font-size="8.5" fill="#f2994a">…disable_prefix_check()</text>
+<line x1="266" y1="122" x2="284" y2="122" stroke="currentColor" stroke-width="1.5" marker-end="url(#fxa)"/>
+<rect x="286" y="102" width="148" height="40" rx="4" fill="#f2994a" fill-opacity="0.12" stroke="#f2994a" stroke-width="1.3"/>
+<text x="294" y="118" font-size="9" fill="#f2994a">SifExecModuleBuffer</text>
+<text x="294" y="132" font-size="8.5" fill="#f2994a" opacity="0.85">charge depuis la mémoire</text>
+<text x="144" y="156" font-size="8.5" fill="#f2994a" opacity="0.85">autorisent les modules non signés</text>
+<line x1="360" y1="142" x2="360" y2="164" stroke="currentColor" stroke-width="1.5" marker-end="url(#fxa)"/>
+<rect x="136" y="170" width="298" height="34" rx="4" fill="#27ae60" fill-opacity="0.12" stroke="#27ae60" stroke-width="1.4"/>
+<text x="146" y="191" font-size="10" fill="#27ae60">fileXioInit() → le disque est accessible</text>
+<rect x="16" y="216" width="418" height="42" rx="5" fill="none" stroke="currentColor" stroke-width="1.1" stroke-dasharray="4 3"/>
+<text x="26" y="234" font-size="9.5" fill="currentColor">device cdrom0: — même préfixe que dans SYSTEM.CNF, syntaxe ISO9660</text>
+<text x="26" y="250" font-size="9" fill="currentColor" opacity="0.85">cdrom0:\DATA.BIN;1 · pour les secteurs bruts et la TOC, passer par libcdvd</text>
+</svg>
+
 ## Exemples
 
 ### Initialisation complète

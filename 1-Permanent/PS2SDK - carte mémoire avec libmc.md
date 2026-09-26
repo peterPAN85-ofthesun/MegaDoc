@@ -23,6 +23,41 @@ Une fois `mcInit` effectué, l'API fichier standard fonctionne directement sur l
 
 Enfin, une sauvegarde PS2 n'est pas un fichier mais un **dossier** contenant `icon.sys` — les métadonnées d'affichage dans le navigateur de la console : couleurs, éclairage 3D de l'icône, nom en SJIS — accompagné des fichiers d'icône `.icn` et des données du jeu.
 
+<svg viewBox="0 0 450 255" width="100%" style="max-width:450px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pile de modules et modèle asynchrone de libmc">
+<defs><marker id="mca" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+<text x="16" y="24" font-size="11.5" fill="currentColor">trois modules, dans cet ordre</text>
+<rect x="16" y="32" width="126" height="30" rx="4" fill="#f2994a" fill-opacity="0.14" stroke="#f2994a" stroke-width="1.3"/>
+<text x="26" y="52" font-size="9.5" fill="#f2994a">1 · SIO2MAN (bus)</text>
+<line x1="142" y1="47" x2="158" y2="47" stroke="currentColor" stroke-width="1.4" marker-end="url(#mca)"/>
+<rect x="160" y="32" width="126" height="30" rx="4" fill="#f2994a" fill-opacity="0.14" stroke="#f2994a" stroke-width="1.3"/>
+<text x="170" y="52" font-size="9.5" fill="#f2994a">2 · MCMAN (blocs)</text>
+<line x1="286" y1="47" x2="302" y2="47" stroke="currentColor" stroke-width="1.4" marker-end="url(#mca)"/>
+<rect x="304" y="32" width="130" height="30" rx="4" fill="#f2994a" fill-opacity="0.14" stroke="#f2994a" stroke-width="1.3"/>
+<text x="314" y="52" font-size="9.5" fill="#f2994a">3 · MCSERV (FS+RPC)</text>
+<text x="16" y="82" font-size="9.5" fill="currentColor">puis mcInit(MC_TYPE_MC) côté EE</text>
+<rect x="16" y="94" width="206" height="80" rx="5" fill="#e05252" fill-opacity="0.07" stroke="#e05252" stroke-width="1.3"/>
+<text x="26" y="112" font-size="10" fill="#e05252">API mc* — ASYNCHRONE</text>
+<rect x="26" y="120" width="186" height="20" rx="3" fill="none" stroke="#e05252" stroke-width="1"/>
+<text x="32" y="134" font-size="8.5" fill="#e05252">mcGetInfo() → rend la main aussitôt</text>
+<rect x="26" y="144" width="186" height="20" rx="3" fill="#27ae60" fill-opacity="0.15" stroke="#27ae60" stroke-width="1.2"/>
+<text x="32" y="158" font-size="8.5" fill="#27ae60">mcSync() → bloque et renseigne le retour</text>
+<text x="26" y="170" font-size="8" fill="#e05252" opacity="0.9">sans mcSync : valeurs non initialisées, sans erreur</text>
+<rect x="232" y="94" width="202" height="80" rx="5" fill="#27ae60" fill-opacity="0.08" stroke="#27ae60" stroke-width="1.3"/>
+<text x="242" y="112" font-size="10" fill="#27ae60">API fichier standard — la voie simple</text>
+<text x="242" y="132" font-size="9" fill="#27ae60" opacity="0.95">devices mc0: (slot 0) et mc1: (slot 1)</text>
+<text x="242" y="150" font-size="9" fill="#27ae60" opacity="0.95">open · read · write · close · mkdir</text>
+<text x="242" y="166" font-size="8.5" fill="#27ae60" opacity="0.8">fonctionne dès mcInit effectué</text>
+<rect x="16" y="188" width="418" height="58" rx="5" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3"/>
+<text x="26" y="206" font-size="10" fill="currentColor">une sauvegarde PS2 n'est pas un fichier mais un DOSSIER</text>
+<rect x="26" y="214" width="110" height="24" rx="3" fill="#4c9aff" fill-opacity="0.15" stroke="#4c9aff" stroke-width="1.1"/>
+<text x="34" y="230" font-size="8.5" fill="#4c9aff">icon.sys (métadonnées)</text>
+<rect x="144" y="214" width="90" height="24" rx="3" fill="none" stroke="currentColor" stroke-width="1"/>
+<text x="154" y="230" font-size="8.5" fill="currentColor">icônes .icn</text>
+<rect x="242" y="214" width="110" height="24" rx="3" fill="none" stroke="currentColor" stroke-width="1"/>
+<text x="252" y="230" font-size="8.5" fill="currentColor">données du jeu</text>
+<text x="360" y="230" font-size="8" fill="currentColor" opacity="0.75">nom en SJIS</text>
+</svg>
+
 ## Exemples
 
 ### Lister la racine de la carte

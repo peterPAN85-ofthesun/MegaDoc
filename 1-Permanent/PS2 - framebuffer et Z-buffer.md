@@ -21,6 +21,32 @@ Les deux sont décrits par des structures distinctes dans `ee/include/draw_buffe
 
 Quand `z->enable = 0`, cas de tous les samples 2D, le test de profondeur est désactivé : les primitives s'écrivent dans le framebuffer strictement **dans leur ordre d'envoi**, la dernière écrasant la précédente. Il n'y a alors aucune notion de profondeur 3D — ce qui est parfaitement suffisant pour du sprite et de l'interface, et économise l'allocation VRAM correspondante.
 
+<svg viewBox="0 0 450 240" width="100%" style="max-width:450px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Framebuffer et Z-buffer, deux buffers VRAM distincts">
+<rect x="16" y="40" width="200" height="96" rx="6" fill="#4c9aff" fill-opacity="0.08" stroke="#4c9aff" stroke-width="1.5"/>
+<text x="26" y="58" font-size="11" fill="#4c9aff">FRAMEBUFFER — la couleur</text>
+<text x="26" y="76" font-size="9" fill="#4c9aff" opacity="0.9">ce qui est réellement affiché</text>
+<text x="26" y="92" font-size="9" fill="#4c9aff" opacity="0.9">relié à la sortie par graph_initialize</text>
+<text x="26" y="110" font-size="9" fill="#4c9aff">champ psm · existe toujours</text>
+<text x="26" y="126" font-size="9" fill="#4c9aff" opacity="0.75">struct framebuffer_t</text>
+<rect x="234" y="40" width="200" height="96" rx="6" fill="#f2994a" fill-opacity="0.08" stroke="#f2994a" stroke-width="1.5"/>
+<text x="244" y="58" font-size="11" fill="#f2994a">Z-BUFFER — la profondeur</text>
+<text x="244" y="76" font-size="9" fill="#f2994a" opacity="0.9">distance à la caméra par pixel</text>
+<text x="244" y="92" font-size="9" fill="#f2994a" opacity="0.9">test d'occlusion : garde le plus proche</text>
+<text x="244" y="110" font-size="9" fill="#f2994a">champ zsm (≠ psm) · enable · method</text>
+<text x="244" y="126" font-size="9" fill="#f2994a" opacity="0.75">struct zbuffer_t</text>
+<text x="16" y="26" font-size="12" fill="currentColor">deux structures séparées dans ee/include/draw_buffers.h — et deux jeux de constantes</text>
+<rect x="16" y="150" width="200" height="76" rx="5" fill="none" stroke="#27ae60" stroke-width="1.3"/>
+<text x="26" y="168" font-size="10" fill="#27ae60">z->enable = 1 — rendu 3D</text>
+<polygon points="40,206 90,180 130,206" fill="#27ae60" fill-opacity="0.35" stroke="#27ae60" stroke-width="1"/>
+<polygon points="90,214 140,188 180,214" fill="#4c9aff" fill-opacity="0.2" stroke="#4c9aff" stroke-width="1" stroke-dasharray="3 2"/>
+<text x="140" y="178" font-size="8.5" fill="#27ae60">le plus proche gagne</text>
+<rect x="234" y="150" width="200" height="76" rx="5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-dasharray="4 3"/>
+<text x="244" y="168" font-size="10" fill="currentColor">z->enable = 0 — 2D, tous les samples</text>
+<polygon points="258,206 308,180 348,206" fill="#27ae60" fill-opacity="0.3" stroke="#27ae60" stroke-width="1"/>
+<polygon points="300,214 350,188 390,214" fill="#4c9aff" fill-opacity="0.5" stroke="#4c9aff" stroke-width="1"/>
+<text x="244" y="234" font-size="8.5" fill="currentColor" opacity="0.8">ordre d'envoi strict : la dernière écrase — et pas d'allocation VRAM pour le Z</text>
+</svg>
+
 ## Exemples
 
 ### Les deux structures

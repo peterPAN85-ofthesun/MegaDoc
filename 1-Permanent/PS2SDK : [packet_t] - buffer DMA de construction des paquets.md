@@ -21,6 +21,37 @@ Le type détermine **où** vit le buffer. `PACKET_NORMAL` utilise la RAM EE clas
 
 Le dimensionnement mérite attention : sous-dimensionner entraîne une **écriture hors bornes silencieuse**, la PS2 n'ayant pas de protection mémoire stricte côté EE — pas de crash garanti, seulement de la corruption potentielle. Sur-dimensionner ne coûte que quelques centaines d'octets. En pratique on prévoit large : `packet_init(50, PACKET_NORMAL)` pour un contenu réel d'une dizaine de quadwords.
 
+<svg viewBox="0 0 450 245" width="100%" style="max-width:450px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Structure d'un packet_t : buffer aligné 64 octets, capacité et quadwords utilisés">
+<text x="16" y="26" font-size="12" fill="currentColor">packet_t : un buffer aligné, prêt pour le DMA</text>
+<rect x="16" y="38" width="418" height="52" rx="5" fill="none" stroke="currentColor" stroke-width="1.4"/>
+<rect x="20" y="42" width="52" height="44" rx="3" fill="#27ae60" fill-opacity="0.2" stroke="#27ae60" stroke-width="1.2"/>
+<text x="30" y="60" font-size="8.5" fill="#27ae60">GIFtag</text>
+<rect x="74" y="42" width="52" height="44" rx="3" fill="#27ae60" fill-opacity="0.12" stroke="#27ae60" stroke-width="1"/>
+<text x="86" y="60" font-size="8.5" fill="#27ae60">qword</text>
+<rect x="128" y="42" width="52" height="44" rx="3" fill="#27ae60" fill-opacity="0.12" stroke="#27ae60" stroke-width="1"/>
+<text x="140" y="60" font-size="8.5" fill="#27ae60">qword</text>
+<rect x="182" y="42" width="52" height="44" rx="3" fill="#27ae60" fill-opacity="0.12" stroke="#27ae60" stroke-width="1"/>
+<text x="194" y="60" font-size="8.5" fill="#27ae60">qword</text>
+<rect x="236" y="42" width="194" height="44" rx="3" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="286" y="66" font-size="9" fill="currentColor" opacity="0.7">capacité restante (prévoir large)</text>
+<line x1="20" y1="96" x2="234" y2="96" stroke="#27ae60" stroke-width="1.2"/>
+<text x="76" y="110" font-size="9" fill="#27ae60">qwc — quadwords utilisés</text>
+<line x1="20" y1="118" x2="430" y2="118" stroke="currentColor" stroke-width="1" opacity="0.6"/>
+<text x="150" y="132" font-size="9" fill="currentColor" opacity="0.75">capacité allouée en quadwords</text>
+<rect x="16" y="142" width="132" height="44" rx="5" fill="#4c9aff" fill-opacity="0.1" stroke="#4c9aff" stroke-width="1.3"/>
+<text x="26" y="160" font-size="9.5" fill="#4c9aff">PACKET_NORMAL</text>
+<text x="26" y="176" font-size="8.5" fill="#4c9aff" opacity="0.9">RAM EE cachée</text>
+<rect x="156" y="142" width="132" height="44" rx="5" fill="#f2994a" fill-opacity="0.1" stroke="#f2994a" stroke-width="1.3"/>
+<text x="166" y="160" font-size="9.5" fill="#f2994a">PACKET_UCAB</text>
+<text x="166" y="176" font-size="8.5" fill="#f2994a" opacity="0.9">uncached accelerated</text>
+<rect x="296" y="142" width="138" height="44" rx="5" fill="#27ae60" fill-opacity="0.1" stroke="#27ae60" stroke-width="1.3"/>
+<text x="306" y="160" font-size="9.5" fill="#27ae60">PACKET_SPR</text>
+<text x="306" y="176" font-size="8.5" fill="#27ae60" opacity="0.9">scratchpad 16 Ko, le + rapide</text>
+<rect x="16" y="198" width="418" height="38" rx="5" fill="#e05252" fill-opacity="0.07" stroke="#e05252" stroke-width="1.2"/>
+<text x="26" y="214" font-size="9.5" fill="#e05252">alignement 64 octets obligatoire : le DMA transfère par quadwords de 16 octets</text>
+<text x="26" y="228" font-size="9" fill="#e05252" opacity="0.9">sous-dimensionner = écriture hors bornes SILENCIEUSE (pas de protection mémoire côté EE)</text>
+</svg>
+
 ## Exemples
 
 ### La structure

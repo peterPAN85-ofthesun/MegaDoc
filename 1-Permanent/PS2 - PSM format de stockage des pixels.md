@@ -21,6 +21,27 @@ Le piège majeur est la **coexistence de deux nomenclatures**. `common/include/g
 
 Le compromis pratique est simple : `CT32` donne l'alpha complet mais consomme le plus, `CT24` économise en perdant l'alpha, `CT16`/`CT16S` divisent la taille par deux au prix de la précision (5 bits par canal, 1 bit d'alpha), et `T8`/`T4` sont réservés aux textures indexées avec palette CLUT.
 
+<svg viewBox="0 0 450 260" width="100%" style="max-width:450px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Formats PSM et le piège des deux nomenclatures">
+<text x="16" y="26" font-size="12" fill="currentColor">le PSM décide de ce qui tient dans les 4 Mo de VRAM</text>
+<rect x="16" y="38" width="418" height="30" rx="4" fill="#4c9aff" fill-opacity="0.2" stroke="#4c9aff" stroke-width="1.3"/>
+<text x="26" y="57" font-size="9.5" fill="#4c9aff">CT32 — R8 G8 B8 A8 · alpha complet, coût maximal</text>
+<rect x="16" y="72" width="314" height="26" rx="4" fill="#4c9aff" fill-opacity="0.15" stroke="#4c9aff" stroke-width="1.2"/>
+<text x="26" y="89" font-size="9.5" fill="#4c9aff">CT24 — R8 G8 B8 · pas d'alpha</text>
+<rect x="16" y="102" width="210" height="26" rx="4" fill="#27ae60" fill-opacity="0.15" stroke="#27ae60" stroke-width="1.2"/>
+<text x="26" y="119" font-size="9.5" fill="#27ae60">CT16 / CT16S — 5·5·5 + 1 bit alpha</text>
+<rect x="16" y="132" width="106" height="26" rx="4" fill="#f2994a" fill-opacity="0.15" stroke="#f2994a" stroke-width="1.2"/>
+<text x="26" y="149" font-size="9.5" fill="#f2994a">T8 — indexé</text>
+<rect x="126" y="132" width="60" height="26" rx="4" fill="#f2994a" fill-opacity="0.15" stroke="#f2994a" stroke-width="1.2"/>
+<text x="134" y="149" font-size="9.5" fill="#f2994a">T4</text>
+<text x="196" y="149" font-size="9" fill="#f2994a" opacity="0.85">→ palette CLUT obligatoire</text>
+<text x="336" y="122" font-size="9" fill="currentColor" opacity="0.7">taille ÷ 2</text>
+<rect x="16" y="172" width="418" height="76" rx="5" fill="#e05252" fill-opacity="0.07" stroke="#e05252" stroke-width="1.3"/>
+<text x="26" y="190" font-size="10" fill="#e05252">⚠ deux nomenclatures incompatibles — mélange = buffer illisible, sans erreur de compilation</text>
+<text x="26" y="210" font-size="9" fill="#e05252" opacity="0.95">common/include/gs_psm.h (ps2sdk) : GS_PSM_* couleur, GS_PSMZ_* Z-buffer — valeurs décalées de +0x30</text>
+<text x="26" y="226" font-size="9" fill="#e05252" opacity="0.95">gsKit/include/gsInit.h : GS_PSM_CT*/T* couleur, GS_PSMZ_* reprenant LES MÊMES valeurs</text>
+<text x="26" y="240" font-size="8.5" fill="#e05252" opacity="0.8">côté gsKit, c'est le registre ZBUF qui donne le contexte</text>
+</svg>
+
 ## Exemples
 
 ### Formats couleur et texture

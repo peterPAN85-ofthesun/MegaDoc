@@ -23,6 +23,38 @@ La logique de lecture repose sur une convention inversée : au repos, tous les b
 
 Au-delà du numérique, le pad possède des modes (digital, DualShock analogique, avec ou sans vibration) négociés par `padInfoMode`/`padSetMainMode`, et des actuateurs de vibration pilotés par `padSetActDirect`/`padSetActAlign`.
 
+<svg viewBox="0 0 450 260" width="100%" style="max-width:450px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Séquence de lecture d'une manette avec libpad">
+<defs><marker id="lpa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+<text x="16" y="24" font-size="11.5" fill="currentColor">rien n'est lisible avant d'avoir tout mis en place</text>
+<rect x="16" y="32" width="124" height="38" rx="4" fill="#f2994a" fill-opacity="0.13" stroke="#f2994a" stroke-width="1.3"/>
+<text x="24" y="48" font-size="9" fill="#f2994a">1 · SifLoadModule</text>
+<text x="24" y="62" font-size="8.5" fill="#f2994a">rom0:SIO2MAN puis PADMAN</text>
+<line x1="140" y1="51" x2="156" y2="51" stroke="currentColor" stroke-width="1.4" marker-end="url(#lpa)"/>
+<rect x="158" y="32" width="128" height="38" rx="4" fill="#4c9aff" fill-opacity="0.13" stroke="#4c9aff" stroke-width="1.3"/>
+<text x="166" y="48" font-size="9" fill="#4c9aff">2 · padPortOpen</text>
+<text x="166" y="62" font-size="8.5" fill="#4c9aff">buffer aligned(64) — DMA</text>
+<line x1="286" y1="51" x2="302" y2="51" stroke="currentColor" stroke-width="1.4" marker-end="url(#lpa)"/>
+<rect x="304" y="32" width="130" height="38" rx="4" fill="#27ae60" fill-opacity="0.13" stroke="#27ae60" stroke-width="1.3"/>
+<text x="312" y="48" font-size="9" fill="#27ae60">3 · attendre l'état stable</text>
+<text x="312" y="62" font-size="8" fill="#27ae60">PAD_STATE_STABLE / FINDCTP1</text>
+<text x="304" y="84" font-size="8" fill="#27ae60" opacity="0.85">à chaque itération, pas seulement au début</text>
+<rect x="16" y="96" width="418" height="76" rx="5" fill="#e05252" fill-opacity="0.07" stroke="#e05252" stroke-width="1.3"/>
+<text x="26" y="114" font-size="10" fill="#e05252">⚠ convention inversée : au repos, tous les bits sont à 1</text>
+<rect x="26" y="122" width="126" height="24" rx="3" fill="none" stroke="#e05252" stroke-width="1.1"/>
+<text x="34" y="138" font-size="8.5" fill="#e05252">buttons.btns (brut)</text>
+<line x1="152" y1="134" x2="170" y2="134" stroke="currentColor" stroke-width="1.3" marker-end="url(#lpa)"/>
+<rect x="172" y="122" width="126" height="24" rx="3" fill="#27ae60" fill-opacity="0.15" stroke="#27ae60" stroke-width="1.2"/>
+<text x="180" y="138" font-size="8.5" fill="#27ae60">0xffff ^ btns → état logique</text>
+<line x1="298" y1="134" x2="316" y2="134" stroke="currentColor" stroke-width="1.3" marker-end="url(#lpa)"/>
+<rect x="318" y="122" width="116" height="24" rx="3" fill="#4c9aff" fill-opacity="0.15" stroke="#4c9aff" stroke-width="1.2"/>
+<text x="324" y="138" font-size="8.5" fill="#4c9aff">paddata &amp; ~old_pad</text>
+<text x="26" y="162" font-size="9" fill="currentColor" opacity="0.85">« le bouton est enfoncé » (état) ≠ « le bouton vient d'être enfoncé » (front montant)</text>
+<rect x="16" y="186" width="418" height="60" rx="5" fill="none" stroke="currentColor" stroke-width="1.1" stroke-dasharray="4 3"/>
+<text x="26" y="204" font-size="9.5" fill="currentColor">au-delà du numérique</text>
+<text x="26" y="222" font-size="9" fill="currentColor" opacity="0.9">modes digital / DualShock analogique — padInfoMode, padSetMainMode</text>
+<text x="26" y="238" font-size="9" fill="currentColor" opacity="0.9">vibration — padSetActDirect, padSetActAlign</text>
+</svg>
+
 ## Exemples
 
 ### Lecture complète avec détection de fronts

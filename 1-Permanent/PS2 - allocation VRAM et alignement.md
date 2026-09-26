@@ -21,6 +21,34 @@ Deux constantes couvrent tous les cas : `GRAPH_ALIGN_PAGE` (2048) pour les frame
 
 La confusion à éviter absolument est celle avec **XYOFFSET**. L'allocation VRAM place un buffer en mémoire et retourne une adresse ; XYOFFSET, lui, ne touche à aucune mémoire — c'est un registre de contexte qui décale les coordonnées des sommets avant rasterization. Les deux sont complémentaires et non substituables : changer l'alignement ne déplace pas un pixel dessiné en `(0,0)`, et changer XYOFFSET ne déplace pas le framebuffer en VRAM.
 
+<svg viewBox="0 0 450 250" width="100%" style="max-width:450px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Allocation en VRAM : granularité page et bloc">
+<text x="16" y="26" font-size="12" fill="currentColor">les registres du GS codent les adresses en PAGES, jamais en octets</text>
+<rect x="16" y="38" width="418" height="56" rx="5" fill="none" stroke="currentColor" stroke-width="1.4"/>
+<text x="20" y="34" font-size="9" fill="currentColor" opacity="0.7">VRAM — 4 Mo</text>
+<rect x="18" y="40" width="120" height="52" rx="2" fill="#4c9aff" fill-opacity="0.2" stroke="#4c9aff" stroke-width="1.2"/>
+<text x="38" y="62" font-size="9.5" fill="#4c9aff">framebuffer</text>
+<text x="30" y="78" font-size="8.5" fill="#4c9aff">GRAPH_ALIGN_PAGE (2048)</text>
+<rect x="140" y="40" width="110" height="52" rx="2" fill="#f2994a" fill-opacity="0.2" stroke="#f2994a" stroke-width="1.2"/>
+<text x="164" y="62" font-size="9.5" fill="#f2994a">Z-buffer</text>
+<text x="150" y="78" font-size="8.5" fill="#f2994a">ALIGN_PAGE aussi</text>
+<rect x="252" y="40" width="60" height="52" rx="2" fill="#27ae60" fill-opacity="0.2" stroke="#27ae60" stroke-width="1.2"/>
+<text x="262" y="62" font-size="9" fill="#27ae60">texture</text>
+<text x="256" y="78" font-size="8" fill="#27ae60">BLOCK (64)</text>
+<rect x="314" y="40" width="40" height="52" rx="2" fill="#27ae60" fill-opacity="0.12" stroke="#27ae60" stroke-width="1"/>
+<text x="322" y="66" font-size="8.5" fill="#27ae60">CLUT</text>
+<line x1="18" y1="100" x2="18" y2="108" stroke="currentColor" stroke-width="1" opacity="0.6"/>
+<line x1="138" y1="100" x2="138" y2="108" stroke="currentColor" stroke-width="1" opacity="0.6"/>
+<line x1="250" y1="100" x2="250" y2="108" stroke="currentColor" stroke-width="1" opacity="0.6"/>
+<text x="40" y="120" font-size="8.5" fill="currentColor" opacity="0.7">frontières de page</text>
+<rect x="16" y="132" width="418" height="44" rx="5" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3"/>
+<text x="26" y="150" font-size="9.5" fill="currentColor">graph_vram_allocate(width, height, psm, alignment) → retourne une adresse</text>
+<text x="26" y="166" font-size="9" fill="currentColor" opacity="0.8">GS_SET_FRAME(FBA, FBW, PSM, FMSK) : FBA sur 9 bits, en unités de pages</text>
+<rect x="16" y="188" width="418" height="52" rx="5" fill="#e05252" fill-opacity="0.07" stroke="#e05252" stroke-width="1.3"/>
+<text x="26" y="206" font-size="10" fill="#e05252">⚠ à ne pas confondre avec XYOFFSET</text>
+<text x="26" y="222" font-size="9" fill="#e05252" opacity="0.95">allocation = OÙ le buffer vit en mémoire · XYOFFSET = décalage des coordonnées avant rasterization</text>
+<text x="26" y="234" font-size="9" fill="#e05252" opacity="0.85">changer l'alignement ne déplace aucun pixel ; changer XYOFFSET ne déplace pas le buffer</text>
+</svg>
+
 ## Exemples
 
 ### Les deux alignements

@@ -21,6 +21,47 @@ Trois familles se dégagent. Les canaux **graphiques** VIF0, VIF1 et GIF portent
 
 Restent `fromIPU`/`toIPU`, réservés au décodage MPEG/vidéo par l'IPU, qui ne servent que dans les projets de lecture vidéo.
 
+<svg viewBox="0 0 450 285" width="100%" style="max-width:450px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Les 10 canaux DMA de l'EE répartis en quatre familles">
+<defs><marker id="dca" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#27ae60"/></marker></defs>
+<rect x="16" y="52" width="76" height="180" rx="6" fill="none" stroke="currentColor" stroke-width="1.5"/>
+<text x="34" y="138" font-size="11" fill="currentColor">RAM EE</text>
+<text x="26" y="154" font-size="9" fill="currentColor" opacity="0.75">source unique</text>
+<rect x="128" y="46" width="306" height="58" rx="6" fill="#27ae60" fill-opacity="0.07" stroke="#27ae60" stroke-width="1.5"/>
+<text x="138" y="62" font-size="10" fill="#27ae60">GRAPHIQUE — le chemin de rendu</text>
+<rect x="138" y="70" width="56" height="22" rx="3" fill="none" stroke="#27ae60" stroke-width="1.1"/>
+<text x="150" y="85" font-size="9" fill="#27ae60">VIF0</text>
+<rect x="200" y="70" width="56" height="22" rx="3" fill="#27ae60" fill-opacity="0.15" stroke="#27ae60" stroke-width="1.3"/>
+<text x="212" y="85" font-size="9" fill="#27ae60">VIF1</text>
+<rect x="262" y="70" width="56" height="22" rx="3" fill="#27ae60" fill-opacity="0.15" stroke="#27ae60" stroke-width="1.3"/>
+<text x="278" y="85" font-size="9" fill="#27ae60">GIF</text>
+<text x="330" y="85" font-size="9" fill="#27ae60" opacity="0.85">→ VU1 → GS</text>
+<rect x="128" y="112" width="306" height="52" rx="6" fill="#f2994a" fill-opacity="0.07" stroke="#f2994a" stroke-width="1.5"/>
+<text x="138" y="128" font-size="10" fill="#f2994a">SIF — le pont vers l'IOP</text>
+<rect x="138" y="134" width="80" height="22" rx="3" fill="none" stroke="#f2994a" stroke-width="1.1"/>
+<text x="144" y="149" font-size="8.5" fill="#f2994a">fromSIF0</text>
+<rect x="224" y="134" width="80" height="22" rx="3" fill="none" stroke="#f2994a" stroke-width="1.1"/>
+<text x="232" y="149" font-size="8.5" fill="#f2994a">toSIF1</text>
+<rect x="310" y="134" width="60" height="22" rx="3" fill="none" stroke="#f2994a" stroke-width="1" stroke-dasharray="3 2"/>
+<text x="318" y="149" font-size="8.5" fill="#f2994a" opacity="0.8">SIF2</text>
+<text x="376" y="149" font-size="8.5" fill="#f2994a" opacity="0.75">RPC</text>
+<rect x="128" y="172" width="150" height="52" rx="6" fill="#4c9aff" fill-opacity="0.07" stroke="#4c9aff" stroke-width="1.5"/>
+<text x="138" y="188" font-size="10" fill="#4c9aff">SCRATCHPAD (16 Ko)</text>
+<rect x="138" y="194" width="62" height="22" rx="3" fill="none" stroke="#4c9aff" stroke-width="1.1"/>
+<text x="144" y="209" font-size="8.5" fill="#4c9aff">fromSPR</text>
+<rect x="206" y="194" width="62" height="22" rx="3" fill="none" stroke="#4c9aff" stroke-width="1.1"/>
+<text x="214" y="209" font-size="8.5" fill="#4c9aff">toSPR</text>
+<rect x="288" y="172" width="146" height="52" rx="6" fill="none" stroke="currentColor" stroke-width="1.3" stroke-dasharray="4 3"/>
+<text x="298" y="188" font-size="10" fill="currentColor" opacity="0.85">IPU — vidéo MPEG</text>
+<text x="298" y="210" font-size="8.5" fill="currentColor" opacity="0.75">fromIPU · toIPU</text>
+<line x1="92" y1="82" x2="126" y2="82" stroke="#27ae60" stroke-width="1.8" marker-end="url(#dca)"/>
+<line x1="92" y1="138" x2="126" y2="138" stroke="#f2994a" stroke-width="1.4"/>
+<line x1="92" y1="198" x2="126" y2="198" stroke="#4c9aff" stroke-width="1.4"/>
+<text x="16" y="28" font-size="12" fill="currentColor">un canal n'est pas générique : sa destination est câblée en dur</text>
+<text x="16" y="42" font-size="10" fill="currentColor" opacity="0.75">DMA_CHANNEL_GIF signifie littéralement « RAM → GIF » : aucun paramètre de destination</text>
+<text x="16" y="256" font-size="10.5" fill="#27ae60">chemin de rendu typique : RAM → VIF1 → VU1 (géométrie) → GIF → GS</text>
+<text x="16" y="274" font-size="10" fill="currentColor" opacity="0.75">constantes définies dans ee/include/dma.h</text>
+</svg>
+
 ## Exemples
 
 ### Les 10 canaux

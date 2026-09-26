@@ -21,6 +21,35 @@ C'est là que le malentendu naît : le code EE ne peut pas appeler ces API direc
 
 D'où la règle pratique : charger `iomanX.irx` **et** `fileXio.irx` ensemble. IOMANX fait le travail de système de fichiers, fileXio fait le transport RPC. Charger l'un sans l'autre laisse soit une API inaccessible, soit un pont sans destination.
 
+<svg viewBox="0 0 450 250" width="100%" style="max-width:450px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="IOMAN et IOMANX vivent sur l'IOP, fileXio est le pont RPC depuis l'EE">
+<defs><marker id="ima" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+<text x="16" y="26" font-size="12" fill="currentColor">la confusion la plus fréquente du SDK : qui tourne où ?</text>
+<rect x="16" y="38" width="130" height="94" rx="6" fill="#4c9aff" fill-opacity="0.08" stroke="#4c9aff" stroke-width="1.6"/>
+<text x="26" y="56" font-size="11" fill="#4c9aff">CÔTÉ EE</text>
+<rect x="26" y="66" width="110" height="26" rx="4" fill="none" stroke="#4c9aff" stroke-width="1.2"/>
+<text x="32" y="83" font-size="9" fill="#4c9aff">votre open() / read()</text>
+<rect x="26" y="98" width="110" height="26" rx="4" fill="#4c9aff" fill-opacity="0.15" stroke="#4c9aff" stroke-width="1.3"/>
+<text x="32" y="115" font-size="9" fill="#4c9aff">fileXio_rpc.h — client</text>
+<rect x="166" y="52" width="70" height="66" rx="5" fill="#f2994a" fill-opacity="0.14" stroke="#f2994a" stroke-width="1.5"/>
+<text x="184" y="80" font-size="10" fill="#f2994a">SIF</text>
+<text x="172" y="98" font-size="8.5" fill="#f2994a">le pont RPC</text>
+<line x1="146" y1="85" x2="164" y2="85" stroke="currentColor" stroke-width="1.6" marker-end="url(#ima)"/>
+<line x1="236" y1="85" x2="254" y2="85" stroke="currentColor" stroke-width="1.6" marker-end="url(#ima)"/>
+<rect x="256" y="38" width="178" height="146" rx="6" fill="#f2994a" fill-opacity="0.07" stroke="#f2994a" stroke-width="1.6"/>
+<text x="266" y="56" font-size="11" fill="#f2994a">CÔTÉ IOP — exclusivement</text>
+<rect x="266" y="66" width="158" height="26" rx="4" fill="#f2994a" fill-opacity="0.15" stroke="#f2994a" stroke-width="1.3"/>
+<text x="272" y="83" font-size="9" fill="#f2994a">fileXio.irx — serveur</text>
+<rect x="266" y="100" width="158" height="30" rx="4" fill="none" stroke="#27ae60" stroke-width="1.4"/>
+<text x="272" y="114" font-size="9" fill="#27ae60">IOMANX — POSIX complet</text>
+<text x="272" y="126" font-size="8" fill="#27ae60" opacity="0.85">noms longs, stat, répertoires profonds</text>
+<rect x="266" y="138" width="158" height="30" rx="4" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="3 2"/>
+<text x="272" y="152" font-size="9" fill="currentColor" opacity="0.85">IOMAN — historique PS1</text>
+<text x="272" y="164" font-size="8" fill="currentColor" opacity="0.7">noms 8.3, pas de vrai stat</text>
+<rect x="16" y="198" width="418" height="42" rx="5" fill="#27ae60" fill-opacity="0.08" stroke="#27ae60" stroke-width="1.3"/>
+<text x="26" y="216" font-size="10" fill="#27ae60">règle pratique : charger iomanX.irx ET fileXio.irx ensemble</text>
+<text x="26" y="232" font-size="9" fill="#27ae60" opacity="0.9">IOMANX = le système de fichiers · fileXio = le transport RPC — l'un sans l'autre ne sert à rien</text>
+</svg>
+
 ## Exemples
 
 ### Les trois couches

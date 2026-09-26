@@ -22,6 +22,36 @@ La DMZ crée un **segment réseau intermédiaire** entre Internet et le LAN inte
 - Si serveur DMZ compromis → LAN interne protégé
 - Double filtrage : Internet ↔ DMZ ↔ LAN
 
+<svg viewBox="0 0 440 260" width="100%" style="max-width:440px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Architecture DMZ entre deux pare-feux">
+<defs><marker id="dzA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+<marker id="dzX" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e05252"/></marker></defs>
+<rect x="160" y="26" width="120" height="30" rx="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="196" y="46" font-size="12" fill="currentColor">Internet</text>
+<line x1="220" y1="56" x2="220" y2="76" stroke="currentColor" stroke-width="1.6" marker-end="url(#dzA)"/>
+<rect x="150" y="76" width="140" height="26" rx="4" fill="#f2994a" fill-opacity="0.16" stroke="#f2994a" stroke-width="1.5"/>
+<text x="176" y="94" font-size="11" fill="#f2994a">FIREWALL 1 (externe)</text>
+<line x1="220" y1="102" x2="220" y2="122" stroke="currentColor" stroke-width="1.6" marker-end="url(#dzA)"/>
+<rect x="60" y="122" width="320" height="56" rx="8" fill="#f2994a" fill-opacity="0.06" stroke="#f2994a" stroke-width="1.3" stroke-dasharray="5 4"/>
+<text x="70" y="140" font-size="11" fill="#f2994a">DMZ — serveurs exposés</text>
+<rect x="80" y="144" width="80" height="26" rx="4" fill="none" stroke="currentColor" stroke-width="1.3"/>
+<text x="100" y="161" font-size="11" fill="currentColor">Web</text>
+<rect x="180" y="144" width="80" height="26" rx="4" fill="none" stroke="currentColor" stroke-width="1.3"/>
+<text x="202" y="161" font-size="11" fill="currentColor">Mail</text>
+<rect x="280" y="144" width="80" height="26" rx="4" fill="none" stroke="currentColor" stroke-width="1.3"/>
+<text x="304" y="161" font-size="11" fill="currentColor">FTP</text>
+<line x1="220" y1="178" x2="220" y2="196" stroke="currentColor" stroke-width="1.6" marker-end="url(#dzA)"/>
+<rect x="150" y="196" width="140" height="26" rx="4" fill="#27ae60" fill-opacity="0.16" stroke="#27ae60" stroke-width="1.5"/>
+<text x="176" y="214" font-size="11" fill="#27ae60">FIREWALL 2 (interne)</text>
+<line x1="220" y1="222" x2="220" y2="238" stroke="currentColor" stroke-width="1.6" marker-end="url(#dzA)"/>
+<rect x="140" y="238" width="160" height="22" rx="4" fill="#27ae60" fill-opacity="0.08" stroke="#27ae60" stroke-width="1.3"/>
+<text x="176" y="254" font-size="11" fill="#27ae60">LAN interne (protégé)</text>
+<path d="M 380 150 C 410 170 410 210 320 244" fill="none" stroke="#e05252" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#dzX)"/>
+<text x="330" y="196" font-size="10" fill="#e05252">serveur DMZ</text>
+<text x="336" y="210" font-size="10" fill="#e05252">compromis :</text>
+<text x="340" y="224" font-size="10" fill="#e05252">bloqué ici</text>
+<text x="16" y="18" font-size="12" fill="currentColor">double filtrage : Internet ↔ DMZ ↔ LAN — une compromission ne franchit pas le 2ᵉ pare-feu</text>
+</svg>
+
 ## Architecture classique
 
 ```

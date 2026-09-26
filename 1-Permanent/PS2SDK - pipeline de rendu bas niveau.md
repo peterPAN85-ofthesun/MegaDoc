@@ -21,6 +21,41 @@ Cela impose deux points de synchronisation explicites, que le programmeur place 
 
 Pour un vrai projet, **gsKit** (`gsKit.h`, `gsVU1.h`) fait exactement ce travail de construction de paquets à la place du développeur et fournit des fonctions de dessin haut niveau (sprites, primitives, textures). Le chemin bas niveau reste indispensable pour comprendre ce qui se passe réellement — et pour tout ce que gsKit ne couvre pas.
 
+<svg viewBox="0 0 450 275" width="100%" style="max-width:450px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Les six étapes du pipeline de rendu bas niveau du PS2SDK">
+<defs><marker id="pla" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+<text x="16" y="26" font-size="12" fill="currentColor">six étapes invariables — libgraph + libdraw, sans couche intermédiaire</text>
+<rect x="16" y="38" width="128" height="40" rx="5" fill="#4c9aff" fill-opacity="0.1" stroke="#4c9aff" stroke-width="1.3"/>
+<text x="24" y="54" font-size="9.5" fill="#4c9aff">1 · init canal DMA</text>
+<text x="24" y="70" font-size="8.5" fill="#4c9aff" opacity="0.85">dma_channel_initialize</text>
+<line x1="144" y1="58" x2="162" y2="58" stroke="currentColor" stroke-width="1.5" marker-end="url(#pla)"/>
+<rect x="164" y="38" width="128" height="40" rx="5" fill="#4c9aff" fill-opacity="0.1" stroke="#4c9aff" stroke-width="1.3"/>
+<text x="172" y="54" font-size="9.5" fill="#4c9aff">2 · allocation VRAM</text>
+<text x="172" y="70" font-size="8.5" fill="#4c9aff" opacity="0.85">framebuffer + Z-buffer</text>
+<line x1="292" y1="58" x2="310" y2="58" stroke="currentColor" stroke-width="1.5" marker-end="url(#pla)"/>
+<rect x="312" y="38" width="122" height="40" rx="5" fill="#4c9aff" fill-opacity="0.1" stroke="#4c9aff" stroke-width="1.3"/>
+<text x="320" y="54" font-size="9.5" fill="#4c9aff">3 · graph_initialize</text>
+<text x="320" y="70" font-size="8.5" fill="#4c9aff" opacity="0.85">mode vidéo</text>
+<line x1="373" y1="78" x2="373" y2="96" stroke="currentColor" stroke-width="1.5" marker-end="url(#pla)"/>
+<rect x="312" y="96" width="122" height="40" rx="5" fill="#27ae60" fill-opacity="0.1" stroke="#27ae60" stroke-width="1.3"/>
+<text x="320" y="112" font-size="9.5" fill="#27ae60">4 · paquet GIF</text>
+<text x="320" y="128" font-size="8.5" fill="#27ae60" opacity="0.85">GIFtags à la main</text>
+<line x1="312" y1="116" x2="294" y2="116" stroke="currentColor" stroke-width="1.5" marker-end="url(#pla)"/>
+<rect x="164" y="96" width="128" height="40" rx="5" fill="#27ae60" fill-opacity="0.1" stroke="#27ae60" stroke-width="1.3"/>
+<text x="172" y="112" font-size="9.5" fill="#27ae60">5 · envoi DMA</text>
+<text x="172" y="128" font-size="8.5" fill="#27ae60" opacity="0.85">send_normal — NE BLOQUE PAS</text>
+<line x1="164" y1="116" x2="146" y2="116" stroke="currentColor" stroke-width="1.5" marker-end="url(#pla)"/>
+<rect x="16" y="96" width="128" height="40" rx="5" fill="#f2994a" fill-opacity="0.1" stroke="#f2994a" stroke-width="1.3"/>
+<text x="24" y="112" font-size="9.5" fill="#f2994a">6 · double sync</text>
+<text x="24" y="128" font-size="8.5" fill="#f2994a" opacity="0.85">finish + vsync</text>
+<rect x="16" y="152" width="418" height="56" rx="5" fill="#f2994a" fill-opacity="0.06" stroke="#f2994a" stroke-width="1.2"/>
+<text x="26" y="170" font-size="10" fill="#f2994a">les deux synchronisations n'ont rien à voir l'une avec l'autre</text>
+<text x="26" y="186" font-size="9" fill="#f2994a" opacity="0.95">draw_wait_finish() → attend la primitive FINISH ajoutée par draw_finish(q) avant l'envoi</text>
+<text x="26" y="200" font-size="9" fill="#f2994a" opacity="0.95">graph_wait_vsync() → attend le VBlank (~60 Hz NTSC / 50 Hz PAL), évite le tearing</text>
+<rect x="16" y="220" width="418" height="44" rx="5" fill="none" stroke="currentColor" stroke-width="1.1" stroke-dasharray="4 3"/>
+<text x="26" y="238" font-size="9.5" fill="currentColor">EE remplit le packet_t → DMA transfère → GIF traduit → registres GS</text>
+<text x="26" y="254" font-size="9" fill="currentColor" opacity="0.8">gsKit fait ce travail à votre place ; ce chemin reste indispensable pour comprendre</text>
+</svg>
+
 ## Exemples
 
 ### Synoptique des échanges entre processeurs

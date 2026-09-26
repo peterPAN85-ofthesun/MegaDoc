@@ -21,6 +21,36 @@ Le GIFtag lui-même est construit par `GIF_SET_TAG(nloop, eop, pre, prim, flg, n
 
 Chaque macro `GIF_SET_*` fonctionne comme un **encodeur d'instruction** : elle place des valeurs à des offsets de bits précis dans un mot de 64 bits, exactement comme un assembleur encode opcode et opérandes. `PACK_GIFTAG` est le « store » qui écrit ce mot en mémoire. La méthode pour décoder un tag à la main est donc toujours la même : prendre la définition bit à bit dans le header, appliquer `(valeur & masque) << décalage` pour chaque champ, puis faire le OR de tous les champs.
 
+<svg viewBox="0 0 450 265" width="100%" style="max-width:450px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Structure d'un paquet GIF : GIFtag de 128 bits suivi de N quadwords">
+<text x="16" y="26" font-size="12" fill="currentColor">un paquet GIF = 1 GIFtag (128 bits) + N quadwords de données</text>
+<rect x="16" y="40" width="200" height="34" rx="4" fill="#f2994a" fill-opacity="0.18" stroke="#f2994a" stroke-width="1.6"/>
+<text x="76" y="62" font-size="11" fill="#f2994a">GIFtag</text>
+<rect x="222" y="40" width="68" height="34" rx="4" fill="none" stroke="currentColor" stroke-width="1.2"/>
+<text x="236" y="62" font-size="9.5" fill="currentColor">qword 1</text>
+<rect x="294" y="40" width="68" height="34" rx="4" fill="none" stroke="currentColor" stroke-width="1.2"/>
+<text x="308" y="62" font-size="9.5" fill="currentColor">qword 2</text>
+<rect x="366" y="40" width="68" height="34" rx="4" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="3 2"/>
+<text x="386" y="62" font-size="9.5" fill="currentColor">…</text>
+<text x="222" y="90" font-size="9" fill="currentColor" opacity="0.75">NLOOP annonce combien de quadwords suivent</text>
+<line x1="16" y1="100" x2="216" y2="100" stroke="#f2994a" stroke-width="1" stroke-dasharray="3 2"/>
+<rect x="16" y="108" width="418" height="52" rx="5" fill="#f2994a" fill-opacity="0.07" stroke="#f2994a" stroke-width="1.3"/>
+<text x="26" y="126" font-size="10" fill="#f2994a">GIF_SET_TAG(nloop, eop, pre, prim, flg, nreg)</text>
+<text x="26" y="144" font-size="9" fill="#f2994a" opacity="0.9">NLOOP = nb de qwords · EOP = fin de paquet · NREG = nb de descripteurs · FLG = mode</text>
+<text x="26" y="156" font-size="9" fill="#f2994a" opacity="0.75">chaque macro GIF_SET_* encode des champs à des offsets de bits précis, comme un assembleur</text>
+<rect x="16" y="172" width="134" height="44" rx="5" fill="#27ae60" fill-opacity="0.12" stroke="#27ae60" stroke-width="1.3"/>
+<text x="26" y="190" font-size="10" fill="#27ae60">PACKED</text>
+<text x="26" y="206" font-size="8.5" fill="#27ae60" opacity="0.9">aligné 128 bits — courant</text>
+<rect x="158" y="172" width="134" height="44" rx="5" fill="none" stroke="currentColor" stroke-width="1.2"/>
+<text x="168" y="190" font-size="10" fill="currentColor">REGLIST</text>
+<text x="168" y="206" font-size="8.5" fill="currentColor" opacity="0.8">compacté 64 bits</text>
+<rect x="300" y="172" width="134" height="44" rx="5" fill="none" stroke="currentColor" stroke-width="1.2"/>
+<text x="310" y="190" font-size="10" fill="currentColor">IMAGE</text>
+<text x="310" y="206" font-size="8.5" fill="currentColor" opacity="0.8">upload VRAM / texture</text>
+<rect x="16" y="228" width="418" height="30" rx="4" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-width="1"/>
+<text x="26" y="240" font-size="9.5" fill="currentColor">PACK_GIFTAG(Q, D0, D1) : D0 → 64 bits bas, D1 → 64 bits hauts</text>
+<text x="26" y="253" font-size="9" fill="currentColor" opacity="0.75">un simple « store » de 128 bits : tout le sens vient des valeurs qu'on y met</text>
+</svg>
+
 ## Exemples
 
 ### La macro elle-même
