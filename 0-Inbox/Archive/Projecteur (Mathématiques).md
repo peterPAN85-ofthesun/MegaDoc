@@ -115,6 +115,8 @@ On se place dans le cas d'une projection sur un plan (i, j), situé à une dista
 
 ## 1) Quaternion
 
+### a - Théorie
+
 >[!Def]
 >**Produit scalaire :**
 >>![[Pasted image 20260921201418.png]]
@@ -193,24 +195,224 @@ Celà permet une division d'un quaternion q1 par un quaternion q1 non nul, mais 
 Pour multiplier deux quaternion ![[Pasted image 20260922011520.png]] et ![[Pasted image 20260922011527.png]]
 sachant que :
 - Notons ![[Pasted image 20260922011805.png]] de sorte à ce que ![[Pasted image 20260922011820.png]] 
-	- H -> 4 dimensions
+	- H -> 4 dimensions 
 	- R -> 1 dimension
 	- Im H -> 3 dimensions
 - `a` est la partie réelle
 - `v` est le vecteur (b, c, d) dans l'espace euclidien de dimension 3 canoniquement isomorphe à ![[Pasted image 20260922012016.png]] en partant de  ![[Pasted image 20260922012124.png]]
 
-On peut donc faire appel au produit de Hamilton:
+On peut donc faire appel au produit de Hamilton
 ![[Pasted image 20260922012209.png]]
 où:
 ![[Pasted image 20260922012228.png]]
 
 
+### b - En pratique pour la rotation
+
+#### Parallèle avec la rotation :
+On peut voir dans le système à 4 unités du quaternions une analogie au problème posé par l'application d'une rotation à un objet 3D:
+**Une rotation sur 3 axe, et la non commutativité des applications (A x B != B x A)**
+
+${}q = a + bi +cj +dk{}$
+
+Par convention, on peut dire que dans un quaternion de rotation :
+- la partie réelle correspond à l'angle de rotation : ${}a{}$
+- les coefs de la partie imaginaire décrivent le vecteur de rotation : ${}\vec{v}\begin{pmatrix}b\ \\  c \\  d\end{pmatrix} = \vec{v}\begin{pmatrix}x \\  y \\  z\end{pmatrix}{}$
+On peut simplifier alors le quaternion de cette manière : ${}q = a + \vec{v}{}$
+
+>[!Definition]
+>Un quaternion unitaire est un quaternion dont la norme est égal à 1
+ 
+
+#### **L'intérêt des quaternion pour la rotation :**
+
+Par rapport à l'usage d'une matrice de rotation, les quaternions apportent des avantages non négligeables : 
+- moins de mémoire utilisé
+- le calcul de deux rotation l'une avec l'autre est moins coûteux
+Sur une grande quantité de vecteur à orienter, les deux méthodes sont significativement identiques en terme de coût de calcul
 
 
+**Espace mémoire nécessaire**
 
+| Méthode             | Mémoire |
+| ------------------- | ------- |
+| Matrice de rotation | 9       |
+| Quaternion          | 4       |
+| Axe et angle        | 4*      |
+>[!Note]
+>la représentation sous forme d'angle et d'axe peut être stockée dans 3 emplacements seulement en multipliant l'axe de rotation par l'angle de rotation ; néanmoins, avant de l'utiliser, il faut récupérer le vecteur unitaire et l'angle en renormalisant, ce qui coûte des opérations mathématiques supplémentaires.
+
+**Comparaison de performance de l'application d'une rotation sur une autre**
+
+| Méthode             | Multiplications | Additions et soustractions | Nb total d'opérations |
+| ------------------- | --------------- | -------------------------- | --------------------- |
+| Matrice de rotation | 27              | 18                         | 45                    |
+| Quaternion          | 16              | 12                         | 28                    |
+
+**Comparaison de performances de la rotation de 1 vecteur**
+
+| Méthode             |                           | Multiplications | Additions et soustractions | sin et cos | Nombre total d'opérations |
+| ------------------- | ------------------------- | --------------- | -------------------------- | ---------- | ------------------------- |
+| Matrice de rotation |                           | 9               | 6                          | 0          | 15                        |
+| Quaternion          | Sans matrice intermédiare | 15              | 15                         | 0          | 30                        |
+| Quaternion          | Avec matrice intermédiare | 21              | 18                         | 0          | 39                        |
+| Axe et angle        | Sans matrice intermédiare | 18              | 13                         | 2          | 30 + 3                    |
+| Axe et angle        | Avec matrice intermédiare | 21              | 16                         | 2          | 37 + 2                    |
+
+**Comparaison de performances de la rotation de *n* vecteurs**
+
+| Méthode             |                           | Multiplications | Additions et soustractions | sin et cos | Nombre total d'opérations |
+| ------------------- | ------------------------- | --------------- | -------------------------- | ---------- | ------------------------- |
+| Matrice de rotation |                           | 9n              | 6n                         | 0          | 15n                       |
+| Quaternion          | Sans matrice intermédiare | 15n             | 15n                        | 0          | 30n                       |
+| Quaternion          | Avec matrice intermédiare | 9n + 12         | 6n + 12                    | 0          | 15n + 24                  |
+| Axe et angle        | Sans matrice intermédiare | 18n             | 12n + 1                    | 2          | 30n + 3                   |
+| Axe et angle        | Avec matrice intermédiare | 9n + 12         | 16n + 10                   | 2          | 15n + 24                  |
+
+>[!Note]
+>L'usage d'une matrice orthogonale obtenue par action de conjugaison est donc plus efficace que si nous voulions passer directement aux coordonnées d'un vecteur après applications d'un quaternion
+
+#### Mise en application :
+
+>[!Rappel] : Multiplication de deux quaternions
+>Mettons :
+>${}q = (s + \vec{v}){}$
+>${}p = (t +\vec{w}){}$
+>${}q \cdot p = (s + \vec{v})(t + \vec{w}) = st + s\vec{w} + t\vec{v} +\vec{v}\vec{w}{}$
+>Or la multiplication de deux vecteurs tel que ${}\vec{v}\vec{w}{}$  donne :
+>${}\vec{v}\vec{w} = -\vec{v} \cdot \vec{w} + \vec{v} \wedge \vec{w}{}$
+>Où :
+>- ${}\vec{v} \cdot \vec{w}{}$ est un produit scalaire (un nombre)
+>- ${}\vec{v} \wedge \vec{w}{}$ est un produit vectoriel (un vecteur)
+>
+>Alors, la multiplication de deux quaternion donne :
+>${}(s + \vec{v})(t + \vec{w}) = (st - \vec{v}\cdot \vec{w}) + (s\vec{w} + \vec{t} + \vec{v} \wedge \vec{w}){}$
+>----
+>On peut vouloir ainsi inverser un quaternion :
+>${}(s + \vec{v})^{-1} =\frac{s - \vec{v}}{s^2 + |\vec{v}|^2}{}$
+>Ainsi ces deux relations sont vrais :
+>- ${}q^{-1} \cdot q = 1{}$
+>- ${}q \cdot q^{-1} = 1{}$
+
+
+Un angle ${}\alpha{}$ est décris par la relation suivante : 
+$$
+q = \begin{pmatrix}
+x \\
+y \\
+z \\
+w
+\end{pmatrix}
+$$
+$$
+\alpha = 2\arccos w = 2 \arcsin \sqrt{ x^2 + y^2 + z^2 }
+$$
+On peut ainsi noté un quaternion de cette manière :
+
+$$
+q = w + xi + yj + zk = w + \begin{pmatrix}
+x \\
+y \\
+z \\
+\end{pmatrix}
+= \cos\left( \frac{\alpha}{2} \right) + \vec{v}\left( \frac{\alpha}{2} \right)
+$$
+Où ${}\vec{u}\begin{pmatrix}x \\  y \\  z\end{pmatrix}{}$ est un *vecteur unitaire* (${}|\vec{u}| = 1{}$)
+
+Pour appliquer une rotation, on dit aussi qu'on applique une **opération de conjugaison**.
+Pour conjuguer un vecteur, on applique alors la relation de conjugaison :
+$$
+\vec{v'} = q\vec{v}q^{-1} = \left( \cos{\frac{\alpha}{2}} + \vec{u}{\sin{\frac{\alpha}{2}}} \right)\vec{v} \left( \cos{\frac{\alpha}{2}} - \vec{u}{\sin{\frac{\alpha}{2}}} \right)
+$$
+>[!Démonstration]
+>On souhaite démontrer que ${}q^{-1} = \left(\cos{\frac{\alpha}{2} - \vec{u}\sin{\frac{\alpha}{2}}} \right){}$
+>${}(s + \vec{v})^{-1} = \frac{s - \vec{v}}{(s^2 + ||\vec{v}||^2)}{}$
+>${}\vec{v}=\vec{u}\sin\left( \frac{\alpha}{2} \right){}$
+>${}\left( \cos{\frac{\alpha}{2}}+\vec{u}\sin\left( \frac{\alpha}{2} \right) \right)^{-1} = \frac{\left( \cos{\frac{\alpha}{2} - \vec{u}\sin{\frac{\alpha}{2}}} \right)}{\cos^2{\frac{\alpha}{2}}+||\vec{u}||^2\cdot \sin^2{\frac{\alpha}{2}}}{}$
+>Or : ${}\vec{u}{}$ étant un vecteur unitaire, sa norme ${}||\vec{u}|| = 1{}$
+>Il ne reste alors au dénominateur que ${}\cos^2{\frac{\alpha}{2}+\sin^2{\frac{\alpha}{2}}}{}$ qui est forcément égal à 1 (identité remarquable de trigonométrie)
+>**Conclusion** : ${}q^{-1} = \frac{\left(\cos{\frac{\alpha}{2} - \vec{u}\sin{\frac{\alpha}{2}}} \right)}{1} = \left(\cos{\frac{\alpha}{2} - \vec{u}\sin{\frac{\alpha}{2}}} \right){}$
+
+Cette **action de conjugaison** ${}\vec{v'} = q\vec{v}q^{-1}{}$ reviens à transformer le quaternion en une matrice de rotation **R** en utilisant la formule de conversion d'un quaternion en **matrice orthogonale**, puis à multiplier le résultat par la matrice-colonne représentant le vecteur.
+
+
+>[!Définition]
+>Une matrice A est dite **orthogonale** lorsqu'elle vérifie la relation ${}A\cdot A^t = I_{n}{}$ tel que :
+>- ${}A^{t}$ est la matrice transposée de ${}A{}$
+>- ${}I_{n}{}$ est la matrice unité
+
+**Matrice orthogonale correspondant à une rotation ${}q = a + bi +cj +dk{}$ avec ${} |z| = 1{}$**
+
+$$
+\begin{pmatrix}
+a^2+b^2-c^2-d^2 & 2bc-2ad & 2ac+2bd \\
+2ad+2bc & a^2-b²+c²-d² & 2cd-2ab \\
+2bd-2ac & 2ab+2cd & a²-b²-c²+d²
+\end{pmatrix}
+$$
 
 
 ## 2) Euler
 
+### a) Généralité
 
+Les trois angles d'Euler :
+- précession ψ
+- nutation θ
+- rotation φ
+ 
+**Exemple de la toupie :**
+![[Pasted image 20260922151016.png]]
+
+Dans l'exemple du mouvement de la toupie ci-contre, l'angle de nutation θ mesure l'obliquité de l'axe par rapport à la verticale, l'angle de précession ψ mesure la rotation de l'axe de la toupie autour de Oz, et l'angle de rotation propre φ mesure bien la rotation de la toupie sur elle-même.
+
+### b) Changement de référentiel
+
+Les trois rotation otenues un gardant constants deux des trois axes d'Euleur sont :
+- la précession
+- la nutation
+- la rotation propre
+On passe du référentiel fixe *Oxyz* au référentiel *Ox'y'z'* 
+
+![[Pasted image 20260922152943.png]]
+
+On peut décomposer la rotation en trois section :
+>**1 :** ψ *précession* autour de l'axe *z*
+>>x -> u
+>>y ->v
+>**2 :** θ *nutation* autour de l'axe *u*
+>>v -> w
+>>z -> z'
+>**3 :** φ *rotation* autour de l'axe *z'*
+>>u -> x'
+>>w -> y'
+
+>[!Remarque]
+>L'axe Ou est porté par l'intersection des plans Oxy et Ox'y'.
+
+On peut simplifier le vecteur de rotation instanté du solide par la simple somme :
+![[Pasted image 20260922152804.png]]
+
+On peut aussi  exprimer les angles d'Euler via une matrice de passage de telle manière que 
+$$
+{\begin{pmatrix}
+x \\
+y \\
+z
+\end{pmatrix}}
+= A {\begin{pmatrix}
+x' \\
+y' \\
+z'
+\end{pmatrix}}
+$$
+$$
+A =
+\begin{pmatrix}
+\cos \psi \cos \phi - \sin \psi \cos \theta \cos \phi & -\cos \psi \sin \phi - \sin \psi \cos \theta \cos \phi & \sin \psi \sin \theta \\
+\cos \psi \cos \phi + \sin \psi \cos \theta \cos \phi & -\sin \psi \sin \phi + \cos \psi \cos \theta \cos \phi & -\cos \psi \sin \theta \\
+\sin \theta \sin \phi & \sin \theta \cos \phi & \cos \theta
+
+\end{pmatrix}
+$$
 

@@ -18,6 +18,36 @@ CMake est un système de build moderne et multiplateforme qui génère des fichi
 
 ## Structure
 
+### Point d'entrée
+
+| Note | Description |
+|------|-------------|
+| [[CMAKE - patrons de CMakeLists.txt (simple, sous-projet, dépendance externe)]] | Les trois squelettes de projet prêts à recopier — vue d'assemblage des commandes détaillées plus bas |
+
+### Structure d'un CMakeLists.txt
+
+| Commande | Description |
+|----------|-------------|
+| [[CMAKE : [cmake_minimum_required] - version minimale et politiques]] | Plancher de version et dialecte CMake du fichier |
+| [[CMAKE : [project] - nom, version et variables générées]] | Nom, langages, version et variables `PROJECT_*` |
+| [[CMAKE : [configure_file] - générer un en-tête depuis un template .h.in]] | Faire descendre une variable CMake jusqu'au code source |
+
+### Cibles
+
+| Commande | Description |
+|----------|-------------|
+| [[CMAKE : [add_executable] - déclarer la cible exécutable]] | Créer le binaire et le point d'accroche des commandes `target_*` |
+| [[CMAKE : [add_library] - déclarer une bibliothèque]] | Produire une archive, un objet partagé ou une cible INTERFACE |
+| [[CMAKE : [target_compile_features] - exiger des fonctionnalités du compilateur]] | Déclarer un standard ou une fonctionnalité de langage plutôt qu'un drapeau |
+
+### Dépendances
+
+| Commande | Description |
+|----------|-------------|
+| [[CMAKE : [add_subdirectory] - intégrer une bibliothèque en sous-projet]] | Intégrer une bibliothèque vendorée ou interne au build |
+| [[CMAKE : [find_package] - variables de résultat en mode Module]] | Localiser une dépendance installée : `_FOUND`, `_INCLUDE_DIR`, `_LIBRARY` |
+| [[CMAKE : [target_include_directories] - propager les répertoires d'en-têtes]] | Exposer les en-têtes d'une cible à ses consommateurs (PRIVATE/PUBLIC/INTERFACE) |
+
 ### Configuration et préréglages
 
 | Fichier/Variable | Description |
@@ -28,8 +58,8 @@ CMake est un système de build moderne et multiplateforme qui génère des fichi
 
 ### Gestion des fichiers sources
 
-| Commande | Description |
-|----------|-------------|
+| Commande                                                             | Description                                            |
+| -------------------------------------------------------------------- | ------------------------------------------------------ |
 | [[CMAKE : [file GLOB] - collecter fichiers sources automatiquement]] | Collecte automatique de fichiers sources avec globbing |
 
 ### Outils et intégration IDE
@@ -63,6 +93,10 @@ CMake ne remplace pas la chaîne de compilation : il l'orchestre. Comprendre ce 
 >`CMAKE_EXPORT_COMPILE_COMMANDS` et l'outil `bear` répondent au même besoin par deux voies : le premier fait générer `compile_commands.json` par CMake, le second le capture depuis un build Make existant — voir [[PS2SDK - configuration du LSP (bear et clangd)]].
 
 ## Notes principales
+- [[CMAKE - patrons de CMakeLists.txt (simple, sous-projet, dépendance externe)]] - Par où commencer
+- [[CMAKE : [add_executable] - déclarer la cible exécutable]] - La brique de base du modèle par cibles
+- [[CMAKE : [add_library] - déclarer une bibliothèque]] - Découper un projet en modules liables
+- [[CMAKE : [target_include_directories] - propager les répertoires d'en-têtes]] - Le cœur des *usage requirements*
 - [[CMAKE : _CMakePresets.json_ - fichier configuration moderne]] - Incontournable pour projets modernes
 - [[CMAKE : [CMAKE_BUILD_TYPE] - variable build type Debug ou Release]] - Fondamental pour développement/distribution
 - [[CMAKE : [CMAKE_EXPORT_COMPILE_COMMANDS] - variable génération compile_commands.json]] - Essentiel pour bonne expérience développeur
@@ -86,6 +120,8 @@ CMake ne remplace pas la chaîne de compilation : il l'orchestre. Comprendre ce 
 - CPack pour packaging
 - CTest pour tests unitaires
 - ExternalProject et FetchContent
+- Cibles importées et export/install d'un paquet
+- Expressions génératrices ($<...>)
 
 ---
-**Dernière mise à jour** : 2026-08-22
+**Dernière mise à jour** : 2026-09-22

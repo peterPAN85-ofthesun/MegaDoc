@@ -56,6 +56,7 @@ add_executable(myapp ${PROJECT_SOURCES})
 
 ## Connexions
 ### Notes liées
+- [[MOC - CMake]]
 - [[CMAKE : [qt_add_executable] - créer exécutable Qt6]]
 - [[CMAKE : _CMakePresets.json_ - fichier configuration moderne]]
 

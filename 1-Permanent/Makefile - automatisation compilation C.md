@@ -63,6 +63,15 @@ make clean    # Supprime .o
 make mrproper # Supprime tout
 ```
 
+## En vrac
+
+### Ajouter un prefix à tous les éléments d'une liste
+
+```Makefile
+ARCH = $(addprefix $(BIN)/,$(OBJ:.o=.a))
+```
+
+Ici, on ajoute `$(BIN)/` avant chaque élément donné par la liste `$(OBJ:.o=.a)`
 ## Connexions
 
 - [[C - compilation et linkage]] - Processus de build

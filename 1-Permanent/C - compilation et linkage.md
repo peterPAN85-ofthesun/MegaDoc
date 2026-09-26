@@ -58,6 +58,20 @@ gcc -O2 main.c -o prog            # Optimisation
 gcc -std=c11 main.c -o prog       # Standard C11
 ```
 
+### Compiler et archiver une librairie statique
+
+Pour créer une archive d'une librairie statique :
+- **1 :** `gcc -c lib.c -o lib.o` (`-o` est optionnel : il sert à renommer)
+- **2 :** `ar -rcs lib.o lib.a`
+
+>[!Note]
+>Les options de ar :
+>- `-r` : Remplace l'archive s'il elle existe
+>- `-c` : Crée l'archive
+>- `-s` : Index le contenu de l'archive
+>Indexer l'archive permet de lister quelle fonction est inclue dans quelle fichier `.o` . L'édition de lien sera alors plus efficace.
+
+
 ## Connexions
 
 - [[C - organisation multi-fichiers (headers)]] - Projets multi-fichiers
