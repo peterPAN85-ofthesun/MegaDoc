@@ -21,6 +21,28 @@ Le problème est classique en cross-compilation : le code compile parfaitement, 
 
 Le piège porte sur les `.clangd` que l'on trouve en ligne : ils déclarent trois `-isystem` pointant vers les en-têtes **builtin de GCC** (`stddef.h`, `stdint.h`…), ce qui ne couvre **aucun** en-tête du PS2SDK. `draw.h`, `graph.h`, `tamtypes.h` restent introuvables. Il manque exactement ce que `Makefile.eeglobal` injecte via `EE_INCS` : `-I$(PS2SDK)/ee/include` et `-I$(PS2SDK)/common/include`.
 
+<svg viewBox="0 0 450 235" width="100%" style="max-width:450px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Deux voies pour que clangd trouve les en-têtes du PS2SDK">
+<defs><marker id="lsa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+<text x="16" y="24" font-size="11.5" fill="currentColor">le code compile, mais l'éditeur ne trouve aucun en-tête : clangd part des chemins de l'HÔTE</text>
+<rect x="16" y="34" width="418" height="62" rx="5" fill="#27ae60" fill-opacity="0.08" stroke="#27ae60" stroke-width="1.4"/>
+<text x="26" y="52" font-size="10" fill="#27ae60">voie recommandée — capturer le vrai build</text>
+<rect x="26" y="60" width="110" height="26" rx="3" fill="#27ae60" fill-opacity="0.15" stroke="#27ae60" stroke-width="1.2"/>
+<text x="40" y="77" font-size="9" fill="#27ae60">bear -- make</text>
+<line x1="136" y1="73" x2="154" y2="73" stroke="currentColor" stroke-width="1.4" marker-end="url(#lsa)"/>
+<rect x="156" y="60" width="140" height="26" rx="3" fill="#27ae60" fill-opacity="0.15" stroke="#27ae60" stroke-width="1.2"/>
+<text x="166" y="77" font-size="9" fill="#27ae60">compile_commands.json</text>
+<line x1="296" y1="73" x2="314" y2="73" stroke="currentColor" stroke-width="1.4" marker-end="url(#lsa)"/>
+<rect x="316" y="60" width="110" height="26" rx="3" fill="#27ae60" fill-opacity="0.15" stroke="#27ae60" stroke-width="1.2"/>
+<text x="326" y="77" font-size="9" fill="#27ae60">clangd — flags exacts</text>
+<rect x="16" y="108" width="418" height="60" rx="5" fill="#e05252" fill-opacity="0.07" stroke="#e05252" stroke-width="1.4"/>
+<text x="26" y="126" font-size="10" fill="#e05252">⚠ le piège des .clangd trouvés en ligne</text>
+<text x="26" y="144" font-size="8.5" fill="#e05252" opacity="0.95">ils déclarent trois -isystem vers les en-têtes builtin de GCC (stddef.h, stdint.h…)</text>
+<text x="26" y="160" font-size="8.5" fill="#e05252" opacity="0.95">→ ne couvrent AUCUN en-tête du SDK : draw.h, graph.h, tamtypes.h restent introuvables</text>
+<rect x="16" y="180" width="418" height="46" rx="5" fill="#4c9aff" fill-opacity="0.08" stroke="#4c9aff" stroke-width="1.3"/>
+<text x="26" y="198" font-size="9.5" fill="#4c9aff">filet de sécurité : le .clangd doit reprendre exactement ce qu'injecte EE_INCS</text>
+<text x="26" y="216" font-size="9" fill="#4c9aff" opacity="0.95">-I$(PS2SDK)/ee/include   et   -I$(PS2SDK)/common/include</text>
+</svg>
+
 ## Exemples
 
 ### Générer la base de compilation

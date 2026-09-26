@@ -21,6 +21,32 @@ Un point est structurant pour lire les exemples du SDK : **l'API publique n'expo
 
 Autre observation utile : plusieurs symboles sont exportés sans être déclarés dans le moindre en-tête — `graph_get_field` dans `libgraph`, cinq fonctions dans `libdebug`, 29 symboles dans `libkernel` dont cinq nommés `RFU009`, `RFU059`… (*Reserved for Future Use*, emplacements de syscalls jamais attribués par Sony). Ils sont utilisables en les déclarant soi-même, mais hors contrat.
 
+<svg viewBox="0 0 450 250" width="100%" style="max-width:450px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Répartition très inégale des 491 fonctions publiques entre les six archives EE">
+<text x="16" y="24" font-size="11.5" fill="currentColor">491 fonctions publiques, très inégalement réparties</text>
+<text x="16" y="48" font-size="9" fill="currentColor">libkernel</text>
+<rect x="86" y="36" width="330" height="18" rx="2" fill="#e05252" fill-opacity="0.35" stroke="#e05252" stroke-width="1"/>
+<text x="422" y="49" font-size="9" fill="#e05252">352</text>
+<text x="16" y="72" font-size="9" fill="currentColor">libdebug</text>
+<rect x="86" y="60" width="56" height="18" rx="2" fill="#4c9aff" fill-opacity="0.3" stroke="#4c9aff" stroke-width="1"/>
+<text x="148" y="73" font-size="9" fill="#4c9aff">~60</text>
+<text x="16" y="96" font-size="9" fill="currentColor">libdraw</text>
+<rect x="86" y="84" width="38" height="18" rx="2" fill="#27ae60" fill-opacity="0.3" stroke="#27ae60" stroke-width="1"/>
+<text x="130" y="97" font-size="9" fill="#27ae60">~40</text>
+<text x="16" y="120" font-size="9" fill="currentColor">libgraph</text>
+<rect x="86" y="108" width="22" height="18" rx="2" fill="#27ae60" fill-opacity="0.3" stroke="#27ae60" stroke-width="1"/>
+<text x="114" y="121" font-size="9" fill="#27ae60">~23</text>
+<text x="16" y="144" font-size="9" fill="currentColor">libdma</text>
+<rect x="86" y="132" width="13" height="18" rx="2" fill="#f2994a" fill-opacity="0.35" stroke="#f2994a" stroke-width="1"/>
+<text x="105" y="145" font-size="9" fill="#f2994a">13</text>
+<text x="16" y="168" font-size="9" fill="currentColor">libpacket</text>
+<rect x="86" y="156" width="4" height="18" rx="1" fill="#f2994a" fill-opacity="0.35" stroke="#f2994a" stroke-width="1"/>
+<text x="96" y="169" font-size="9" fill="#f2994a">3</text>
+<text x="86" y="186" font-size="8.5" fill="currentColor" opacity="0.75">les bibliothèques graphiques sont petites ; libkernel est un système complet</text>
+<rect x="16" y="196" width="418" height="46" rx="5" fill="#27ae60" fill-opacity="0.07" stroke="#27ae60" stroke-width="1.2"/>
+<text x="26" y="214" font-size="9.5" fill="#27ae60">l'API publique n'exporte quasiment aucune variable globale</text>
+<text x="26" y="230" font-size="8.5" fill="#27ae60" opacity="0.9">tout passe par des pointeurs de structures : framebuffer_t*, zbuffer_t*, packet_t*</text>
+</svg>
+
 ## Exemples
 
 ### Vue d'ensemble des six archives

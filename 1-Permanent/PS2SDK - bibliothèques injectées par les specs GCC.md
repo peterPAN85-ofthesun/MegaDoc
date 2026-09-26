@@ -21,6 +21,32 @@ Le lien est par ailleurs **intégralement statique** : la PS2 n'a ni chargeur dy
 
 Dernier point à connaître : le **plugin LTO** (`liblto_plugin.so`, actif par défaut) réexamine les archives et **masque les erreurs d'ordre**. Mettre les bibliothèques avant les objets — l'erreur classique décrite dans [[C - ordre de résolution des archives au link]] — passe quand même via `gcc`. L'échec ne réapparaît qu'avec `-fno-use-linker-plugin` ou en appelant `ld` directement. Il faut donc respecter l'ordre malgré tout.
 
+<svg viewBox="0 0 450 250" width="100%" style="max-width:450px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bibliothèques ajoutées d'office par les specs du toolchain">
+<text x="16" y="24" font-size="11.5" fill="currentColor">la ligne de link réelle (gcc -###) contient bien plus que EE_LIBS</text>
+<rect x="16" y="34" width="120" height="34" rx="4" fill="#27ae60" fill-opacity="0.14" stroke="#27ae60" stroke-width="1.4"/>
+<text x="26" y="55" font-size="9.5" fill="#27ae60">vos EE_LIBS</text>
+<rect x="140" y="34" width="294" height="34" rx="4" fill="#4c9aff" fill-opacity="0.14" stroke="#4c9aff" stroke-width="1.4"/>
+<text x="148" y="55" font-size="8.5" fill="#4c9aff">-lgcc -lm --start-group -lc -lcdvd -lpthread -lpthreadglue -lcglue -lkernel --end-group -lgcc</text>
+<text x="140" y="82" font-size="8.5" fill="#4c9aff" opacity="0.85">injecté d'office par les specs ps2dev — jamais déclaré par le projet</text>
+<rect x="16" y="94" width="206" height="64" rx="5" fill="#f2994a" fill-opacity="0.08" stroke="#f2994a" stroke-width="1.3"/>
+<text x="26" y="112" font-size="9.5" fill="#f2994a">pourquoi --start-group ?</text>
+<text x="26" y="128" font-size="8.5" fill="#f2994a" opacity="0.95">libc ↔ libcglue ↔ libkernel ont des</text>
+<text x="26" y="142" font-size="8.5" fill="#f2994a" opacity="0.95">dépendances croisées : aucun ordre</text>
+<text x="26" y="153" font-size="8.5" fill="#f2994a" opacity="0.95">linéaire ne les satisferait</text>
+<rect x="232" y="94" width="202" height="64" rx="5" fill="#27ae60" fill-opacity="0.08" stroke="#27ae60" stroke-width="1.3"/>
+<text x="242" y="112" font-size="9.5" fill="#27ae60">conséquences directes</text>
+<text x="242" y="128" font-size="8.5" fill="#27ae60" opacity="0.95">printf, malloc, cosf dispo sans rien déclarer</text>
+<text x="242" y="142" font-size="8.5" fill="#27ae60" opacity="0.95">-lkernel dans EE_LIBS est redondant</text>
+<rect x="16" y="170" width="206" height="66" rx="5" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3"/>
+<text x="26" y="188" font-size="9.5" fill="currentColor">lien 100 % statique</text>
+<text x="26" y="204" font-size="8.5" fill="currentColor" opacity="0.9">ni chargeur dynamique ni .so sur PS2</text>
+<text x="26" y="220" font-size="8.5" fill="currentColor" opacity="0.9">→ ~1,4 Mo d'ELF pour 100 lignes de C</text>
+<rect x="232" y="170" width="202" height="66" rx="5" fill="#e05252" fill-opacity="0.07" stroke="#e05252" stroke-width="1.3"/>
+<text x="242" y="188" font-size="9.5" fill="#e05252">⚠ le plugin LTO masque les erreurs d'ordre</text>
+<text x="242" y="206" font-size="8.5" fill="#e05252" opacity="0.95">bibliothèques avant les objets : passe quand même</text>
+<text x="242" y="222" font-size="8.5" fill="#e05252" opacity="0.9">l'échec ne réapparaît qu'avec -fno-use-linker-plugin</text>
+</svg>
+
 ## Exemples
 
 ### La ligne de link réelle

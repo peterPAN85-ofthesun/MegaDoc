@@ -21,6 +21,29 @@ On commence par les includes de base : `tamtypes.h` pour les types (`u32`, `u64`
 
 La fin du programme est le point le plus déroutant : on termine par **`SleepThread()`**, pas par un `return`. Personne n'est là pour récupérer la valeur de retour de `main()` puisqu'il n'y a pas d'OS ; on endort donc le thread indéfiniment au lieu de « quitter ». Un `return 0` atteint mènerait à un comportement indéfini.
 
+<svg viewBox="0 0 450 270" width="100%" style="max-width:450px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Les six étapes du squelette d'un programme EE">
+<defs><marker id="sqa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+<text x="16" y="24" font-size="11.5" fill="currentColor">bare metal : rien n'est initialisé pour vous, d'où cette trame invariable</text>
+<rect x="16" y="34" width="418" height="30" rx="4" fill="#4c9aff" fill-opacity="0.1" stroke="#4c9aff" stroke-width="1.2"/>
+<text x="26" y="53" font-size="9.5" fill="#4c9aff">1 · includes — tamtypes.h (u32/u64/u128) · kernel.h · sifrpc.h si périphérique</text>
+<line x1="225" y1="64" x2="225" y2="74" stroke="currentColor" stroke-width="1.3" marker-end="url(#sqa)"/>
+<rect x="16" y="76" width="418" height="30" rx="4" fill="#f2994a" fill-opacity="0.12" stroke="#f2994a" stroke-width="1.3"/>
+<text x="26" y="95" font-size="9.5" fill="#f2994a">2 · sceSifInitRpc(0) — ouvre le canal vers l'IOP, obligatoire</text>
+<line x1="225" y1="106" x2="225" y2="116" stroke="currentColor" stroke-width="1.3" marker-end="url(#sqa)"/>
+<rect x="16" y="118" width="418" height="38" rx="4" fill="#f2994a" fill-opacity="0.1" stroke="#f2994a" stroke-width="1.2"/>
+<text x="26" y="135" font-size="9.5" fill="#f2994a">3 · chargement des modules IRX</text>
+<text x="26" y="150" font-size="8.5" fill="#f2994a" opacity="0.9">SifLoadModule("rom0:PADMAN") · SifExecModuleBuffer pour un module hors ROM</text>
+<line x1="225" y1="156" x2="225" y2="166" stroke="currentColor" stroke-width="1.3" marker-end="url(#sqa)"/>
+<rect x="16" y="168" width="418" height="30" rx="4" fill="#27ae60" fill-opacity="0.1" stroke="#27ae60" stroke-width="1.2"/>
+<text x="26" y="187" font-size="9.5" fill="#27ae60">4 · init des bibliothèques clientes — padInit() · mcInit(MC_TYPE_MC) · fileXioInit()</text>
+<line x1="225" y1="198" x2="225" y2="208" stroke="currentColor" stroke-width="1.3" marker-end="url(#sqa)"/>
+<rect x="16" y="210" width="418" height="26" rx="4" fill="#27ae60" fill-opacity="0.1" stroke="#27ae60" stroke-width="1.2"/>
+<text x="26" y="227" font-size="9.5" fill="#27ae60">5 · boucle principale</text>
+<line x1="225" y1="236" x2="225" y2="244" stroke="currentColor" stroke-width="1.3" marker-end="url(#sqa)"/>
+<rect x="16" y="246" width="418" height="24" rx="4" fill="#e05252" fill-opacity="0.12" stroke="#e05252" stroke-width="1.4"/>
+<text x="26" y="262" font-size="9.5" fill="#e05252">6 · SleepThread() — jamais return : personne ne récupère la valeur de main()</text>
+</svg>
+
 ## Exemples
 
 ### La trame complète

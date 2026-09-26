@@ -21,6 +21,24 @@ Les deux répertoires d'en-têtes sont injectés d'office par `EE_INCS`, ce qui 
 
 Toutes les archives vivent dans **un seul** répertoire, `ee/lib/`, déjà couvert par le `-L` de `Makefile.eeglobal`. Un `-L` supplémentaire n'est utile que pour un port compilé à la main. Attention : `ee/common/lib` **n'existe pas** — c'est un `-L` mort qu'on trouve encore dans des exemples et qui provoque un `cannot find -l…` trompeur.
 
+<svg viewBox="0 0 450 245" width="100%" style="max-width:450px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Les trois répertoires du PS2SDK côté EE">
+<text x="16" y="24" font-size="11.5" fill="currentColor">trois répertoires suffisent à situer tout le SDK côté EE</text>
+<rect x="16" y="34" width="418" height="22" rx="3" fill="none" stroke="currentColor" stroke-width="1.2"/>
+<text x="26" y="49" font-size="9" fill="currentColor">$PS2SDK = /usr/local/ps2dev/ps2sdk</text>
+<rect x="36" y="64" width="398" height="46" rx="4" fill="#4c9aff" fill-opacity="0.1" stroke="#4c9aff" stroke-width="1.3"/>
+<text x="46" y="82" font-size="9.5" fill="#4c9aff">ee/include/ — propre à l'EE</text>
+<text x="46" y="98" font-size="8.5" fill="#4c9aff" opacity="0.9">dma.h · draw.h · graph.h · kernel.h · packet.h · debug.h · dma_tags.h</text>
+<rect x="36" y="116" width="398" height="46" rx="4" fill="#27ae60" fill-opacity="0.1" stroke="#27ae60" stroke-width="1.3"/>
+<text x="46" y="134" font-size="9.5" fill="#27ae60">common/include/ — partagé EE et IOP, compilé selon #ifdef _EE</text>
+<text x="46" y="150" font-size="8.5" fill="#27ae60" opacity="0.9">tamtypes.h · gif_tags.h · gs_gp.h · gs_psm.h</text>
+<rect x="36" y="168" width="398" height="42" rx="4" fill="#f2994a" fill-opacity="0.1" stroke="#f2994a" stroke-width="1.3"/>
+<text x="46" y="186" font-size="9.5" fill="#f2994a">ee/lib/ — TOUTES les archives .a, un seul répertoire</text>
+<text x="46" y="202" font-size="8.5" fill="#f2994a" opacity="0.9">déjà couvert par le -L de Makefile.eeglobal</text>
+<text x="46" y="60" font-size="8" fill="currentColor" opacity="0.7">les deux dossiers d'en-têtes sont injectés d'office par EE_INCS</text>
+<rect x="16" y="216" width="418" height="26" rx="4" fill="#e05252" fill-opacity="0.08" stroke="#e05252" stroke-width="1.2"/>
+<text x="26" y="233" font-size="8.5" fill="#e05252">⚠ ee/common/lib N'EXISTE PAS · aucun alias ee-gcc : c'est mips64r5900el-ps2-elf-gcc</text>
+</svg>
+
 ## Exemples
 
 ### Le réflexe avant d'ajouter un `-l`

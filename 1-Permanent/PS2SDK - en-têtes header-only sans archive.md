@@ -21,6 +21,28 @@ Le message d'erreur est particulièrement trompeur : `ld: have you installed the
 
 Un cas mixte mérite attention : `draw_types.h` ne définit que des types (`framebuffer_t`, `zbuffer_t`…), mais ces types sont consommés par des fonctions de `libdraw`. C'est le `#include <draw.h>` qui l'amène et `-ldraw` qui fournit le code — le `-l` existe donc, mais il ne correspond pas à cet en-tête-là.
 
+<svg viewBox="0 0 450 230" width="100%" style="max-width:450px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="En-têtes header-only sans archive à lier">
+<defs><marker id="hoa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+<text x="16" y="24" font-size="11.5" fill="currentColor">un en-tête déclare, une archive définit — les deux sont indépendants</text>
+<rect x="16" y="34" width="200" height="72" rx="5" fill="#27ae60" fill-opacity="0.08" stroke="#27ae60" stroke-width="1.4"/>
+<text x="26" y="52" font-size="9.5" fill="#27ae60">gif_tags.h, gs_psm.h…</text>
+<text x="26" y="68" font-size="8.5" fill="#27ae60" opacity="0.95">uniquement #define et typedef</text>
+<text x="26" y="84" font-size="8.5" fill="#27ae60" opacity="0.95">tout est résolu par le préprocesseur</text>
+<text x="26" y="100" font-size="8.5" fill="#27ae60">→ RIEN à lier, aucune archive</text>
+<rect x="234" y="34" width="200" height="72" rx="5" fill="#4c9aff" fill-opacity="0.08" stroke="#4c9aff" stroke-width="1.4"/>
+<text x="244" y="52" font-size="9.5" fill="#4c9aff">draw.h + libdraw.a</text>
+<text x="244" y="68" font-size="8.5" fill="#4c9aff" opacity="0.95">l'en-tête déclare des fonctions</text>
+<text x="244" y="84" font-size="8.5" fill="#4c9aff" opacity="0.95">l'archive fournit leur code</text>
+<text x="244" y="100" font-size="8.5" fill="#4c9aff">→ -ldraw nécessaire</text>
+<rect x="16" y="120" width="418" height="48" rx="5" fill="#e05252" fill-opacity="0.07" stroke="#e05252" stroke-width="1.3"/>
+<text x="26" y="138" font-size="9.5" fill="#e05252">le message d'erreur est trompeur</text>
+<text x="26" y="156" font-size="8.5" fill="#e05252" opacity="0.95">ld: have you installed the static version of the gif_tags library ? — elle n'a jamais existé</text>
+<rect x="16" y="178" width="418" height="44" rx="5" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3"/>
+<text x="26" y="196" font-size="9.5" fill="currentColor">réflexe correct : vérifier avant d'ajouter un -l</text>
+<text x="26" y="212" font-size="9" fill="currentColor" opacity="0.9">ls $PS2SDK/ee/lib/lib*.a</text>
+<text x="200" y="212" font-size="8.5" fill="currentColor" opacity="0.75">cas mixte : draw_types.h ne définit que des types, consommés par libdraw</text>
+</svg>
+
 ## Exemples
 
 ### Inventaire des en-têtes sans archive

@@ -21,6 +21,29 @@ La macro `GIF_SET_XYZ(X, Y, Z)` ne connaît rien à ce format : elle empile simp
 
 Le champ Z fait exception : il reste un entier simple sur 32 bits, sans partie fractionnaire. Seuls X et Y portent le format fixed-point.
 
+<svg viewBox="0 0 450 230" width="100%" style="max-width:450px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Format 12.4 fixed-point des coordonnées X et Y du GS">
+<text x="16" y="24" font-size="11.5" fill="currentColor">les champs X et Y du registre XYZ2 ne sont pas des entiers pixel</text>
+<rect x="16" y="34" width="290" height="38" rx="4" fill="#4c9aff" fill-opacity="0.2" stroke="#4c9aff" stroke-width="1.5"/>
+<text x="130" y="58" font-size="10" fill="#4c9aff">partie entière — 12 bits (0 à 4095)</text>
+<rect x="306" y="34" width="128" height="38" rx="4" fill="#f2994a" fill-opacity="0.22" stroke="#f2994a" stroke-width="1.5"/>
+<text x="316" y="53" font-size="9.5" fill="#f2994a">fraction — 4 bits</text>
+<text x="330" y="66" font-size="8.5" fill="#f2994a">0 à 15/16</text>
+<text x="16" y="88" font-size="8.5" fill="currentColor" opacity="0.7">bit 15</text>
+<text x="404" y="88" font-size="8.5" fill="currentColor" opacity="0.7">bit 0</text>
+<text x="290" y="88" font-size="8.5" fill="#f2994a" opacity="0.85">précision au 1/16ᵉ de pixel — interpolation et antialiasing</text>
+<rect x="16" y="102" width="418" height="44" rx="5" fill="#27ae60" fill-opacity="0.08" stroke="#27ae60" stroke-width="1.3"/>
+<text x="26" y="120" font-size="9.5" fill="#27ae60">conséquence : c'est au programmeur de décaler</text>
+<text x="26" y="136" font-size="9" fill="#27ae60" opacity="0.95">GIF_SET_XYZ((x &lt;&lt; 4) + (2048 &lt;&lt; 4), (y &lt;&lt; 4) + (2048 &lt;&lt; 4), 0)</text>
+<rect x="16" y="156" width="206" height="62" rx="5" fill="#e05252" fill-opacity="0.07" stroke="#e05252" stroke-width="1.3"/>
+<text x="26" y="174" font-size="9.5" fill="#e05252">oublier le &lt;&lt; 4</text>
+<text x="26" y="192" font-size="8.5" fill="#e05252" opacity="0.95">la valeur est interprétée 16 fois trop petite</text>
+<text x="26" y="208" font-size="8.5" fill="#e05252" opacity="0.95">primitive minuscule, collée à l'origine, invisible</text>
+<rect x="232" y="156" width="202" height="62" rx="5" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3"/>
+<text x="242" y="174" font-size="9.5" fill="currentColor">le champ Z fait exception</text>
+<text x="242" y="192" font-size="8.5" fill="currentColor" opacity="0.9">entier simple sur 32 bits, sans fraction</text>
+<text x="242" y="208" font-size="8.5" fill="currentColor" opacity="0.8">seuls X et Y portent le format fixed-point</text>
+</svg>
+
 ## Exemples
 
 ### La macro et le format
