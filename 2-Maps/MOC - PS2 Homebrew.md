@@ -90,7 +90,7 @@ La PS2 n'a pas un CPU mais plusieurs processeurs spécialisés, et tout le SDK d
 
 Les mécanismes de compilation utilisés par le SDK n'ont rien de spécifique à la PS2 :
 
-- [[GCC - driver et non compilateur]] - Les quatre étapes et le rôle du driver
+- [[C - compilation et linkage]] - Les quatre étapes et le rôle du driver
 - [[C - en-tête et bibliothèque (déclarer vs définir)]] - La distinction clé du build C
 - [[C - convention -lfoo et recherche des archives]] - Comment `ld` trouve une bibliothèque
 - [[C - ordre de résolution des archives au link]] - Objets d'abord, bibliothèques ensuite

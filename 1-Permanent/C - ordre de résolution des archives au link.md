@@ -70,7 +70,7 @@ gcc -fno-use-linker-plugin ... -lfoo foo.o   # fait ressortir la vraie erreur d'
 ### Notes liées
 - [[C - convention -lfoo et recherche des archives]] - Comment `ld` trouve chaque archive
 - [[C - en-tête et bibliothèque (déclarer vs définir)]] - L'origine des symboles indéfinis
-- [[GCC - driver et non compilateur]] - Qui transmet ces options à `ld`
+- [[C - compilation et linkage]] - Qui transmet ces options à `ld`
 - [[PS2SDK - bibliothèques injectées par les specs GCC]] - Un `--start-group` réel
 
 - [[ELF - Executable and Linkable Format]] - La table des symboles que `ld` cherche à satisfaire

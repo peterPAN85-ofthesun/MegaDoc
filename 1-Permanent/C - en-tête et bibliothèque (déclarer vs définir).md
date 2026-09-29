@@ -68,11 +68,10 @@ gcc -o prog foo.o             # undefined reference  → il manque un -l
 ## Connexions
 
 ### Notes liées
-- [[GCC - driver et non compilateur]] - Quelle étape consomme quelle option
+- [[C - compilation et linkage]] - Les quatre étapes de build, et laquelle consomme quelle option
 - [[C - convention -lfoo et recherche des archives]] - Comment `-l` est résolu
 - [[C - organisation multi-fichiers (headers)]] - Le rôle des en-têtes dans un projet
 - [[PS2SDK - en-têtes header-only sans archive]] - Une instanciation concrète
-- [[C - compilation et linkage]] - Les étapes de build
 
 - [[ELF - Executable and Linkable Format]] - Où vivent réellement déclarations et définitions dans le binaire
 

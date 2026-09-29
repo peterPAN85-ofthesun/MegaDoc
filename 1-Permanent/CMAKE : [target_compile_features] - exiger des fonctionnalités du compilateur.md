@@ -73,7 +73,7 @@ message(STATUS "${features}")
 - [[CMAKE : [add_executable] - déclarer la cible exécutable]] - la cible doit exister avant l'appel
 - [[CMAKE : [target_include_directories] - propager les répertoires d'en-têtes]] - même logique de visibilité PRIVATE/PUBLIC/INTERFACE
 - [[CMAKE : [cmake_minimum_required] - version minimale et politiques]] - le pendant côté CMake de cette exigence de version
-- [[GCC - driver et non compilateur]] - le drapeau `-std=` que CMake finit par générer
+- [[C - compilation et linkage]] - le drapeau `-std=` que CMake finit par générer
 - [[CMAKE - patrons de CMakeLists.txt (simple, sous-projet, dépendance externe)]] - le squelette complet où cette commande prend place
 
 

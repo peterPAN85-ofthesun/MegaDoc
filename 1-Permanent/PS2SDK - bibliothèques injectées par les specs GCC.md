@@ -100,7 +100,7 @@ EXTRA_LDFLAGS = -nodefaultlibs $(LIBM) -lgcc -Wl,--start-group $(LIBC) \
 ### Notes liées
 - [[C - ordre de résolution des archives au link]] - Le mécanisme générique masqué par le LTO
 - [[C - convention -lfoo et recherche des archives]] - Comment `ld` trouve les archives
-- [[GCC - driver et non compilateur]] - Pourquoi `-###` révèle ces injections
+- [[C - compilation et linkage]] - Pourquoi `-###` révèle ces injections
 - [[PS2SDK - Makefile d'un projet EE]] - Où se déclare `EE_LIBS`
 - [[PS2SDK - en-têtes header-only sans archive]] - L'autre source d'erreurs de link
 

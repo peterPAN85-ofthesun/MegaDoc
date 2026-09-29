@@ -72,8 +72,7 @@ make -p -n | grep '^\.DEFAULT_GOAL'
 ### Notes liées
 - [[Makefile - automatisation compilation C]] - Les bases de Make
 - [[PS2SDK - Makefile d'un projet EE]] - Une manifestation concrète du piège
-- [[C - compilation et linkage]] - Ce que ces règles orchestrent
-- [[GCC - driver et non compilateur]] - Les commandes lancées par les règles
+- [[C - compilation et linkage]] - Les commandes que ces règles orchestrent
 
 ### Dans le contexte de
 - [[MOC - Programmation C]] - Fait partie de ce domaine

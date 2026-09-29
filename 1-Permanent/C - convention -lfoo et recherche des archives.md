@@ -71,7 +71,7 @@ gcc -o prog foo.o -L/usr/lib -lfoo -lbar
 ### Notes liées
 - [[C - en-tête et bibliothèque (déclarer vs définir)]] - Ce que `-l` apporte réellement
 - [[C - ordre de résolution des archives au link]] - Pourquoi la position du `-l` compte
-- [[GCC - driver et non compilateur]] - Qui reçoit ces options
+- [[C - compilation et linkage]] - Qui reçoit ces options
 - [[PS2SDK - bibliothèques injectées par les specs GCC]] - Un cas de `-l` implicites
 
 - [[ELF - Executable and Linkable Format]] - Ce que contient l'archive trouvée

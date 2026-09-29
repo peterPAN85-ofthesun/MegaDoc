@@ -88,8 +88,7 @@ Le lien y est intégralement statique : `ld` ne tente jamais d'ouvrir un `.so`, 
 ## Connexions
 
 ### Notes liées
-- [[C - compilation et linkage]] - Les étapes qui produisent un ELF
-- [[GCC - driver et non compilateur]] - Quel programme génère quel type de fichier
+- [[C - compilation et linkage]] - Les quatre étapes qui produisent un ELF, et quel programme génère quel type de fichier
 - [[C - en-tête et bibliothèque (déclarer vs définir)]] - La distinction lisible dans `.symtab`
 - [[C - ordre de résolution des archives au link]] - Comment les symboles indéfinis sont résolus
 - [[PS2 - SYSTEM.CNF et démarrage d'un ELF]] - Le chargement d'un ELF sans OS

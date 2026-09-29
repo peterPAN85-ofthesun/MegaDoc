@@ -81,12 +81,11 @@ CMake ne remplace pas la chaîne de compilation : il l'orchestre. Comprendre ce 
 
 | Note | Ce que CMake en fait |
 |------|----------------------|
-| [[GCC - driver et non compilateur]] | Les quatre étapes (`cpp`, `cc1`, `as`, `ld`) derrière chaque ligne de build |
+| [[C - compilation et linkage]] | Les quatre étapes (`cpp`, `cc1`, `as`, `ld`) derrière chaque ligne de build |
 | [[C - en-tête et bibliothèque (déclarer vs définir)]] | La distinction entre `target_include_directories` (`-I`) et `target_link_libraries` (`-l`) |
 | [[C - convention -lfoo et recherche des archives]] | Ce que `target_link_libraries` produit réellement sur la ligne de commande |
 | [[C - ordre de résolution des archives au link]] | Pourquoi CMake calcule un ordre de link à partir du graphe de dépendances |
 | [[MAKE - but par défaut DEFAULT_GOAL]] | Le comportement des Makefiles générés par le générateur Unix Makefiles |
-| [[C - compilation et linkage]] | Les étapes de build en C |
 | [[ELF - Executable and Linkable Format]] | Le format de l'artefact que produisent `add_executable` et `add_library` |
 
 >[!Note]

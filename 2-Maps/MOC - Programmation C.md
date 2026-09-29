@@ -97,8 +97,7 @@ Le C est un langage de programmation impératif créé dans les années 1970, en
 ## 🔧 Outils et build
 
 ### Compilation
-- [[C - compilation et linkage]] - gcc, étapes de compilation
-- [[GCC - driver et non compilateur]] - Les quatre étapes et qui reçoit quelle option
+- [[C - compilation et linkage]] - Les quatre étapes (`cpp`, `cc1`, `as`, `ld`) et qui reçoit quelle option
 - [[C - en-tête et bibliothèque (déclarer vs définir)]] - La distinction qui explique la moitié des erreurs de build
 - [[ELF - Executable and Linkable Format]] - Le format du binaire produit : sections, segments, table des symboles
 
@@ -109,6 +108,35 @@ Le C est un langage de programmation impératif créé dans les années 1970, en
 ### Make
 - [[Makefile - automatisation compilation C]] - Règles, variables, automatisation
 - [[MAKE - but par défaut DEFAULT_GOAL]] - Le piège de l'`include` placé avant `all:`
+- [[GCC : [-MMD -MP] - génération des fichiers de dépendances]] - Recompiler juste ce qu'il faut quand un en-tête change
+
+### Options GCC
+- [[GCC : [-O] - niveaux d'optimisation]] - `-O0` à `-O3`, `-Os`, `-Og` : vitesse, taille, débogage
+- [[GCC : [-g] - niveaux d'informations de débogage]] - `-g0` à `-g3`, tables DWARF
+- [[GCC : [-fsanitize] - instrumentation à l'exécution]] - `address`, `leak`, `undefined`
+- [[GCC : [-fPIC] - code indépendant de la position]] - Obligatoire pour produire un `.so`
+- [[GCC : [-fvisibility] - visibilité des symboles]] - `hidden` par défaut, API désignée explicitement
+
+### Outillage de projet
+- [[GIT : _.gitignore_ - artefacts de compilation C et C++]] - Ce que le build régénère ne se versionne pas
+
+---
+
+## 📦 Créer une bibliothèque
+
+### Choix de conception
+- [[C - bibliothèque statique vs bibliothèque partagée]] - `.a` vs `.so` : autonomie contre mise à jour centralisée
+- [[ABI - Application Binary Interface]] - Le contrat binaire, distinct de l'API
+- [[C - type opaque (encapsulation et stabilité ABI)]] - Déclarer sans définir pour rester libre d'évoluer
+
+### Structure du projet
+- [[C - arborescence d'un projet de bibliothèque]] - `include/foo/`, `src/`, `tests/`, `build/`
+- [[C - en-tête public vs en-tête privé]] - Ce qu'on promet à l'utilisateur, ce qu'on garde
+- [[C - en-tête compatible C et C++ (extern C)]] - Rendre la bibliothèque consommable depuis du C++
+
+### Build et diffusion
+- [[C - Makefile de bibliothèque]] - `ar rcs`, `-shared`, `PREFIX` et `DESTDIR`
+- [[GIT : _.gitignore_ - artefacts de compilation C et C++]] - Garder le dépôt propre
 
 ---
 
@@ -163,13 +191,28 @@ Le C est un langage de programmation impératif créé dans les années 1970, en
 18. [[C - programmation orientée objet]]
 19. [[C - compilation et linkage]]
 20. [[Makefile - automatisation compilation C]]
-21. [[GCC - driver et non compilateur]]
-22. [[C - en-tête et bibliothèque (déclarer vs définir)]]
-23. [[C - convention -lfoo et recherche des archives]]
-24. [[C - ordre de résolution des archives au link]]
-25. [[MAKE - but par défaut DEFAULT_GOAL]]
-26. [[IEEE-754 - simple précision 32 bits]]
-27. [[C - qualificatif volatile]]
+21. [[C - en-tête et bibliothèque (déclarer vs définir)]]
+22. [[C - convention -lfoo et recherche des archives]]
+23. [[C - ordre de résolution des archives au link]]
+24. [[MAKE - but par défaut DEFAULT_GOAL]]
+25. [[IEEE-754 - simple précision 32 bits]]
+26. [[C - qualificatif volatile]]
+
+### Niveau 5 : Créer et diffuser une bibliothèque
+27. [[C - bibliothèque statique vs bibliothèque partagée]]
+28. [[C - arborescence d'un projet de bibliothèque]]
+29. [[C - en-tête public vs en-tête privé]]
+30. [[ABI - Application Binary Interface]]
+31. [[C - type opaque (encapsulation et stabilité ABI)]]
+32. [[C - en-tête compatible C et C++ (extern C)]]
+33. [[C - Makefile de bibliothèque]]
+34. [[GCC : [-O] - niveaux d'optimisation]]
+35. [[GCC : [-g] - niveaux d'informations de débogage]]
+36. [[GCC : [-fsanitize] - instrumentation à l'exécution]]
+37. [[GCC : [-fPIC] - code indépendant de la position]]
+38. [[GCC : [-fvisibility] - visibilité des symboles]]
+39. [[GCC : [-MMD -MP] - génération des fichiers de dépendances]]
+40. [[GIT : _.gitignore_ - artefacts de compilation C et C++]]
 
 ---
 
@@ -177,7 +220,7 @@ Le C est un langage de programmation impératif créé dans les années 1970, en
 
 ### Sources
 - OpenClassrooms : https://openclassrooms.com/fr/courses/19980-apprenez-a-programmer-en-c
-- Fichiers source : `Archive/Apprendre le C/`, `0-Inbox/PS2SDK.md` (chapitre 7)
+- Fichiers source : `Archive/Apprendre le C/`, `0-Inbox/PS2SDK.md` (chapitre 7), `0-Inbox/Archive/Créer sa librairie en C-C++.md`
 
 ### Domaines connexes
 - [[MOC - PS2 Homebrew]] - Instanciation de ces mécanismes en cross-compilation MIPS
@@ -193,9 +236,9 @@ Le C est un langage de programmation impératif créé dans les années 1970, en
 
 ## 🎯 Statistiques
 
-- **Total de notes** : 33 notes permanentes
+- **Total de notes** : 46 notes permanentes
 - **Date de création** : 2025-11-13
-- **Dernière mise à jour** : 2026-08-26
+- **Dernière mise à jour** : 2026-09-29
 
 ---
 

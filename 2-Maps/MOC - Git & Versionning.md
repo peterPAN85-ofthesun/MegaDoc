@@ -45,6 +45,7 @@ Map of Content pour Git : système de contrôle de version distribué pour gére
 
 ### Cycle de vie des fichiers
 - [[GIT - cycle de vie fichiers]] - États : untracked, modified, staged, unmodified
+- [[GIT : _.gitignore_ - artefacts de compilation C et C++]] - Exclure ce que le build régénère
 
 ### Commandes essentielles
 
@@ -197,8 +198,8 @@ git clean -fd
 
 ## 📊 Statistiques du vault
 
-**Notes permanentes** : 24 notes sur Git
-**Dernière mise à jour** : 2025-11-13
+**Notes permanentes** : 25 notes sur Git
+**Dernière mise à jour** : 2026-09-29
 **Couverture** : Configuration, workflow, branches, remote, annulation
 
 ---

@@ -78,7 +78,7 @@ Les concepts essentiels à maîtriser en priorité :
 La séparation header/source d'une classe C++ est une instance du principe général « déclarer vs définir », et les erreurs de build qui en découlent obéissent aux mêmes règles qu'en C :
 
 - [[C - en-tête et bibliothèque (déclarer vs définir)]] - Pourquoi `undefined reference` n'est jamais une erreur de compilation
-- [[GCC - driver et non compilateur]] - Les quatre étapes et l'option qui s'adresse à chacune
+- [[C - compilation et linkage]] - Les quatre étapes et l'option qui s'adresse à chacune
 - [[C - ordre de résolution des archives au link]] - Objets d'abord, bibliothèques ensuite
 - [[ELF - Executable and Linkable Format]] - Le format du binaire et de la table des symboles
 - [[C++ - Classes (structure header-source)]] - L'application directe en C++

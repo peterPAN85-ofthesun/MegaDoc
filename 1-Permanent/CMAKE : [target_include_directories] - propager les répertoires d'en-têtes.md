@@ -16,7 +16,7 @@ tags:
 
 ## Explication
 
-`target_include_directories(<cible> <PRIVATE|PUBLIC|INTERFACE> <répertoires...>)` ajoute des chemins de recherche d'en-têtes — les futurs `-I` de la ligne de compilation, voir [[GCC - driver et non compilateur]]. Elle remplace l'ancienne commande globale `include_directories()`, qui s'appliquait à toutes les cibles du répertoire sans distinction.
+`target_include_directories(<cible> <PRIVATE|PUBLIC|INTERFACE> <répertoires...>)` ajoute des chemins de recherche d'en-têtes — les futurs `-I` de la ligne de compilation, voir [[C - compilation et linkage]]. Elle remplace l'ancienne commande globale `include_directories()`, qui s'appliquait à toutes les cibles du répertoire sans distinction.
 
 Tout l'intérêt tient dans le mot-clé de visibilité, qui exprime **qui a besoin de ce chemin** :
 
