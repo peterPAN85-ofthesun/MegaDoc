@@ -58,6 +58,7 @@ Trois représentations concurrentes du même objet géométrique, chacune avec s
 
 - [[IEEE-754 - simple précision 32 bits]] - comment un réel est réellement stocké
 - [[PS2 - fixed-point 12.4 des coordonnées]] - l'alternative en virgule fixe, côté matériel
+- [[C - librairie math.h]] - les fonctions de calcul en C (`sqrt`, `pow`, `atan2`) et le `-lm` qu'elles imposent
 
 ## 🔗 MOCs connexes
 

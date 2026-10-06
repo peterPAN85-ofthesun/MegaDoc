@@ -92,6 +92,7 @@ int maximum = MAX(10, 20);  // 20
 
 - [[C - organisation multi-fichiers (headers)]] - Include guards
 - [[C - macros prédéfinies]] - Macros système
+- [[GCC : [-I] et [-i*] - chemins de recherche des en-têtes]] - Où le préprocesseur va chercher les fichiers `#include`
 
 ## Sources
 - Fichier source : `0-Inbox/Apprendre le C/Les Bases/Les Bases.md` (section 12)

@@ -69,6 +69,7 @@ gcc -fno-use-linker-plugin ... -lfoo foo.o   # fait ressortir la vraie erreur d'
 
 ### Notes liées
 - [[C - convention -lfoo et recherche des archives]] - Comment `ld` trouve chaque archive
+- [[GCC : [-l] et [-L] - lier une bibliothèque et son chemin de recherche]] - La règle « bibliothèque après les sources » côté `gcc`
 - [[C - en-tête et bibliothèque (déclarer vs définir)]] - L'origine des symboles indéfinis
 - [[C - compilation et linkage]] - Qui transmet ces options à `ld`
 - [[PS2SDK - bibliothèques injectées par les specs GCC]] - Un `--start-group` réel

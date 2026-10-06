@@ -104,6 +104,7 @@ Le C est un langage de programmation impératif créé dans les années 1970, en
 ### Édition de liens
 - [[C - convention -lfoo et recherche des archives]] - Comment `ld` trouve `libfoo.a`
 - [[C - ordre de résolution des archives au link]] - Objets d'abord, bibliothèques ensuite, `--start-group`
+- [[GCC : [-l] et [-L] - lier une bibliothèque et son chemin de recherche]] - `-L` où chercher, `-l` quoi lier, et le `-l` **après** les sources
 
 ### Make
 - [[Makefile - automatisation compilation C]] - Règles, variables, automatisation
@@ -116,6 +117,8 @@ Le C est un langage de programmation impératif créé dans les années 1970, en
 - [[GCC : [-fsanitize] - instrumentation à l'exécution]] - `address`, `leak`, `undefined`
 - [[GCC : [-fPIC] - code indépendant de la position]] - Obligatoire pour produire un `.so`
 - [[GCC : [-fvisibility] - visibilité des symboles]] - `hidden` par défaut, API désignée explicitement
+- [[GCC : [-I] et [-i*] - chemins de recherche des en-têtes]] - `-I`, `-iquote`, `-isystem`, `-include` : pas de `-i` seul
+- [[GCC : [-l] et [-L] - lier une bibliothèque et son chemin de recherche]] - Le couple du link et sa contrainte d'ordre
 
 ### Outillage de projet
 - [[GIT : _.gitignore_ - artefacts de compilation C et C++]] - Ce que le build régénère ne se versionne pas
@@ -160,6 +163,9 @@ Le C est un langage de programmation impératif créé dans les années 1970, en
 ### stdlib.h
 - [[C - allocation dynamique (malloc free)]] - Gestion mémoire
 
+### math.h
+- [[C - librairie math.h]] - `sqrt`, `pow`, trigonométrie, et le `-lm` obligatoire au link
+
 ---
 
 ## 🔗 Parcours d'apprentissage recommandé
@@ -197,6 +203,8 @@ Le C est un langage de programmation impératif créé dans les années 1970, en
 24. [[MAKE - but par défaut DEFAULT_GOAL]]
 25. [[IEEE-754 - simple précision 32 bits]]
 26. [[C - qualificatif volatile]]
+27. [[GCC : [-I] et [-i*] - chemins de recherche des en-têtes]]
+28. [[GCC : [-l] et [-L] - lier une bibliothèque et son chemin de recherche]]
 
 ### Niveau 5 : Créer et diffuser une bibliothèque
 27. [[C - bibliothèque statique vs bibliothèque partagée]]
@@ -238,7 +246,7 @@ Le C est un langage de programmation impératif créé dans les années 1970, en
 
 - **Total de notes** : 46 notes permanentes
 - **Date de création** : 2025-11-13
-- **Dernière mise à jour** : 2026-09-29
+- **Dernière mise à jour** : 2026-09-30
 
 ---
 
