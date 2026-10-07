@@ -5,10 +5,14 @@
 
 ```shell
 $ gcc -g -02 main.c -o a.out  # On compile avec les bons paramètre d'optimisation !
-$ valgrind --tool=massif --stacks=yes --massif-out-file=out.log ./a.out  # On génère un log à l'aide de massif
+$ valgrind --tool=massif --stacks=yes --peak-inaccuracy=0.0 --massif-out-file=out.log ./a.out  # On génère un log à l'aide de massif
 
 $ ms_print out.log | less # On affiche le graphe corresiondant à l'usage de la mémmoire
 ```
+
+>[!Warning]
+>Penser à désactiver `--fsanitize=address` comme option dans gcc; valgrind ne fonctionnera pas avec
+
 
 Le graphe prend cette forme :
 ```
@@ -36,4 +40,34 @@ Un autre outil graphique pour visualiser la sortie de massif :
 $ massif-visualizer out.log
 ```
 
-# 2 - changer 
+# 2 - changer la taille de la `stack` ou de la `heap`
+
+```shell
+$ ulimit -a    
+-t: cpu time (seconds)              unlimited
+-f: file size (blocks)              unlimited
+-d: data seg size (kbytes)          unlimited
+-s: stack size (kbytes)             8192
+-c: core file size (blocks)         unlimited
+-m: resident set size (kbytes)      unlimited
+-u: processes                       127171
+-n: file descriptors                1024
+-l: locked-in-memory size (kbytes)  unlimited
+-v: address space (kbytes)          unlimited
+-x: file locks                      unlimited
+-i: pending signals                 127171
+-q: bytes in POSIX msg queues       819200
+-e: max nice                        31
+-r: max rt priority                 98
+-N 15: rt cpu time (microseconds)   unlimited
+```
+
+Changer la taille de la `heap`
+```shell
+$ ulimit -d 
+```
+
+Changer la taille de la `stack`
+```shell
+$ ulimit -s
+```
