@@ -67,6 +67,7 @@ Un moteur 3D calcule l'intensité d'une surface par $\max(\vec{n} \cdot \vec{l},
 - [[MATH - produit vectoriel]] - l'autre produit, qui mesure l'orthogonalité plutôt que l'alignement
 - [[MATH - produit de Hamilton]] - le produit scalaire y fournit la partie réelle
 - [[MATH - matrice orthogonale (inverse par transposition)]] - les matrices qui conservent ce produit
+- [[MATH - matrice transposée]] - le produit scalaire s'écrit matriciellement $\vec{u}^{T}\vec{v}$
 - [[MATH - projection (application linéaire idempotente)]] - la projection orthogonale s'exprime par produit scalaire
 
 ### Dans le contexte de

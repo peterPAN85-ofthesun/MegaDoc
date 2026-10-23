@@ -19,6 +19,11 @@ Les briques de base : espaces, décompositions, applications qui les transformen
 - [[MATH - somme directe et sous-espaces supplémentaires]] - `E = F ⊕ G`, l'unicité de la décomposition
 - [[MATH - projection (application linéaire idempotente)]] - écraser l'espace sur un sous-espace, selon une direction
 - [[MATH - idempotence]] - `f ∘ f = f`, la propriété qui caractérise les projections
+- [[MATH - calcul du déterminant d'une matrice carrée]] - `ad − bc`, Sarrus, cofacteurs, pivot de Gauss — et ce que mesure le déterminant
+- [[MATH - multiplication de matrices (produit naïf et algorithme de Strassen)]] - ligne × colonne en `n³`, et Strassen qui descend à `n^2,807` avec 7 produits au lieu de 8
+- [[MATH - matrice transposée]] - `(Aᵀ)ᵢⱼ = aⱼᵢ`, lignes et colonnes échangées
+- [[MATH - matrice triangulaire (et triangularisation par pivot de Gauss)]] - zéros sous la diagonale, et comment y arriver par pivot de Gauss
+- [[MATH - matrice inverse]] - `A · A⁻¹ = Iₙ`, existe si `det A ≠ 0`
 - [[MATH - matrice orthogonale (inverse par transposition)]] - `A · Aᵀ = Iₙ`, l'inversion gratuite
 
 ## 📐 Géométrie vectorielle
@@ -75,7 +80,7 @@ Trois représentations concurrentes du même objet géométrique, chacune avec s
 
 Branches encore absentes du vault, à alimenter au fil des besoins :
 
-- [ ] **Algèbre linéaire** : déterminant, diagonalisation, valeurs et vecteurs propres, décomposition SVD
+- [ ] **Algèbre linéaire** : diagonalisation, valeurs et vecteurs propres, décomposition SVD
 - [ ] **Géométrie** : coniques, courbes de Bézier et splines, intersections rayon-objet (raytracing)
 - [ ] **Analyse** : dérivées et gradient, intégration, développements limités, séries de Fourier
 - [ ] **Probabilités et statistiques** : lois usuelles, espérance et variance, méthodes de Monte-Carlo
@@ -84,5 +89,5 @@ Branches encore absentes du vault, à alimenter au fil des besoins :
 
 ---
 
-**Dernière mise à jour** : 2026-09-26
-**Nombre de notes** : 21
+**Dernière mise à jour** : 2026-10-23
+**Nombre de notes** : 26

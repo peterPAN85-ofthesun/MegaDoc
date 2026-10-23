@@ -19,7 +19,7 @@ Une projection admet deux définitions équivalentes, et c'est leur équivalence
 
 $$p : E = F \oplus G \to E, \qquad x = x' + x'' \mapsto x'$$
 
-L'idempotence traduit une évidence géométrique : une fois le vecteur aplati sur $F$, le réaplatir ne change plus rien. Elle a une conséquence forte — une projection est **non inversible** dès que $G \neq \{ 0 \}$ : l'information de la composante $x''$ est définitivement perdue. Pour une projection donnée $x'$, il existe une infinité d'antécédents possibles, tous alignés sur la droite (ou le sous-espace) passant par $x'$ et de direction $G$. C'est exactement ce qui se passe quand une scène 3D est projetée sur un écran : la profondeur disparaît.
+L'idempotence traduit une évidence géométrique : une fois le vecteur aplati sur $F$, le réaplatir ne change plus rien. Elle a une conséquence forte — une projection est **non [[MATH - matrice inverse|inversible]]** dès que $G \neq \{ 0 \}$ : l'information de la composante $x''$ est définitivement perdue. Pour une projection donnée $x'$, il existe une infinité d'antécédents possibles, tous alignés sur la droite (ou le sous-espace) passant par $x'$ et de direction $G$. C'est exactement ce qui se passe quand une scène 3D est projetée sur un écran : la profondeur disparaît.
 
 Attention, le mot « projection » ne suffit pas à décrire l'opération : il faut préciser **sur quoi** et **selon quelle direction**. Projeter sur un même plan $F$ parallèlement à deux droites $G_{1}$ et $G_{2}$ différentes donne deux applications distinctes. Le cas particulier où $G = F^{\perp}$ porte un nom propre : la projection **orthogonale**, la seule qui minimise la distance entre $x$ et son image.
 
@@ -59,7 +59,7 @@ Dans la base canonique de $\mathbb{R}^{3}$, la projection sur le plan $(i, j)$ p
 
 $$P = \begin{pmatrix} 1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 0 \end{pmatrix}, \qquad P^2 = P$$
 
-Elle envoie $(x, y, z)$ sur $(x, y, 0)$. Son déterminant est nul : aucune matrice ne peut la défaire.
+Elle envoie $(x, y, z)$ sur $(x, y, 0)$. Son [[MATH - calcul du déterminant d'une matrice carrée|déterminant]] est nul : aucune matrice ne peut la défaire.
 
 ## Cas d'usage
 
@@ -84,6 +84,8 @@ Elle envoie $(x, y, z)$ sur $(x, y, 0)$. Son déterminant est nul : aucune matri
 - [[MATH - somme directe et sous-espaces supplémentaires]] - la décomposition $E = F \oplus G$ qui rend l'écriture unique
 - [[MATH - projection orthographique]] - le cas où la direction est perpendiculaire au plan
 - [[MATH - projection gnomonique (perspective conique)]] - la projection du rendu réaliste, non linéaire en cartésien
+- [[MATH - calcul du déterminant d'une matrice carrée]] - un déterminant nul signale l'écrasement de l'espace
+- [[MATH - matrice inverse]] - ce qu'une projection non triviale ne possède pas
 
 ### Dans le contexte de
 - [[MATH - coordonnées homogènes et plan à l'infini]] - le cadre où ces projections deviennent des matrices

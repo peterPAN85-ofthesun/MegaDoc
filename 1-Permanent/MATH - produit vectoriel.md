@@ -79,6 +79,7 @@ Pour un triangle de sommets $A$, $B$, $C$, le vecteur $\vec{AB} \wedge \vec{AC}$
 - [[MATH - produit de Hamilton]] - le produit vectoriel y fournit la partie imaginaire et la non-commutativité
 - [[MATH - quaternion (définition et structure)]] - la table $ij = k$ est le cycle du produit vectoriel
 - [[MATH - matrices de rotation autour des axes]] - l'ordre cyclique $\vec{i} \to \vec{j} \to \vec{k}$ y explique les signes
+- [[MATH - calcul du déterminant d'une matrice carrée]] - se calcule comme un déterminant $3 \times 3$ formel ; sa norme est l'aire, comme $|\det|$ en 2D
 
 ### Dans le contexte de
 - [[MOC - Mathématiques]] - fait partie de ce domaine

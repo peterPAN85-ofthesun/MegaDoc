@@ -18,7 +18,7 @@ L'idempotence dit qu'après le premier passage, le résultat est déjà dans son
 
 En algèbre linéaire, l'idempotence est la signature exacte des projections : un endomorphisme vérifie $p^{2} = p$ si et seulement s'il projette sur $\operatorname{Im} p$ parallèlement à $\operatorname{Ker} p$. C'est une caractérisation très économique — on reconnaît une projection en élevant sa matrice au carré, sans avoir à identifier les sous-espaces.
 
-Il ne faut pas confondre idempotence et **involution**. Une involution vérifie $f \circ f = \mathrm{id}$ : elle revient au point de départ (le changement de signe, la conjugaison, la transposition). L'idempotence, elle, ne revient nulle part : elle reste sur place. La première est bijective, la seconde ne l'est généralement pas.
+Il ne faut pas confondre idempotence et **involution**. Une involution vérifie $f \circ f = \mathrm{id}$ : elle revient au point de départ (le changement de signe, la conjugaison, la [[MATH - matrice transposée|transposition]]). L'idempotence, elle, ne revient nulle part : elle reste sur place. La première est bijective, la seconde ne l'est généralement pas.
 
 ## Exemples
 
@@ -46,6 +46,7 @@ C'est le critère qui rend une opération rejouable sans risque — précieux po
 - [[MATH - projection (application linéaire idempotente)]] - l'idempotence y est la définition même
 - [[MATH - conjugué, norme et inverse d'un quaternion]] - la conjugaison est une involution, le contre-modèle utile
 - [[MATH - matrice orthogonale (inverse par transposition)]] - autre propriété algébrique qui caractérise une famille de matrices
+- [[MATH - matrice transposée]] - exemple d'involution : $(A^{T})^{T} = A$
 
 ### Dans le contexte de
 - [[MOC - Mathématiques]] - fait partie de ce domaine

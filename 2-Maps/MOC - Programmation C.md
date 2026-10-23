@@ -143,6 +143,36 @@ Le C est un langage de programmation impératif créé dans les années 1970, en
 
 ---
 
+## 🐞 Débogage et profilage
+
+### GDB — pilotage de l'exécution
+- [[GDB - débogueur en ligne de commande]] - Vue d'ensemble : prérequis `-g -O0`, `run`, `set args`, `detach`
+- [[GDB : [break] - poser et gérer les points d'arrêt]] - `break`, `tbreak`, `fichier:ligne`, points d'arrêt conditionnels
+- [[GDB - les quatre familles de points d'arrêt (breakpoint, watchpoint, catchpoint, tracepoint)]] - Code, donnée, événement, collecte sans arrêt : choisir le bon déclencheur
+- [[GDB - exécution pas à pas (next step continue finish)]] - `next` vs `step`, la valeur de retour offerte par `finish`
+- [[GDB - débogage inverse (target record-full)]] - Revenir sur un pas déjà franchi, et à quel prix
+
+### GDB — inspection de l'état
+- [[GDB : [backtrace] - lire la pile d'appels]] - `bt`, `up`/`down`, `info args`, `info locals` : le premier réflexe après un crash
+- [[GDB : [print] - afficher une valeur et choisir son format]] - Formats `/x /t /c`, historique `$n`, opérateur `@` sur un buffer
+- [[GDB : [whatis] et [ptype] - inspecter le type d'une expression]] - Le type déclaré contre la définition dépliée
+- [[GDB - qualification de portée (fonction::variable)]] - Atteindre un `static` ou une locale hors de la portée courante
+- [[GDB : [display] - réévaluer une expression à chaque arrêt]] - Le tableau de bord du pas-à-pas
+
+### GDB — agir sur le processus
+- [[GDB : [set variable] - modifier une variable en cours d'exécution]] - Tester une branche sans recompiler, et le piège du nom réservé
+- [[GDB : [call] - appeler une fonction depuis le débogueur]] - Exécuter une fonction du binaire, cast de retour obligatoire sans symboles
+
+### Profilage mémoire
+- [[VALGRIND - profiler la consommation stack et heap]] - `massif` + `ms_print` : heap utile, surcoût d'allocateur, pile
+- [[LINUX : [ulimit] - consulter et modifier les limites de ressources]] - Les plafonds `-s` (pile) et `-d` (données) que le programme peut atteindre
+
+### Instrumentation à la compilation
+- [[GCC : [-g] - niveaux d'informations de débogage]] - Ce sans quoi `gdb` ne parle qu'en adresses
+- [[GCC : [-fsanitize] - instrumentation à l'exécution]] - Détection automatique, mutuellement exclusive avec Valgrind
+
+---
+
 ## 🚀 Concepts avancés
 
 - [[C - programmation orientée objet]] - Simulation de POO avec struct + pointeurs de fonctions
@@ -206,6 +236,16 @@ Le C est un langage de programmation impératif créé dans les années 1970, en
 27. [[GCC : [-I] et [-i*] - chemins de recherche des en-têtes]]
 28. [[GCC : [-l] et [-L] - lier une bibliothèque et son chemin de recherche]]
 
+### Niveau 4b : Déboguer et profiler
+- [[GDB - débogueur en ligne de commande]]
+- [[GDB : [break] - poser et gérer les points d'arrêt]]
+- [[GDB - exécution pas à pas (next step continue finish)]]
+- [[GDB : [print] - afficher une valeur et choisir son format]]
+- [[GDB : [backtrace] - lire la pile d'appels]]
+- [[GDB - les quatre familles de points d'arrêt (breakpoint, watchpoint, catchpoint, tracepoint)]]
+- [[VALGRIND - profiler la consommation stack et heap]]
+- [[LINUX : [ulimit] - consulter et modifier les limites de ressources]]
+
 ### Niveau 5 : Créer et diffuser une bibliothèque
 27. [[C - bibliothèque statique vs bibliothèque partagée]]
 28. [[C - arborescence d'un projet de bibliothèque]]
@@ -228,7 +268,7 @@ Le C est un langage de programmation impératif créé dans les années 1970, en
 
 ### Sources
 - OpenClassrooms : https://openclassrooms.com/fr/courses/19980-apprenez-a-programmer-en-c
-- Fichiers source : `Archive/Apprendre le C/`, `0-Inbox/PS2SDK.md` (chapitre 7), `0-Inbox/Archive/Créer sa librairie en C-C++.md`
+- Fichiers source : `Archive/Apprendre le C/`, `0-Inbox/PS2SDK.md` (chapitre 7), `0-Inbox/Archive/Créer sa librairie en C-C++.md`, `0-Inbox/Archive/GDB.md`, `0-Inbox/Archive/Monitorer les performances d'un programme en C.md`
 
 ### Domaines connexes
 - [[MOC - PS2 Homebrew]] - Instanciation de ces mécanismes en cross-compilation MIPS
@@ -244,10 +284,10 @@ Le C est un langage de programmation impératif créé dans les années 1970, en
 
 ## 🎯 Statistiques
 
-- **Total de notes** : 46 notes permanentes
+- **Total de notes** : 60 notes permanentes
 - **Date de création** : 2025-11-13
-- **Dernière mise à jour** : 2026-09-30
+- **Dernière mise à jour** : 2026-10-12
 
 ---
 
-**Tags thématiques** : #c #programmation #moc #index #langage-c
+**Tags thématiques** : #c #programmation #moc #index #langage-c #debug

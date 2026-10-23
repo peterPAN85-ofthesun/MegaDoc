@@ -95,6 +95,8 @@ avec les deux relations toujours vraies, à gauche comme à droite : $q^{-1} q =
 - [[MATH - produit de Hamilton]] - le produit dont ces opérations sont dérivées
 - [[MATH - rotation par conjugaison de quaternion]] - l'usage direct de $q^{-1}$
 - [[MATH - matrice orthogonale (inverse par transposition)]] - le parallèle exact côté matrices
+- [[MATH - matrice inverse]] - la notion d'inverse côté matrices, avec la même inversion d'ordre $(AB)^{-1} = B^{-1}A^{-1}$
+- [[MATH - matrice transposée]] - $(AB)^{T} = B^{T}A^{T}$, l'analogue matriciel de $(pq)^{*} = q^{*}p^{*}$
 - [[MATH - idempotence]] - à distinguer de l'involution que réalise la conjugaison
 
 ### Dans le contexte de

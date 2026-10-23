@@ -23,7 +23,7 @@ Le mécanisme est limpide : la dernière colonne est multipliée par la coordonn
 
 La conséquence la plus utile est le traitement automatique des **directions**. Un vecteur, écrit $w = 0$, annule la dernière colonne et sort **inchangé** de la multiplication — ce qui est le comportement correct : translater une scène ne doit pas modifier ses normales ni la direction d'une lumière. La même matrice applique donc la bonne règle aux points et aux vecteurs, sans test ni branchement, selon la seule valeur de $w$.
 
-Règle de lecture générale qui en découle : dans **toute** matrice de transformation affine 4×4, la dernière colonne est la translation, quels que soient les autres coefficients. L'inverse d'une translation est immédiat — c'est la translation de $-t$.
+Règle de lecture générale qui en découle : dans **toute** matrice de transformation affine 4×4, la dernière colonne est la translation, quels que soient les autres coefficients. L'[[MATH - matrice inverse|inverse]] d'une translation est immédiat — c'est la translation de $-t$.
 
 <svg viewBox="0 0 420 215" width="100%" style="max-width:420px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Effet d'une translation sur un point (w=1) et sur une direction (w=0)">
 <defs>
@@ -77,6 +77,8 @@ Le même produit avec $(x, y, z, 0)$ redonne $(x, y, z, 0)$ : la direction est p
 - [[MATH - coordonnées homogènes et plan à l'infini]] - pourquoi la 4ᵉ coordonnée change tout
 - [[MATH - matrice de transformation affine 4x4]] - la forme générale dont ceci est un cas particulier
 - [[MATH - matrices de rotation autour des axes]] - l'autre brique de base, à combiner avec celle-ci
+- [[MATH - matrice inverse]] - l'inverse de $T(\vec{t})$ est $T(-\vec{t})$
+- [[MATH - matrice triangulaire (et triangularisation par pivot de Gauss)]] - c'est une matrice triangulaire supérieure à diagonale de $1$, donc de déterminant $1$
 
 ### Dans le contexte de
 - [[MOC - Mathématiques]] - fait partie de ce domaine

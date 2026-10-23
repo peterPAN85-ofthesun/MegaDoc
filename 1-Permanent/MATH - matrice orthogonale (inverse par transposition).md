@@ -15,13 +15,13 @@ tags:
 
 ## Explication
 
-La **transposée** $A^{T}$ s'obtient en échangeant lignes et colonnes : le coefficient en position $(i, j)$ devient celui en position $(j, i)$. C'est une opération purement combinatoire, sans aucune arithmétique — de simples lectures mémoire. La définition d'une matrice orthogonale exploite cela :
+La [[MATH - matrice transposée|transposée]] $A^{T}$ s'obtient en échangeant lignes et colonnes : le coefficient en position $(i, j)$ devient celui en position $(j, i)$. C'est une opération purement combinatoire, sans aucune arithmétique — de simples lectures mémoire. La définition d'une matrice orthogonale exploite cela :
 
 $$A \cdot A^{T} = I_{n} \iff A^{-1} = A^{T}$$
 
-où $I_{n}$ est la matrice unité. Géométriquement, cette égalité dit que les colonnes de $A$ forment une **base orthonormée** : chacune est de norme $1$ et orthogonale aux autres. Une telle matrice conserve donc les produits scalaires, donc les longueurs et les angles : c'est une isométrie. Son déterminant vaut nécessairement $\pm 1$ — $+1$ pour les rotations (isométries directes, groupe $SO(n)$), $-1$ quand une réflexion est en jeu.
+où $I_{n}$ est la matrice unité. Géométriquement, cette égalité dit que les colonnes de $A$ forment une **base orthonormée** : chacune est de norme $1$ et orthogonale aux autres. Une telle matrice conserve donc les produits scalaires, donc les longueurs et les angles : c'est une isométrie. Son [[MATH - calcul du déterminant d'une matrice carrée|déterminant]] vaut nécessairement $\pm 1$ — $+1$ pour les rotations (isométries directes, groupe $SO(n)$), $-1$ quand une réflexion est en jeu.
 
-L'intérêt pratique est considérable. L'inversion d'une matrice quelconque $3 \times 3$ demande un déterminant, une comatrice et une division, avec les instabilités numériques qui vont avec ; pour une matrice orthogonale, il suffit de relire les coefficients dans l'autre sens, **sans une seule opération flottante**. C'est pourquoi on revient dans le repère d'origine, après une transformation, en multipliant par $R_{3\times 3}^{T}$.
+L'intérêt pratique est considérable. L'[[MATH - matrice inverse|inversion]] d'une matrice quelconque $3 \times 3$ demande un déterminant, une comatrice et une division, avec les instabilités numériques qui vont avec ; pour une matrice orthogonale, il suffit de relire les coefficients dans l'autre sens, **sans une seule opération flottante**. C'est pourquoi on revient dans le repère d'origine, après une transformation, en multipliant par $R_{3\times 3}^{T}$.
 
 Le revers est la fragilité de la propriété : après des dizaines de produits en virgule flottante, les colonnes cessent d'être exactement orthonormées, $A A^{T}$ s'éloigne de $I_{n}$, et la transposée n'est plus l'inverse. Il faut alors **réorthonormaliser** périodiquement la matrice (procédé de Gram-Schmidt ou renormalisation par quaternion).
 
@@ -77,6 +77,9 @@ Après avoir amené un objet dans le repère caméra par $R$, on revient dans le
 ## Connexions
 
 ### Notes liées
+- [[MATH - matrice transposée]] - la définition de $A^{T}$ et ses propriétés
+- [[MATH - matrice inverse]] - le cas général, dont celui-ci est le raccourci
+- [[MATH - calcul du déterminant d'une matrice carrée]] - toujours $\pm 1$ pour une matrice orthogonale
 - [[MATH - matrices de rotation autour des axes]] - la famille de matrices orthogonales la plus utilisée
 - [[MATH - matrice de transformation affine 4x4]] - où cette inversion s'applique au bloc $R_{3\times 3}$
 - [[MATH - rotation par conjugaison de quaternion]] - la conversion quaternion → matrice produit une matrice orthogonale

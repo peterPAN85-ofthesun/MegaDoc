@@ -26,12 +26,12 @@ Ces informations ne changent **ni le code généré ni les performances** : elle
 
 ### Les niveaux
 
-| Option | Contenu |
-|---|---|
-| `-g0` | Aucune information de débogage. |
-| `-g1` | Minimum : description des fonctions et variables externes. **Aucune info sur les variables locales.** |
-| `-g` = `-g2` | Niveau par défaut : variables locales, `typedef`, `namespace`, classes, fonctions template. |
-| `-g3` | Ajoute les définitions de macros. |
+| Option       | Contenu                                                                                               |
+| ------------ | ----------------------------------------------------------------------------------------------------- |
+| `-g0`        | Aucune information de débogage.                                                                       |
+| `-g1`        | Minimum : description des fonctions et variables externes. **Aucune info sur les variables locales.** |
+| `-g` = `-g2` | Niveau par défaut : variables locales, `typedef`, `namespace`, classes, fonctions template.           |
+| `-g3`        | Ajoute les définitions de macros.                                                                     |
 
 ### Ce que change `-g3`
 

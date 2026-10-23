@@ -46,6 +46,15 @@ Ces notes sont basées sur les objectifs de la certification LPI Linux (101-500)
 | [[LINUX : _proc_ - système de fichiers virtuel processus]] | Détails sur les fichiers importants dans /proc |
 | [[LINUX : _sys_ - système de fichiers virtuel kernel]] | Système de fichiers virtuel /sys pour le matériel |
 
+### Limites de ressources et diagnostic
+
+| Commande | Description |
+|----------|-------------|
+| [[LINUX : [ulimit] - consulter et modifier les limites de ressources]] | Lire et ajuster pile, segment de données, descripteurs, *core dumps* |
+
+**Concepts associés** :
+- [[VALGRIND - profiler la consommation stack et heap]] - Mesurer la consommation réelle que ces limites plafonnent
+
 ## 🖥️ Sessions graphiques et services utilisateur
 
 ### KDE Plasma / Wayland
@@ -142,15 +151,17 @@ Ces notes sont basées sur les objectifs de la certification LPI Linux (101-500)
 - [ ] netstat, ss - Monitoring réseau
 - [ ] dmesg - Messages kernel
 - [ ] strace - Tracer appels système
+- [x] ulimit - Limites de ressources des processus
 
 ## 🔗 MOCs connexes
 
 - [[MOC - Réseau]] - Concepts réseau généraux (Cisco + Linux)
+- [[MOC - Programmation C]] - Outillage de débogage et de profilage sous Linux (`gdb`, Valgrind)
 
 ## 📊 Statistiques
 
-**Dernière mise à jour** : 2025-11-11
-**Nombre de notes** : 38
+**Dernière mise à jour** : 2026-10-12
+**Nombre de notes** : 39
 **Répartition** :
 - Gestion matériel et kernel : 9 notes
 - Configuration réseau Linux : 9 notes

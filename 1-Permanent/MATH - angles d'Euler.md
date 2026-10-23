@@ -62,7 +62,7 @@ $$\begin{pmatrix} x \\ y \\ z \end{pmatrix} = A \begin{pmatrix} x' \\ y' \\ z' \
 
 $$A = \begin{pmatrix} \cos\psi \cos\varphi - \sin\psi \cos\theta \sin\varphi & -\cos\psi \sin\varphi - \sin\psi \cos\theta \cos\varphi & \sin\psi \sin\theta \\ \sin\psi \cos\varphi + \cos\psi \cos\theta \sin\varphi & -\sin\psi \sin\varphi + \cos\psi \cos\theta \cos\varphi & -\cos\psi \sin\theta \\ \sin\theta \sin\varphi & \sin\theta \cos\varphi & \cos\theta \end{pmatrix}$$
 
-Cette matrice est orthogonale : le passage inverse s'obtient par $A^{T}$. Sa dernière ligne et sa dernière colonne, les plus simples, portent toute l'information de nutation — ce qui en fait le bon point d'entrée pour extraire les angles d'une matrice donnée.
+Cette matrice est orthogonale : le passage inverse s'obtient par la [[MATH - matrice transposée|transposée]] $A^{T}$. Sa dernière ligne et sa dernière colonne, les plus simples, portent toute l'information de nutation — ce qui en fait le bon point d'entrée pour extraire les angles d'une matrice donnée.
 
 ## Exemples
 
@@ -96,6 +96,7 @@ Lorsque $\theta = 0$, les axes $z$ et $z'$ se confondent : $\psi$ et $\varphi$ f
 - [[MATH - matrices de rotation autour des axes]] - les trois rotations élémentaires composées ici
 - [[MATH - rotation par conjugaison de quaternion]] - la représentation sans blocage de cardan
 - [[MATH - matrice orthogonale (inverse par transposition)]] - pourquoi le passage inverse est $A^{T}$
+- [[MATH - matrice transposée]] - l'opération $A^{T}$ elle-même
 - [[MATH - quaternion vs matrice de rotation (coûts)]] - le tableau comparatif où figure aussi l'axe-angle
 
 ### Dans le contexte de

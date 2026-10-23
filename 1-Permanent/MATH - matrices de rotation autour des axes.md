@@ -23,7 +23,7 @@ Le signe inversé de $R_{\vec{j}}$ n'est pas une erreur : il vient de l'ordre cy
 
 Ces matrices s'insèrent telles quelles comme bloc $R_{3\times 3}$ d'une matrice homogène $4 \times 4$, ce qui permet de les composer avec des translations. Leur produit n'est **pas commutatif** : $R_{\vec{i}}(\alpha) R_{\vec{k}}(\gamma) \neq R_{\vec{k}}(\gamma) R_{\vec{i}}(\alpha)$. Une orientation 3D n'est donc jamais définie par trois angles seuls — il faut aussi préciser l'ordre dans lequel on les applique, ce qui est tout l'objet des conventions d'angles d'Euler.
 
-Propriétés communes : $\det R = 1$, colonnes orthonormées, et surtout $R^{-1} = R^{T}$. Une rotation conserve les longueurs, les angles et l'orientation — c'est une isométrie directe, élément du groupe $SO(3)$.
+Propriétés communes : $\det R = 1$ (voir [[MATH - calcul du déterminant d'une matrice carrée|déterminant]]), colonnes orthonormées, et surtout $R^{-1} = R^{T}$. Une rotation conserve les longueurs, les angles et l'orientation — c'est une isométrie directe, élément du groupe $SO(3)$.
 
 <svg viewBox="0 0 420 250" width="100%" style="max-width:420px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Rotations élémentaires autour des trois axes du repère">
 <defs>
@@ -86,6 +86,8 @@ Poser un livre à plat, le tourner de $90°$ autour de la verticale puis le basc
 
 ### Notes liées
 - [[MATH - matrice orthogonale (inverse par transposition)]] - la propriété qui rend l'inversion triviale
+- [[MATH - matrice transposée]] - $R^{-1} = R^{T}$ : l'inverse est la transposée
+- [[MATH - calcul du déterminant d'une matrice carrée]] - $\det R = 1$ : ni changement de volume ni retournement
 - [[MATH - matrice de transformation affine 4x4]] - où ce bloc $3 \times 3$ vient se loger
 - [[MATH - angles d'Euler]] - la composition ordonnée de ces trois rotations
 - [[MATH - rotation par conjugaison de quaternion]] - l'autre représentation des rotations, sans blocage de cardan

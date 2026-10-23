@@ -51,7 +51,7 @@ $$M = T \cdot R = \begin{pmatrix} R_{3\times3} & t \\ 0\ 0\ 0 & 1 \end{pmatrix}$
 Appliquée à $(x, y, z, 1)$, elle donne $R \cdot (x, y, z) + \vec{t}$ : le point est d'abord tourné autour de l'origine, puis déplacé.
 
 ### Exemple 2 — défaire la transformation
-Quand le bloc linéaire est une rotation, l'inverse se calcule sans algorithme général : $R^{-1} = R^{T}$, et la translation inverse devient $-R^{T} \cdot \vec{t}$. C'est pour cela qu'on multiplie le résultat par la transposée $R_{3\times 3}^{T}$ pour revenir dans le repère d'origine.
+Quand le bloc linéaire est une rotation, l'[[MATH - matrice inverse|inverse]] se calcule sans algorithme général : $R^{-1} = R^{T}$, et la translation inverse devient $-R^{T} \cdot \vec{t}$. C'est pour cela qu'on multiplie le résultat par la [[MATH - matrice transposée|transposée]] $R_{3\times 3}^{T}$ pour revenir dans le repère d'origine.
 
 ## Cas d'usage
 
@@ -77,6 +77,8 @@ Quand le bloc linéaire est une rotation, l'inverse se calcule sans algorithme g
 - [[MATH - matrice de translation homogène]] - le cas où le bloc linéaire est l'identité
 - [[MATH - matrices de rotation autour des axes]] - ce qui remplit le bloc $R_{3\times 3}$
 - [[MATH - matrice orthogonale (inverse par transposition)]] - comment inverser ce bloc à moindre coût
+- [[MATH - matrice inverse]] - l'inversion générale, nécessaire dès que le bloc contient une mise à l'échelle
+- [[MATH - calcul du déterminant d'une matrice carrée]] - la ligne $(0\ 0\ 0\ 1)$ ramène le déterminant à celui du bloc $3 \times 3$
 
 ### Dans le contexte de
 - [[MOC - Mathématiques]] - fait partie de ce domaine
