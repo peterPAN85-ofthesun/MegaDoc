@@ -114,7 +114,7 @@ Le **mineur** $M_{ij}$ est le déterminant de la sous-matrice obtenue en **suppr
 
 $$\det(A) = \sum_{j=1}^{n} (-1)^{i+j} \, a_{ij} \, M_{ij}$$
 
-(formule symétrique selon une colonne). **Toutes les lignes et colonnes donnent le même résultat** : on choisit celle qui a le plus de zéros, chaque $a_{ij} = 0$ supprimant un sous-déterminant entier. La méthode est récursive et redescend jusqu'aux cas $3 \times 3$ ou $2 \times 2$. Son coût est en $O(n!)$ ($10! \approx 3{,}6$ millions de produits pour une $10 \times 10$) : idéale à la main sur une petite matrice creuse, inutilisable numériquement sur une grande.
+(formule symétrique selon une colonne). **Toutes les lignes et colonnes donnent le même résultat** : on choisit celle qui a le plus de zéros, chaque $a_{ij} = 0$ supprimant un sous-déterminant entier. La méthode est récursive et redescend jusqu'aux cas $3 \times 3$ ou $2 \times 2$. Son coût est en $O(n!)$ (environ $6{,}2$ millions de produits pour une $10 \times 10$) : idéale à la main sur une petite matrice creuse, inutilisable numériquement sur une grande.
 
 <svg viewBox="0 0 440 210" width="100%" style="max-width:440px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Damier des signes et mineur obtenu en rayant une ligne et une colonne">
 <text x="16" y="22" font-size="12" fill="currentColor">damier des signes (−1)^(i+j)</text>
@@ -138,17 +138,49 @@ $$\det(A) = \sum_{j=1}^{n} (-1)^{i+j} \, a_{ij} \, M_{ij}$$
 
 ### Cas $n \times n$ : pivot de Gauss (triangularisation)
 
-On applique des opérations élémentaires sur les lignes pour rendre la matrice **triangulaire supérieure**, puis on multiplie les coefficients de la diagonale. Il suffit de tenir le compte des effets de chaque opération (voir propriétés) : $L_i \leftarrow L_i + \lambda L_j$ est neutre, chaque **échange de lignes** multiplie par $-1$. Le coût est en $O(n^{3})$ : c'est la méthode employée par les bibliothèques numériques (via la décomposition $LU$). Si un pivot nul ne peut pas être remplacé par échange, une colonne entière est nulle sous la diagonale et $\det(A) = 0$.
+On applique des opérations élémentaires sur les lignes pour rendre la matrice [[MATH - matrice triangulaire (et triangularisation par pivot de Gauss)|triangulaire supérieure]], puis on multiplie les coefficients de la diagonale. Il suffit de tenir le compte des effets de chaque opération (voir propriétés) : $L_i \leftarrow L_i + \lambda L_j$ est neutre, chaque **échange de lignes** multiplie par $-1$. Le coût est en $O(n^{3})$ : c'est la méthode employée par les bibliothèques numériques (via la décomposition $LU$). Si un pivot nul ne peut pas être remplacé par échange, une colonne entière est nulle sous la diagonale et $\det(A) = 0$.
 
 ### Quelle méthode choisir
 
-| Taille / situation | Méthode | Coût |
-|---|---|---|
-| $2 \times 2$ | $ad - bc$ | 2 produits |
-| $3 \times 3$ | Sarrus (ou Laplace) | 12 produits |
-| petite matrice avec beaucoup de zéros | Laplace sur la ligne/colonne la plus creuse | $O(n!)$ dans le pire cas |
-| grande matrice, calcul par programme | pivot de Gauss | $O(n^{3})$ |
-| matrice triangulaire ou diagonale | produit de la diagonale | $n$ produits |
+#### Coût de chaque méthode
+
+On compte les **multiplications et divisions** : ce sont elles qui dominent le temps de calcul, et les additions suivent le même ordre de grandeur.
+
+| Méthode | Valable pour | Multiplications / divisions | Additions | Complexité |
+|---|---|---|---|---|
+| Produit en croix $ad - bc$ | $n = 2$ | $2$ | $1$ | — |
+| Sarrus | $n = 3$ **uniquement** | $12$ ($6$ termes de $2$ produits) | $5$ | — |
+| Laplace, ligne pleine | tout $n$ | $M(n) = n\,\big(M(n-1) + 1\big)$, $M(2) = 2$, soit $\approx (e-1)\,n!$ | $\approx$ autant | $O(n!)$ |
+| Laplace, ligne à $k$ coefficients non nuls | tout $n$ | $k\,\big(M(n-1) + 1\big)$ | idem | $O(k\,(n-1)!)$ |
+| Pivot de Gauss | tout $n$ | $\dfrac{(n-1)\,n\,(n+1)}{3} + (n - 1) \approx \dfrac{n^{3}}{3}$ | $\approx \dfrac{n^{3}}{3}$ | $O(n^{3})$ |
+| Produit de la diagonale | triangulaire ou diagonale | $n - 1$ | $0$ | $O(n)$ |
+
+#### En chiffres
+
+| $n$ | Laplace (ligne pleine) | Pivot de Gauss | Triangulaire |
+|---|---|---|---|
+| $3$ | $9$ (Sarrus : $12$) | $10$ | $2$ |
+| $4$ | $40$ | $23$ | $3$ |
+| $5$ | $205$ | $44$ | $4$ |
+| $10$ | $\approx 6{,}2$ millions | $339$ | $9$ |
+| $20$ | $\approx 4 \cdot 10^{18}$ | $\approx 2\,700$ | $19$ |
+
+> [!tip] Ce que disent les chiffres
+> - **En $3 \times 3$**, les trois méthodes se valent (9 à 12 produits). Sarrus est la plus coûteuse mais la plus mécanique à retenir.
+> - **Dès $4 \times 4$, Gauss passe devant Laplace**, et l'écart explose : à $n = 20$, à un milliard d'opérations par seconde, Laplace demanderait plus d'un siècle de calcul, Gauss quelques microsecondes.
+> - **Les zéros changent tout pour Laplace** : chaque coefficient nul supprime un sous-déterminant entier. Une colonne à un seul coefficient non nul ramène une $4 \times 4$ à une seule $3 \times 3$ (exemple 5).
+> - **À la main, le coût n'est pas le seul critère** : Gauss fait vite apparaître des fractions, alors que Laplace reste en nombres entiers si la matrice l'est.
+
+#### Choix selon la situation
+
+| Situation | Méthode | Coût | Pourquoi |
+|---|---|---|---|
+| $2 \times 2$ | $ad - bc$ | $2$ produits | formule directe |
+| $3 \times 3$ quelconque, à la main | Sarrus ou Laplace | $9$ à $12$ produits | rapide, sans fraction |
+| petite matrice ($n \le 5$) avec beaucoup de zéros, à la main | Laplace sur la ligne/colonne la plus creuse | $k\,(M(n-1)+1)$ | les zéros éliminent des branches entières |
+| petite matrice pleine, à la main | Gauss pour créer des zéros, puis Laplace | $\approx n^{3}/3$ | combine les deux avantages |
+| grande matrice, calcul par programme | pivot de Gauss (décomposition $LU$) | $O(n^{3})$ | seule méthode praticable au-delà de $n \approx 10$ |
+| matrice déjà triangulaire ou diagonale | produit de la diagonale | $n - 1$ produits | aucun calcul préalable |
 
 ## Exemples
 
