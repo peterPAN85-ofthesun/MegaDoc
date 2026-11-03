@@ -66,6 +66,14 @@ CFLAGS = $(CFLAGS) -Wall    # erreur : Recursive variable references itself
 CFLAGS := $(CFLAGS) -Wall   # correct
 ```
 
+## Les etapes dans le calcul de l'arbre des dependances du Make
+
+L'arbre des dependances est construits depuis le bout de chaque branche, ce qui veut dire que lorsqu'il y a deux regle avec le meme nom qui sont annoncee, c'est bien celle qui a la dependance la plus "profonde" qui est executee.
+
+Exemple :
+```Makefile
+
+```
 ## Exemples
 
 ### Makefile basique
