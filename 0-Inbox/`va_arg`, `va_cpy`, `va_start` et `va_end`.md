@@ -55,7 +55,7 @@ int maximum( int counter, ... ) {
 `va_end(va_list ap)`
 > Libere les ressources acquises durant un parcours des parametres d'une fonction a un nombre variable de parametres.
 
-## `va_cpy()`
+## `va_copy()`
 
 `va_cpy(va_list Dest, va_list Src)`
 > - Duplique l'etat d'une variable de type `va_list`
