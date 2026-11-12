@@ -61,5 +61,5 @@ int maximum( int counter, ... ) {
 > - Duplique l'etat d'une variable de type `va_list`
 > - Pratique pour parcourir plusieurs fois une liste de parametre
 
-ap
- 
+(null) -> str
+(nil) -> ptr
